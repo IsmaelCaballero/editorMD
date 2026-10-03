@@ -410,7 +410,8 @@ const PROJECT = {
       concepts: ["ci", "pr"] },
     { date: "2026-10-03", title: "Pendiente: instalar Rust y revisar el PR de F0", branch: "feature/F0-scaffold", pending: true,
       did: ["Instalar Visual Studio Build Tools 2022 (carga «Desarrollo para el escritorio con C++») y Rust (rustup).",
-            "Instalar GitHub CLI (<code>gh</code>), autenticarse y crear el repositorio público.",
+            "GitHub CLI dio problemas al instalarse. No es imprescindible: se puede usar el MSI de su página de releases, o crear el repositorio y el PR desde la web de GitHub con <code>git push</code> normal.",
+            "Sesión pausada: el estado queda guardado en STATUS.md («Punto de reanudación») y en git.",
             "Compilar con <code>npm run tauri dev</code>, ejecutar <code>cargo test</code> y generar rustdoc.",
             "Tú decides si se fusiona <code>feature/F0-scaffold</code> en <code>main</code>."],
       why: "En Windows, Rust necesita el enlazador de Microsoft (MSVC) para compilar.",
@@ -424,10 +425,11 @@ const PROJECT = {
       { t: "commit", branch: "feature/F0-scaffold", id: "f5e2f7b", msg: "feat: esqueleto Tauri + Svelte + SemVer" },
       { t: "commit", branch: "feature/F0-scaffold", id: "0075509", msg: "docs(web): hash en la bitácora" },
       { t: "commit", branch: "feature/F0-scaffold", id: "3430064", msg: "ci: GitHub Actions en 4 SO" },
+      { t: "commit", branch: "feature/F0-scaffold", id: "939859b", msg: "docs(web): bitácora CI" },
     ],
     branches: [
       { name: "main", goal: "Rama estable", status: ["ok", "estable"], commits: 1 },
-      { name: "feature/F0-scaffold", goal: "F0: esqueleto, tests, documentación y web", status: ["wip", "en curso · PR en espera de que compile Rust"], commits: 3 },
+      { name: "feature/F0-scaffold", goal: "F0: esqueleto, tests, documentación y web", status: ["wip", "en curso · PR en espera de que compile Rust"], commits: 4 },
     ],
   },
 

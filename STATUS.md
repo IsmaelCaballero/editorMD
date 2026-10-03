@@ -3,6 +3,27 @@
 > Fotografía del estado actual. Se actualiza **al final de cada sesión de trabajo**.
 > Última actualización: 2026-10-03
 
+## ⏸ Punto de reanudación (2026-10-03, fin de la sesión #1)
+
+**Dónde estamos:** F0 casi terminada. Rama activa `feature/F0-scaffold` (4 commits sobre `main`, árbol limpio). PR → `main` **en espera** (el usuario decidió fusionar cuando compile Rust y pasen sus tests).
+
+**Herramientas del usuario:**
+| Herramienta | Estado |
+|---|---|
+| git 2.51, Node 24.16, npm 11.13, WebView2 | ✅ |
+| Visual Studio Build Tools 2022 (C++) | ❓ instalación pendiente o en curso |
+| Rust (rustup) | ❓ pendiente (no estaba en PATH al cerrar) |
+| GitHub CLI (`gh`) | ⚠️ **el usuario tuvo problemas para instalarlo** |
+
+**Al retomar (en orden):**
+1. Comprobar `rustc --version`, `cargo --version`, `gh --version`, `where.exe link.exe`.
+2. Si hay Rust: `npm run tauri dev` (abrir la app), `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run docs:rust`. Corregir lo que falle **en la misma rama**.
+3. GitHub: si `gh` sigue dando problemas, **no es imprescindible**. Alternativas:
+   - (a) Instalador MSI desde https://github.com/cli/cli/releases (fichero `gh_*_windows_amd64.msi`) y abrir un terminal nuevo.
+   - (b) Sin `gh`: crear el repositorio público vacío en la web de GitHub, `git remote add origin <url>`, `git push -u origin main feature/F0-scaffold` y abrir el PR desde la web.
+4. Con la CI en verde, **preguntar al usuario** antes de fusionar el PR de F0. Después, etiquetar y pasar a F1.
+5. Actualizar la web `docs/index.html` (diario, ramas y KPIs; corregir `commits: 3` → número real) y este fichero.
+
 ## Resumen
 
 | Campo | Valor |
@@ -58,6 +79,7 @@ Implementados: **M00 AppInfo 0.1.0**, **M17 SemVer 0.1.0**, **V01 MainWindow 0.1
 | 2026-10-03 | #1 | Plan inicial; creados PLAN.md, STATUS.md y CONTEXT.md; propuesta de stacks y arquitectura MVC |
 | 2026-10-03 | #1 | Decididos D-01 (Tauri), D-02 (WYSIWYG), D-03 (formatos), D-15 (codificaciones y fin de línea). Añadido el soporte .Rmd. Plan reescrito para Tauri |
 | 2026-10-03 | #1 | Decididos D-05 (extras + barra de accesos directos), D-07 (MIT), D-11 (Typst), D-12 (modo fuente). Nuevos componentes M14–M16, V09–V11 |
+| 2026-10-03 | #1 | CI GitHub Actions (4 SO) preparada. Decidido: GitHub público y PR F0 tras compilar Rust. Sesión cerrada por el usuario (problemas instalando `gh`). |
 | 2026-10-03 | #1 | Convenciones (SemVer 2.0.0, rustdoc/TSDoc, rama por feature + PR, web). Git init + commit en main. Rama `feature/F0-scaffold`: Vite+Svelte+TS, Tauri 2, M00 AppInfo, M17 SemVer (29 tests), TypeDoc, .gitattributes, web `docs/index.html` |
 
 ## Checklist de release (se usará en F9)

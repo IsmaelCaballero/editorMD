@@ -37,6 +37,9 @@ Un editor Markdown de escritorio con GUI, **ligero** (poca memoria) y **portable
 - Git 2.51, Node 24.16, npm 11.13 y WebView2 instalados. **Faltan Rust (rustup) y Visual Studio Build Tools (C++)**, que el usuario instalará con permisos de administrador. `gh` (GitHub CLI) no está instalado y aún no hay remoto en GitHub.
 - Usuario git: Ismael Caballero.
 
+## Retomar el trabajo
+Lee el apartado **«⏸ Punto de reanudación»** al principio de STATUS.md.
+
 ## Decisiones tomadas
 *(Se trasladan aquí desde PLAN.md §8 cuando se cierran, con su justificación.)*
 - Arquitectura MVC con *Passive View*: decidido (requisito del usuario).
