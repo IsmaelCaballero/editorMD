@@ -44,7 +44,8 @@ Implementados: **M00 AppInfo 0.1.0**, **M17 SemVer 0.1.0**, **V01 MainWindow 0.1
 
 ## Bloqueos / pendiente del usuario
 - **Instalar Visual Studio Build Tools 2022 (C++) y Rust (rustup)**: requieren permisos de administrador.
-- **Aprobar el PR** de `feature/F0-scaffold` → `main`.
+- Instalar **GitHub CLI** (`gh`) y autenticarse (`gh auth login`) para crear el repositorio **público**.
+- PR de `feature/F0-scaffold` → `main`: **el usuario decidió esperar a que Rust compile y pasen los tests**.
 
 ## Próximos pasos
 1. Instalar Rust y Build Tools → `npm run tauri dev`, `cargo test`, `npm run docs:rust`.

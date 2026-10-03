@@ -52,7 +52,7 @@ Un editor Markdown de escritorio con GUI, **ligero** (poca memoria) y **portable
 - **D-12**: modo fuente Markdown en la v1.0, además del WYSIWYG.
 
 ## Decisiones abiertas
-Ninguna bloqueante. Confirmadas por el usuario el 2026-10-03: D-06 GitHub, D-08 sin firma hasta la 1.0, D-10 SO mínimos, D-13 Svelte 5, D-14 Milkdown, D-16 convenciones. Ver PLAN.md §8.
+Ninguna bloqueante. Confirmadas por el usuario el 2026-10-03: D-06 GitHub, D-08 sin firma hasta la 1.0, D-10 SO mínimos, D-13 Svelte 5, D-14 Milkdown, D-16 convenciones. GitHub **público**. PR F0: esperar a que compile Rust. Ver PLAN.md §8.
 
 ## Cómo trabajar en el repo
 - `npm test` (Vitest) · `npm run coverage` · `npm run check` (tipos) · `npm run build`

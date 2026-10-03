@@ -269,7 +269,7 @@ Asociación de `.md`, `.markdown`, `.Rmd` (y opcionalmente `.txt`), iconos y ent
 - [~] F0.3 Instalar la toolchain: Rust, Node LTS, Tauri CLI, WebView2 (ya viene en Win11), Pandoc (opcional)
 - [x] F0.4 Repositorio git, `.gitignore`, licencia, README
 - [~] F0.5 Proyecto Tauri + Vite + Svelte; estructura `src/` (frontend: `model/`, `view/`, `controller/`), `src-tauri/src/` (`model/`, `commands/`), `tests/`, `fixtures/`
-- [~] F0.6 Tests + cobertura (✔) + CI multiplataforma (pendiente)
+- [~] F0.6 Tests + cobertura (✔) + CI multiplataforma (`.github/workflows/ci.yml` escrito; se activa al subir a GitHub)
 - [ ] F0.7 Linters/formateadores: rustfmt, clippy, ESLint, Prettier
 - [~] F0.8 Documentación del código: rustdoc (`cargo doc`) + TSDoc/TypeDoc, publicada en `docs/api/`
 - [x] F0.9 Página web del proyecto `docs/index.html` (plan, progreso, diario de aprendizaje, ramas y PR)
@@ -341,7 +341,7 @@ Asociación de `.md`, `.markdown`, `.Rmd` (y opcionalmente `.txt`), iconos y ent
 | D-03 | Importar/exportar | **HTML, PDF, TXT + DOCX/ODT vía Pandoc** | ✅ Decidido 2026-10-03 |
 | D-04 | Dialecto | CommonMark + GFM + front matter + Rmd | ✅ Asumido |
 | D-05 | Extras v1.0 | **Tema claro/oscuro · interfaz es+en · autoguardado/recuperación · pestañas multidocumento · barra de accesos directos configurable (guardar, previsualizar…)** | ✅ Decidido 2026-10-03 |
-| D-06 | Repositorio/CI | **GitHub + Actions** | ✅ Decidido 2026-10-03 |
+| D-06 | Repositorio/CI | **GitHub (repositorio público) + Actions** | ✅ Decidido 2026-10-03 |
 | D-07 | Licencia | **MIT, código abierto** | ✅ Decidido 2026-10-03 |
 | D-08 | Firma de código Win/macOS | **No hasta la 1.0** | ✅ Decidido 2026-10-03 |
 | D-09 | Idioma de la UI | es + en (consecuencia de D-05) | ✅ Decidido 2026-10-03 |
