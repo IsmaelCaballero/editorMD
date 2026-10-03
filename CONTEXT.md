@@ -54,6 +54,13 @@ Un editor Markdown de escritorio con GUI, **ligero** (poca memoria) y **portable
 ## Decisiones abiertas
 Ninguna bloqueante. Confirmadas por el usuario el 2026-10-03: D-06 GitHub, D-08 sin firma hasta la 1.0, D-10 SO mínimos, D-13 Svelte 5, D-14 Milkdown, D-16 convenciones. Ver PLAN.md §8.
 
+## Cómo trabajar en el repo
+- `npm test` (Vitest) · `npm run coverage` · `npm run check` (tipos) · `npm run build`
+- `npm run tauri dev` (app de escritorio; requiere Rust) · `cargo test --manifest-path src-tauri/Cargo.toml`
+- `npm run docs` → `docs/api/ts` + `docs/api/rust` (no se versionan)
+- Web de aprendizaje: `docs/index.html`; datos en el objeto `PROJECT` del `<script>`. **Actualizarla en cada paso** (diario, fases, ramas, componentes, KPIs).
+- Estructura: `src/{model,view,controller}` (TS), `src-tauri/src/{model,commands.rs}` (Rust), `tests/` (Vitest), `fixtures/` (binarios).
+
 ## Glosario
 - **GFM**: GitHub Flavored Markdown (tablas, tachado, tareas).
 - **Split view**: editor de texto a la izquierda y vista previa renderizada a la derecha.

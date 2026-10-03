@@ -1,0 +1,15 @@
+# Finales de línea normalizados a LF en el repositorio (proyecto multiplataforma).
+* text=auto eol=lf
+
+# Scripts de Windows: CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Fixtures de codificación: git NO debe tocar ni un byte (BOM, CRLF, Latin-1…).
+fixtures/** binary
+
+# Binarios.
+*.png binary
+*.ico binary
+*.icns binary

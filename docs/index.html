@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>editorMD · Bitácora del proyecto</title>
+<style>
+  :root {
+    --bg: #fbfaf7; --fg: #1d2127; --muted: #5d6673; --card: #ffffff; --line: #e3e1db;
+    --accent: #2f6fdf; --accent-soft: #e6eefc;
+    --ok: #1f8a4c; --ok-soft: #e3f4ea; --wip: #b7791f; --wip-soft: #fbf0dc;
+    --todo: #8a93a0; --todo-soft: #eef0f3; --bad: #c0392b; --bad-soft: #fbe6e3;
+    --m: #7b4fd6; --v: #1e88c7; --c: #d9822b;
+    --code-bg: #f3f2ee;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12151a; --fg: #e6e9ee; --muted: #9aa4b2; --card: #1a1f26; --line: #2b323c;
+      --accent: #6ea2ff; --accent-soft: #1d2a42;
+      --ok: #4cc27f; --ok-soft: #173326; --wip: #e3a948; --wip-soft: #3a2e17;
+      --todo: #7d8794; --todo-soft: #232a33; --bad: #ef6b5b; --bad-soft: #3b1f1c;
+      --m: #a78bfa; --v: #5cb8ee; --c: #f0a35b;
+      --code-bg: #20262e;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 1rem; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font: 15px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, sans-serif; }
+  a { color: var(--accent); }
+  code, pre { font-family: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace; font-size: .88em; }
+  code { background: var(--code-bg); padding: .1em .35em; border-radius: 4px; }
+  pre { background: var(--code-bg); padding: .75rem 1rem; border-radius: 8px; overflow-x: auto; margin: .5rem 0; }
+  pre code { background: none; padding: 0; }
+
+  .layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 2rem;
+            max-width: 1200px; margin: 0 auto; padding-inline: 1.25rem; }
+  nav.toc { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto;
+            padding-block: 1.5rem; font-size: .9rem; }
+  nav.toc .brand { font-weight: 700; font-size: 1.1rem; margin-bottom: .25rem; }
+  nav.toc .brand small { display: block; font-weight: 400; color: var(--muted); font-size: .8rem; }
+  nav.toc ol { list-style: none; padding: 0; margin: 1rem 0 0; counter-reset: s; }
+  nav.toc li { counter-increment: s; }
+  nav.toc a { display: block; padding: .3rem .6rem; border-radius: 6px; color: var(--fg); text-decoration: none; }
+  nav.toc a::before { content: counter(s) ". "; color: var(--muted); }
+  nav.toc a:hover, nav.toc a.active { background: var(--accent-soft); color: var(--accent); }
+  main { padding-block: 1.5rem 4rem; min-width: 0; }
+  section { margin-bottom: 3rem; }
+  h1 { font-size: 1.9rem; margin: 0 0 .25rem; letter-spacing: -.01em; }
+  h2 { font-size: 1.35rem; margin: 0 0 1rem; padding-bottom: .4rem; border-bottom: 1px solid var(--line); }
+  h3 { font-size: 1.05rem; margin: 1.25rem 0 .5rem; }
+  .lead { color: var(--muted); margin: 0 0 1.25rem; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 1rem 1.25rem; }
+
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .75rem; margin: 1rem 0; }
+  .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: .75rem 1rem; }
+  .kpi .label { font-size: .78rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .kpi .value { font-size: 1.45rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .kpi .sub { font-size: .8rem; color: var(--muted); }
+
+  .callout { border-left: 4px solid var(--wip); background: var(--wip-soft); padding: .75rem 1rem; border-radius: 0 8px 8px 0; margin: 1rem 0; }
+  .callout.info { border-color: var(--accent); background: var(--accent-soft); }
+
+  .bar { height: 10px; background: var(--todo-soft); border-radius: 99px; overflow: hidden; display: flex; }
+  .bar span { display: block; height: 100%; }
+  .bar .ok { background: var(--ok); } .bar .wip { background: var(--wip); }
+
+  .phases { display: grid; gap: .6rem; }
+  .phase { background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
+  .phase summary { list-style: none; cursor: pointer; padding: .75rem 1rem; display: grid;
+                   grid-template-columns: 3.2rem minmax(0, 1fr) 6.5rem 9rem; gap: .75rem; align-items: center; }
+  .phase summary::-webkit-details-marker { display: none; }
+  .phase .pid { font-weight: 700; color: var(--accent); }
+  .phase .pname small { display: block; color: var(--muted); font-size: .8rem; }
+  .phase .count { font-size: .82rem; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+  .phase ul { list-style: none; margin: 0; padding: 0 1rem 1rem 4.95rem; }
+  .phase li { padding: .2rem 0; display: flex; gap: .5rem; }
+
+  .pill { display: inline-block; font-size: .75rem; font-weight: 600; padding: .05rem .5rem; border-radius: 99px; white-space: nowrap; }
+  .pill.ok { background: var(--ok-soft); color: var(--ok); }
+  .pill.wip { background: var(--wip-soft); color: var(--wip); }
+  .pill.todo { background: var(--todo-soft); color: var(--todo); }
+  .pill.bad { background: var(--bad-soft); color: var(--bad); }
+  .pill.M { background: color-mix(in srgb, var(--m) 15%, transparent); color: var(--m); }
+  .pill.V { background: color-mix(in srgb, var(--v) 15%, transparent); color: var(--v); }
+  .pill.C { background: color-mix(in srgb, var(--c) 15%, transparent); color: var(--c); }
+  .ver { font-family: ui-monospace, Consolas, monospace; font-size: .85rem; font-weight: 600; }
+  .ver.zero { color: var(--todo); font-weight: 400; }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+  th, td { text-align: left; padding: .5rem .75rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); background: var(--card); }
+  tr:last-child td { border-bottom: 0; }
+  .filters { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: .75rem; }
+  .filters button { font: inherit; font-size: .85rem; border: 1px solid var(--line); background: var(--card); color: var(--fg);
+                    padding: .25rem .75rem; border-radius: 99px; cursor: pointer; }
+  .filters button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  .mermaid-box { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 1rem; overflow-x: auto; }
+  .mermaid-box pre.mermaid { background: none; margin: 0; }
+
+  .timeline { position: relative; padding-left: 1.75rem; }
+  .timeline::before { content: ""; position: absolute; left: .55rem; top: .5rem; bottom: .5rem; width: 2px; background: var(--line); }
+  .step { position: relative; margin-bottom: 1.1rem; }
+  .step::before { content: ""; position: absolute; left: -1.53rem; top: 1.05rem; width: 12px; height: 12px; border-radius: 50%;
+                  background: var(--accent); border: 3px solid var(--bg); }
+  .step.pending::before { background: var(--wip); }
+  .step .meta { font-size: .8rem; color: var(--muted); display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; }
+  .step h3 { margin: .2rem 0 .5rem; }
+  .step dl { display: grid; grid-template-columns: 8.5rem minmax(0, 1fr); gap: .3rem 1rem; margin: 0; }
+  .step dt { font-weight: 600; color: var(--muted); font-size: .85rem; }
+  .step dd { margin: 0; }
+  .step dd ul { margin: 0; padding-left: 1.1rem; }
+  .tags a { margin-right: .35rem; }
+
+  .concepts { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: .75rem; }
+  .concept:target { outline: 2px solid var(--accent); }
+  .concept h3 { margin-top: 0; }
+  .concept p { margin: .3rem 0; }
+  .links { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: .75rem; }
+  .links a.card { text-decoration: none; color: var(--fg); display: block; }
+  .links a.card:hover { border-color: var(--accent); }
+  .links a.card strong { color: var(--accent); }
+  .links a.card span { display: block; font-size: .85rem; color: var(--muted); }
+  footer { color: var(--muted); font-size: .8rem; border-top: 1px solid var(--line); padding-top: 1rem; }
+
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; gap: 0; }
+    nav.toc { position: static; max-height: none; padding-bottom: 0; }
+    nav.toc ol { display: flex; flex-wrap: wrap; gap: .25rem; }
+    .phase summary { grid-template-columns: 2.6rem minmax(0, 1fr); }
+    .phase summary .bar, .phase summary .count { grid-column: 2; }
+    .phase ul { padding-left: 1rem; }
+    .step dl { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="toc" aria-label="Índice">
+    <div class="brand">editorMD <small>Bitácora del proyecto</small></div>
+    <ol>
+      <li><a href="#resumen">Resumen</a></li>
+      <li><a href="#planificacion">Planificación</a></li>
+      <li><a href="#diario">Diario de pasos</a></li>
+      <li><a href="#git">Ramas y pull requests</a></li>
+      <li><a href="#arquitectura">Arquitectura MVC</a></li>
+      <li><a href="#componentes">Componentes y versiones</a></li>
+      <li><a href="#decisiones">Decisiones</a></li>
+      <li><a href="#conceptos">Conceptos aprendidos</a></li>
+      <li><a href="#documentacion">Documentación y ficheros</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <!-- ============================================================ -->
+    <section id="resumen">
+      <h1>editorMD</h1>
+      <p class="lead">Editor Markdown WYSIWYG ligero y multiplataforma (Windows · Ubuntu · Fedora · macOS) con
+        <strong>Rust + Tauri 2 + Svelte 5 + Milkdown</strong> y arquitectura <a href="#c-mvc">MVC</a>.
+        Esta página reúne el plan, los pasos dados y lo aprendido en cada uno.</p>
+      <div class="kpis" id="kpis"></div>
+      <div class="card" id="summary"></div>
+      <div class="callout" id="next"></div>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="planificacion">
+      <h2>Planificación</h2>
+      <p class="lead">Diez fases; cada una termina en una versión <a href="#c-semver">SemVer</a> de la app. Pulsa una fase para ver sus tareas.
+        <span class="pill ok">hecho</span> <span class="pill wip">en curso</span> <span class="pill todo">pendiente</span></p>
+      <div class="phases" id="phases"></div>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="diario">
+      <h2>Diario de pasos</h2>
+      <p class="lead">Cada paso indica qué se hizo, por qué y qué conceptos conviene aprender; los conceptos enlazan a su explicación. El más reciente aparece primero.</p>
+      <div class="timeline" id="journal"></div>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="git">
+      <h2>Ramas y pull requests</h2>
+      <p class="lead">Se usa <a href="#c-branch">una rama por feature</a>. Ninguna rama se fusiona en <code>main</code> sin tu aprobación (<a href="#c-pr">pull request</a>).</p>
+      <div class="mermaid-box"><pre class="mermaid" id="gitgraph"></pre></div>
+      <h3>Estado de las ramas</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Rama</th><th>Objetivo</th><th>Estado</th><th>Commits</th></tr></thead>
+        <tbody id="branches"></tbody>
+      </table></div>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="arquitectura">
+      <h2>Arquitectura MVC</h2>
+      <p class="lead">Variante <a href="#c-passive-view">Passive View</a>. El Modelo está repartido: los servicios del sistema, en Rust; el documento y el formato, en TypeScript. Se comunican por <a href="#c-ipc">IPC de Tauri</a>.</p>
+      <div class="mermaid-box"><pre class="mermaid">
+flowchart LR
+  subgraph FE["Frontend · TypeScript (WebView)"]
+    direction TB
+    V["Vista<br/>Svelte + Milkdown"] -- eventos --> C["Controladores"]
+    C -- actualiza --> V
+    C --> MT["Modelo TS<br/>documento, formato,<br/>tablas, búsqueda"]
+  end
+  subgraph BE["Backend · Rust"]
+    MR["Modelo Rust<br/>ficheros, codificación,<br/>exportación, Pandoc"]
+  end
+  C -- "invoke() · IPC" --> MR
+      </pre></div>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="componentes">
+      <h2>Componentes y versiones</h2>
+      <p class="lead">Cada componente tiene su propia versión <a href="#c-semver">SemVer 2.0.0</a>. Una versión <span class="ver zero">0.0.0</span> indica que el componente aún no está implementado.</p>
+      <div class="filters" id="filters" role="group" aria-label="Filtrar por capa"></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>Capa</th><th>Lado</th><th>Componente</th><th>Responsabilidad</th><th>Versión</th><th>Fase</th></tr></thead>
+        <tbody id="components"></tbody>
+      </table></div>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="decisiones">
+      <h2>Decisiones</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>Tema</th><th>Elección</th><th>Estado</th></tr></thead>
+        <tbody id="decisions"></tbody>
+      </table></div>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="conceptos">
+      <h2>Conceptos aprendidos</h2>
+      <p class="lead">Un pequeño glosario que crece con el proyecto; el diario enlaza a cada concepto.</p>
+      <div class="concepts" id="concepts"></div>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="documentacion">
+      <h2>Documentación y ficheros</h2>
+      <div class="links">
+        <a class="card" href="api/ts/index.html"><strong>API TypeScript</strong><span>Generada con TypeDoc a partir de TSDoc · <code>npm run docs:ts</code></span></a>
+        <a class="card" href="api/rust/index.html"><strong>API Rust</strong><span>Generada con rustdoc · <code>npm run docs:rust</code> (requiere Rust)</span></a>
+        <a class="card" href="../PLAN.md"><strong>PLAN.md</strong><span>Plan completo, arquitectura y convenciones</span></a>
+        <a class="card" href="../STATUS.md"><strong>STATUS.md</strong><span>Estado actual y registro de sesiones</span></a>
+        <a class="card" href="../CONTEXT.md"><strong>CONTEXT.md</strong><span>Contexto y requisitos; léelo primero</span></a>
+        <a class="card" href="../CHANGELOG.md"><strong>CHANGELOG.md</strong><span>Cambios por versión</span></a>
+      </div>
+      <p class="lead" style="margin-top:1rem">La documentación de la API se genera en local (<code>docs/api/</code> está en <code>.gitignore</code>). Si un enlace da error, ejecuta antes <code>npm run docs</code>.</p>
+    </section>
+
+    <footer id="footer"></footer>
+  </main>
+</div>
+
+<script>
+/* =====================================================================
+ * DATOS DEL PROYECTO — se actualizan en cada paso (PLAN.md §10.4).
+ * Estados: "ok" (hecho) · "wip" (en curso) · "todo" (pendiente) · "bad" (bloqueado)
+ * ===================================================================== */
+const PROJECT = {
+  updated: "2026-10-03",
+  appVersion: "0.0.1",
+  currentPhase: "F0",
+  tests: { passed: 29, total: 29, coverage: "98 %" },
+  summary: `
+    <p><strong>Sesión 1 (2026-10-03).</strong> Se definió el proyecto completo y se tomaron las 16 decisiones del plan
+    (stack, WYSIWYG, formatos, codificaciones, licencia MIT, convenciones). Se creó el repositorio git
+    y, en la rama <code>feature/F0-scaffold</code>, el esqueleto de la app:</p>
+    <ul>
+      <li>frontend Vite + Svelte 5 + TypeScript con la ventana inicial;</li>
+      <li>backend Tauri 2 en Rust, documentado con rustdoc;</li>
+      <li>el primer componente del Modelo, <a href="#comp-M17">M17 SemVer</a>, con 29 tests unitarios y un 98 % de cobertura;</li>
+      <li>generación de documentación con TypeDoc;</li>
+      <li>configuración de finales de línea para un repositorio multiplataforma.</li>
+    </ul>`,
+  next: `<strong>Siguiente paso:</strong> instalar <strong>Visual Studio Build Tools (C++)</strong> y <strong>Rust</strong> para compilar el backend
+    y abrir la ventana nativa. Después, revisar el <a href="#git">pull request</a> de <code>feature/F0-scaffold</code>.`,
+
+  phases: [
+    { id: "F0", name: "Decisiones y entorno", target: "0.0.x", tasks: [
+      ["ok", "F0.1 Crear PLAN.md, STATUS.md y CONTEXT.md"],
+      ["ok", "F0.2 Cerrar las decisiones (D-01 … D-16)"],
+      ["wip", "F0.3 Toolchain: Node 24 ✔ · Rust y Build Tools pendientes"],
+      ["ok", "F0.4 Repositorio git, .gitignore, .gitattributes, licencia MIT, README, CHANGELOG"],
+      ["wip", "F0.5 Proyecto Tauri + Vite + Svelte creado; falta compilarlo con Rust"],
+      ["wip", "F0.6 Vitest y cobertura ✔ · CI multiplataforma pendiente"],
+      ["todo", "F0.7 Linters/formateadores (rustfmt, clippy, ESLint, Prettier)"],
+      ["wip", "F0.8 Documentación: TypeDoc ✔ · rustdoc escrito, falta generarlo"],
+      ["ok", "F0.9 Página web del proyecto (esta página)"],
+    ]},
+    { id: "F1", name: "Esqueleto MVC", target: "0.0.x", tasks: [
+      ["todo", "F1.1 Interfaces IEditorView, IBackend, IDialogService"],
+      ["todo", "F1.2 M01 DocumentState + tests"],
+      ["todo", "F1.3 M07 MarkdownCodec (GFM, front matter, Rmd) + corpus de fidelidad"],
+      ["todo", "F1.4 V01 MainWindow con menús + V02 Milkdown"],
+      ["todo", "F1.5 C01 AppController + composition root + tests"],
+    ]},
+    { id: "F2", name: "Ficheros y codificaciones", target: "0.1.0", tasks: [
+      ["todo", "F2.1 TextCodec: detección y decodificación de las 8 codificaciones"],
+      ["todo", "F2.2 TextCodec: codificación, BOM, LF/CRLF/CR, ida y vuelta byte a byte"],
+      ["todo", "F2.3 Informe de pérdidas, transliteración y sustitución"],
+      ["todo", "F2.4 FileService (escritura atómica) + comandos Tauri"],
+      ["todo", "F2.5 FileController: nuevo, abrir, guardar, guardar como, cerrar"],
+      ["todo", "F2.6 EncodingDialog y perfiles Windows / Linux-macOS / ASCII"],
+      ["todo", "F2.7 Barra de estado con codificación y fin de línea"],
+      ["todo", "F2.8 Ficheros recientes"],
+    ]},
+    { id: "F3", name: "Edición", target: "0.2.0", tasks: [
+      ["todo", "F3.1 Deshacer/rehacer, portapapeles, seleccionar todo"],
+      ["todo", "F3.2 Buscar y reemplazar"],
+      ["todo", "F3.3 Ir a línea / ir a título"],
+    ]},
+    { id: "F4", name: "Formato", target: "0.3.0", tasks: [
+      ["todo", "F4.1 Títulos H1–H6, negrita, cursiva, tachado, código, cita…"],
+      ["todo", "F4.2 FormatController, barra de herramientas y atajos"],
+      ["todo", "F4.3 Modo fuente Markdown y conmutación"],
+      ["todo", "F4.4 Barra de accesos directos (primera versión)"],
+    ]},
+    { id: "F5", name: "Objetos", target: "0.4.0", tasks: [
+      ["todo", "F5.1 Listas: viñetas, numeradas, tareas, sangrado"],
+      ["todo", "F5.2 Tablas"],
+      ["todo", "F5.3 Diálogos de tabla, enlace, imagen y código"],
+    ]},
+    { id: "F6", name: "Importar / Exportar", target: "0.5.0", tasks: [
+      ["todo", "F6.1 Importar TXT y HTML"],
+      ["todo", "F6.2 Exportar HTML y TXT con codificación elegible"],
+      ["todo", "F6.3 Exportar PDF con Typst embebido"],
+      ["todo", "F6.4 Pandoc: DOCX/ODT"],
+      ["todo", "F6.5 Previsualización de la exportación"],
+    ]},
+    { id: "F7", name: "Preferencias y extras", target: "0.6.0", tasks: [
+      ["todo", "F7.1 Preferencias"], ["todo", "F7.2 Tema claro/oscuro"], ["todo", "F7.3 Interfaz es/en"],
+      ["todo", "F7.4 Autoguardado y recuperación"], ["todo", "F7.5 Pestañas multidocumento"],
+      ["todo", "F7.6 Barra de accesos directos configurable"],
+    ]},
+    { id: "F8", name: "Empaquetado", target: "0.9.0-beta", tasks: [
+      ["todo", "F8.1 MSI/NSIS Windows"], ["todo", "F8.2 .deb y .rpm"], ["todo", "F8.3 AppImage"],
+      ["todo", "F8.4 .dmg macOS"], ["todo", "F8.5 Asociaciones de fichero e iconos"], ["todo", "F8.6 Pipeline de release"],
+    ]},
+    { id: "F9", name: "QA y release", target: "1.0.0", tasks: [
+      ["todo", "F9.1 Checklist manual en los 4 SO"], ["todo", "F9.2 Rendimiento"],
+      ["todo", "F9.3 Manual de usuario y documentación técnica"], ["todo", "F9.4 Etiqueta v1.0.0"],
+    ]},
+  ],
+
+  /* Diario: el más reciente al final del array (se muestra invertido). */
+  journal: [
+    { date: "2026-10-03", title: "Plan inicial del proyecto", branch: "—",
+      did: ["Análisis de requisitos y propuesta de funciones que faltaban (deshacer/rehacer, vista previa, barra de estado…).",
+            "Comparación de 5 stacks portables y ligeros.",
+            "Creación de PLAN.md, STATUS.md y CONTEXT.md."],
+      why: "Un plan escrito y actualizado permite retomar el trabajo aunque se pierda el contexto, y obliga a decidir antes de programar.",
+      concepts: ["mvc", "passive-view"] },
+    { date: "2026-10-03", title: "Decisiones: Tauri, WYSIWYG, formatos y codificaciones", branch: "—",
+      did: ["Stack: Rust + Tauri 2 (D-01); edición WYSIWYG con modo fuente (D-02, D-12).",
+            "Formatos: HTML, PDF (Typst), TXT y DOCX/ODT vía Pandoc (D-03, D-11).",
+            "8 codificaciones y 3 finales de línea, con conversión sin pérdidas silenciosas (D-15).",
+            "Extras de la v1.0 y licencia MIT (D-05, D-07)."],
+      why: "WYSIWYG implica el riesgo de reescribir el Markdown del usuario; por eso se exigen tests de ida y vuelta y un modo fuente.",
+      concepts: ["tauri", "encoding", "eol"] },
+    { date: "2026-10-03", title: "Convenciones: SemVer 2.0.0, documentación y git", branch: "—",
+      did: ["Reglas de Semantic Versioning 2.0.0 para la app y para cada componente (PLAN.md §10.1).",
+            "Documentación con rustdoc y TSDoc/TypeDoc (§10.2).",
+            "Flujo de trabajo con una rama por feature y PR aprobados por ti (§10.3)."],
+      why: "Las versiones comunican el tipo de cambio; la documentación junto al código no se queda desactualizada; las ramas aíslan el trabajo en curso.",
+      concepts: ["semver", "conventional-commits", "rustdoc", "tsdoc", "branch", "pr"] },
+    { date: "2026-10-03", title: "Repositorio git y primer commit en main", branch: "main", commit: "0608f3c",
+      did: ["<code>git init -b main</code>; ficheros base: <code>.gitignore</code>, <code>LICENSE</code> (MIT), <code>README.md</code>, <code>CHANGELOG.md</code>.",
+            "Primer commit con la planificación ya acordada."],
+      cmds: "git init -b main\ngit add -A\ngit commit -m \"docs: planificación inicial del proyecto editorMD\"\ngit switch -c feature/F0-scaffold",
+      why: "main arranca con una base que ya ha revisado el usuario; a partir de aquí, todo el código entra por ramas.",
+      concepts: ["conventional-commits", "branch", "keep-a-changelog"] },
+    { date: "2026-10-03", title: "Esqueleto del frontend: Vite + Svelte 5 + TypeScript", branch: "feature/F0-scaffold",
+      did: ["Plantilla <code>svelte-ts</code> de Vite; se quitó la demo y se crearon las carpetas <code>src/model</code>, <code>src/view</code> y <code>src/controller</code>.",
+            "<code>vite.config.ts</code> preparado para Tauri (puerto fijo 5173) y para Vitest (cobertura ≥ 85 %).",
+            "Ventana inicial V01 con menús y barra de estado; la versión se inyecta desde <code>package.json</code>."],
+      cmds: "npm create vite@latest -- --template svelte-ts\nnpm install -D vitest @vitest/coverage-v8 typedoc @tauri-apps/cli\nnpm run build   # 32 KB de JS (13 KB gzip)",
+      why: "Svelte compila a JavaScript sin runtime pesado, lo que ayuda a que la app sea ligera.",
+      concepts: ["vite", "svelte", "mvc"] },
+    { date: "2026-10-03", title: "Backend Tauri 2 en Rust, documentado con rustdoc", branch: "feature/F0-scaffold",
+      did: ["<code>tauri init</code> genera <code>src-tauri/</code>; se renombró el crate a <code>editormd</code> (v0.0.1) y se ajustó la ventana a 1100×750.",
+            "Organización MVC del backend: <code>model/</code> (lógica que se puede probar) y <code>commands.rs</code> (capa IPC fina).",
+            "Primer componente Rust <a href=\"#comp-M00\">M00 AppInfo</a> con <code>#![warn(missing_docs)]</code>, un doctest y 3 tests unitarios."],
+      cmds: "npx tauri init --ci --app-name editorMD ...\ncargo test        # pendiente: requiere Rust\ncargo doc --no-deps",
+      why: "Separar los comandos del modelo permite probar la lógica en Rust sin abrir ninguna ventana.",
+      concepts: ["tauri", "ipc", "rustdoc", "doctest"] },
+    { date: "2026-10-03", title: "Primer componente del Modelo: M17 SemVer (TDD)", branch: "feature/F0-scaffold",
+      did: ["Implementación de SemVer 2.0.0 en TypeScript: <code>parse</code>, <code>isValid</code>, <code>format</code>, <code>compare</code> y <code>bump</code>.",
+            "29 tests unitarios: incluyen el ejemplo de orden oficial de semver.org y 9 versiones inválidas.",
+            "Cobertura del 98 % de líneas; documentación TSDoc publicada con TypeDoc."],
+      cmds: "npm test            # 29 passed\nnpm run coverage    # semver.ts 97.95 %\nnpm run docs:ts     # docs/api/ts",
+      why: "Es un componente de Modelo puro, ideal para practicar el ciclo test → código → documentación, y además enseña SemVer.",
+      concepts: ["semver", "tdd", "tsdoc", "coverage"] },
+    { date: "2026-10-03", title: ".gitattributes: finales de línea en un repositorio multiplataforma", branch: "feature/F0-scaffold",
+      did: ["Git avisaba de «LF will be replaced by CRLF» porque tienes <code>core.autocrlf=true</code>.",
+            "Se añadió <code>* text=auto eol=lf</code> y se marcó <code>fixtures/**</code> como <code>binary</code>."],
+      why: "Los ficheros de prueba de codificaciones (CRLF, BOM, Latin-1…) deben llegar byte a byte; si git los convirtiera, los tests no comprobarían nada.",
+      concepts: ["eol", "encoding"] },
+    { date: "2026-10-03", title: "Pendiente: instalar Rust y revisar el PR de F0", branch: "feature/F0-scaffold", pending: true,
+      did: ["Instalar Visual Studio Build Tools 2022 (carga «Desarrollo para el escritorio con C++») y Rust (rustup).",
+            "Compilar con <code>npm run tauri dev</code>, ejecutar <code>cargo test</code> y generar rustdoc.",
+            "Tú decides si se fusiona <code>feature/F0-scaffold</code> en <code>main</code>."],
+      why: "En Windows, Rust necesita el enlazador de Microsoft (MSVC) para compilar.",
+      concepts: ["pr"] },
+  ],
+
+  git: {
+    events: [
+      { t: "commit", branch: "main", id: "0608f3c", msg: "docs: planificación inicial" },
+      { t: "branch", name: "feature/F0-scaffold" },
+      { t: "commit", branch: "feature/F0-scaffold", id: "F0-1", msg: "feat: esqueleto Tauri + Svelte + SemVer" },
+    ],
+    branches: [
+      { name: "main", goal: "Rama estable", status: ["ok", "estable"], commits: 1 },
+      { name: "feature/F0-scaffold", goal: "F0: esqueleto, tests, documentación y web", status: ["wip", "en curso · PR pendiente de tu aprobación"], commits: 1 },
+    ],
+  },
+
+  components: [
+    ["M00","M","Rust","AppInfo","Nombre y versión de la app (comando app_info)","0.1.0","F0"],
+    ["M01","M","TS","DocumentState","Contenido, ruta, modificado, codificación/fin de línea","0.0.0","F1"],
+    ["M02","M","TS","History","Deshacer/rehacer","0.0.0","F3"],
+    ["M03","M","TS","FormatCommands","Títulos, negrita, cursiva, tachado, código, cita","0.0.0","F4"],
+    ["M04","M","TS","ListCommands","Viñetas, numeradas, tareas, sangrado","0.0.0","F5"],
+    ["M05","M","TS","TableModel","Tablas GFM","0.0.0","F5"],
+    ["M06","M","TS","SearchEngine","Buscar/reemplazar","0.0.0","F3"],
+    ["M07","M","TS","MarkdownCodec","MD ⇄ WYSIWYG (GFM, front matter, Rmd)","0.0.0","F1"],
+    ["M08","M","Rust","FileService","Lectura/escritura atómica","0.0.0","F2"],
+    ["M09","M","Rust","TextCodec","Codificaciones, BOM, fin de línea, transliteración","0.0.0","F2"],
+    ["M10","M","Rust","Importers","TXT, HTML → MD","0.0.0","F6"],
+    ["M11","M","Rust","Exporters","HTML, TXT, PDF (Typst)","0.0.0","F6"],
+    ["M12","M","Rust","PandocBridge","DOCX/ODT vía Pandoc","0.0.0","F6"],
+    ["M13","M","Rust","Settings / RecentFiles","Preferencias y recientes","0.0.0","F2/F7"],
+    ["M14","M","Rust","AutosaveService","Autoguardado y recuperación","0.0.0","F7"],
+    ["M15","M","TS","Workspace","Documentos abiertos (pestañas)","0.0.0","F7"],
+    ["M16","M","TS","I18n","Interfaz es/en","0.0.0","F7"],
+    ["M17","M","TS","SemVer","Análisis, comparación e incremento SemVer 2.0.0","0.1.0","F0"],
+    ["V01","V","TS","MainWindow","Menús, barra de herramientas, layout (esqueleto)","0.1.0","F0/F1"],
+    ["V02","V","TS","WysiwygEditorView","Editor Milkdown","0.0.0","F1"],
+    ["V03","V","TS","SourceEditorView","Modo fuente (CodeMirror 6)","0.0.0","F4"],
+    ["V04","V","TS","StatusBarView","Posición, palabras, codificación, fin de línea","0.0.0","F2"],
+    ["V05","V","TS","FindReplaceDialog","Buscar y reemplazar","0.0.0","F3"],
+    ["V06","V","TS","InsertDialogs","Tabla, enlace, imagen, código","0.0.0","F5"],
+    ["V07","V","TS","EncodingDialog","Reabrir/guardar con codificación","0.0.0","F2"],
+    ["V08","V","TS","PreferencesDialog","Preferencias","0.0.0","F7"],
+    ["V09","V","TS","QuickToolbar","Accesos directos configurables","0.0.0","F4/F7"],
+    ["V10","V","TS","TabBar","Pestañas","0.0.0","F7"],
+    ["V11","V","TS","ExportPreviewView","Previsualización de la exportación","0.0.0","F6"],
+    ["C01","C","TS","AppController","Ciclo de vida, salida segura","0.0.0","F1"],
+    ["C02","C","TS","FileController","Ficheros, importar/exportar, codificación","0.0.0","F2"],
+    ["C03","C","TS","EditController","Portapapeles, deshacer, buscar","0.0.0","F3"],
+    ["C04","C","TS","FormatController","Formato","0.0.0","F4"],
+    ["C05","C","TS","InsertController","Objetos","0.0.0","F5"],
+    ["C06","C","TS","ViewController","Modo fuente, tema, zoom, preferencias","0.0.0","F4/F7"],
+  ],
+
+  decisions: [
+    ["D-01","Stack","Rust + Tauri 2"], ["D-02","Modo de edición","WYSIWYG"],
+    ["D-03","Importar/exportar","HTML, PDF, TXT + DOCX/ODT (Pandoc)"], ["D-04","Dialecto","CommonMark + GFM + front matter + Rmd"],
+    ["D-05","Extras v1.0","Tema, es/en, autoguardado, pestañas, accesos directos"], ["D-06","Repositorio/CI","GitHub + Actions"],
+    ["D-07","Licencia","MIT"], ["D-08","Firma de código","No hasta la 1.0"], ["D-09","Idioma de la UI","es + en"],
+    ["D-10","SO mínimos","Win10+, Ubuntu 22.04+, Fedora 39+, macOS 11+"], ["D-11","PDF","Typst embebido"],
+    ["D-12","Modo fuente","Sí, en la v1.0"], ["D-13","Frontend","Svelte 5 + Vite"], ["D-14","Editor WYSIWYG","Milkdown"],
+    ["D-15","Codificaciones","UTF-8(±BOM), UTF-16, ASCII, ISO-8859-1/15, Win-1252, Mac Roman · LF/CRLF/CR"],
+    ["D-16","Convenciones","SemVer 2.0.0 · rustdoc/TSDoc · rama por feature + PR"],
+  ],
+
+  concepts: {
+    "mvc": ["MVC", "Modelo-Vista-Controlador. El <b>Modelo</b> contiene los datos y las reglas, la <b>Vista</b> los muestra y el <b>Controlador</b> traduce las acciones del usuario en operaciones sobre el modelo. Separarlos permite probar la lógica sin interfaz gráfica."],
+    "passive-view": ["Passive View", "Variante de MVC en la que la Vista no tiene ninguna lógica: solo pinta y emite eventos. Así el Controlador se prueba sustituyendo la vista por un <i>mock</i>."],
+    "tauri": ["Tauri", "Framework para crear apps de escritorio con interfaz web y backend en Rust. A diferencia de Electron, no incluye un navegador entero: usa el WebView del sistema (WebView2, WebKitGTK o WKWebView). Por eso los binarios son pequeños."],
+    "ipc": ["IPC / comandos Tauri", "La interfaz (JavaScript) no puede leer ficheros por sí misma. Llama con <code>invoke(\"cmd\")</code> a una función Rust marcada con <code>#[tauri::command]</code>, y los datos viajan en JSON."],
+    "semver": ["Semantic Versioning 2.0.0", "<code>MAJOR.MINOR.PATCH</code>: MAJOR sube con cambios incompatibles, MINOR con funciones nuevas compatibles y PATCH con correcciones. <code>-rc.1</code> marca una pre-release y <code>+build</code> añade metadatos que no cuentan para ordenar. <code>0.y.z</code> = desarrollo inicial."],
+    "conventional-commits": ["Conventional Commits", "Formato de los mensajes de commit: <code>tipo(ámbito): descripción</code>, con tipos como <code>feat</code>, <code>fix</code>, <code>docs</code> o <code>test</code>. Permite deducir la siguiente versión SemVer y generar el CHANGELOG."],
+    "keep-a-changelog": ["Keep a Changelog", "Convención para CHANGELOG.md: una sección por versión, con apartados Added/Changed/Fixed/Removed, escrita para humanos."],
+    "rustdoc": ["rustdoc", "Documentación de Rust: <code>///</code> documenta el elemento siguiente y <code>//!</code> el módulo. <code>cargo doc</code> genera HTML. <code>#![warn(missing_docs)]</code> avisa de los elementos públicos sin documentar."],
+    "doctest": ["Doctest", "Los ejemplos de código dentro de la documentación de Rust se compilan y ejecutan con <code>cargo test</code>. Si la API cambia y el ejemplo no, el test falla."],
+    "tsdoc": ["TSDoc + TypeDoc", "Comentarios <code>/** … */</code> con etiquetas estándar (<code>@param</code>, <code>@returns</code>, <code>@throws</code>, <code>@example</code>). TypeDoc los convierte en un sitio HTML navegable."],
+    "branch": ["Rama por feature", "Cada funcionalidad se desarrolla en su propia rama (<code>feature/F2-text-codec</code>). <code>main</code> siempre compila y pasa los tests; el trabajo a medias nunca lo rompe."],
+    "pr": ["Pull request", "Petición para fusionar una rama en <code>main</code>. Es el momento de revisar el código, los tests y la documentación. En este proyecto <b>tú apruebas cada PR</b>."],
+    "vite": ["Vite", "Servidor de desarrollo con recarga instantánea y empaquetador para producción. Tauri carga la interfaz desde Vite en desarrollo y desde <code>dist/</code> en el instalador."],
+    "svelte": ["Svelte 5", "Framework de interfaz que <i>compila</i> los componentes a JavaScript directo, sin DOM virtual. El resultado son bundles pequeños y rápidos."],
+    "tdd": ["TDD", "Desarrollo guiado por pruebas: se escribe un test que falla, luego el código mínimo que lo hace pasar y después se refactoriza. Encaja con el Modelo, que está formado por funciones puras."],
+    "coverage": ["Cobertura", "Porcentaje de líneas o ramas que ejecutan los tests. Es un indicador, no una garantía: el 100 % no implica ausencia de errores. Objetivo del proyecto: ≥ 85 % en Modelo y Controlador."],
+    "encoding": ["Codificación de caracteres", "Cómo se convierten los caracteres en bytes. UTF-8 representa cualquier carácter; ASCII solo 128; Windows-1252 e ISO-8859-1 representan el alfabeto occidental con 1 byte. El BOM es una marca inicial opcional que identifica UTF-8 o UTF-16."],
+    "eol": ["Finales de línea", "Windows usa CRLF (<code>\\r\\n</code>); Linux y macOS, LF (<code>\\n</code>); el Mac clásico, CR. Git puede convertirlos automáticamente (<code>core.autocrlf</code>, <code>.gitattributes</code>), lo que es útil para el código pero dañino para los ficheros de prueba binarios."],
+  },
+};
+
+/* =====================================================================
+ * RENDER — no hace falta tocar nada debajo de esta línea.
+ * ===================================================================== */
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const LABEL = { ok: "hecho", wip: "en curso", todo: "pendiente", bad: "bloqueado" };
+const LAYER = { M: "Modelo", V: "Vista", C: "Controlador" };
+
+function phaseStats(p) {
+  const n = p.tasks.length, ok = p.tasks.filter((t) => t[0] === "ok").length, wip = p.tasks.filter((t) => t[0] === "wip").length;
+  return { n, ok, wip, status: ok === n ? "ok" : ok + wip > 0 ? "wip" : "todo" };
+}
+const bar = (ok, wip, n) => `<div class="bar" role="img" aria-label="${ok} de ${n} hechas"><span class="ok" style="width:${(ok / n) * 100}%"></span><span class="wip" style="width:${(wip / n) * 100}%"></span></div>`;
+
+// KPIs y resumen
+(function () {
+  const all = PROJECT.phases.flatMap((p) => p.tasks);
+  const ok = all.filter((t) => t[0] === "ok").length;
+  const impl = PROJECT.components.filter((c) => c[5] !== "0.0.0").length;
+  const open = PROJECT.git.branches.filter((b) => b.status[0] !== "ok").length;
+  const k = [
+    ["Versión app", "v" + PROJECT.appVersion, "SemVer 2.0.0 · desarrollo inicial"],
+    ["Fase actual", PROJECT.currentPhase, PROJECT.phases.find((p) => p.id === PROJECT.currentPhase).name],
+    ["Tareas", `${ok}/${all.length}`, `${Math.round((ok / all.length) * 100)} % del plan`],
+    ["Tests", `${PROJECT.tests.passed}/${PROJECT.tests.total}`, "cobertura " + PROJECT.tests.coverage],
+    ["Componentes", `${impl}/${PROJECT.components.length}`, "implementados"],
+    ["Ramas abiertas", open, "pendientes de PR"],
+  ];
+  $("kpis").innerHTML = k.map(([l, v, s]) => `<div class="kpi"><div class="label">${l}</div><div class="value">${v}</div><div class="sub">${esc(s)}</div></div>`).join("");
+  $("summary").innerHTML = PROJECT.summary;
+  $("next").innerHTML = PROJECT.next;
+  $("footer").textContent = `Actualizado: ${PROJECT.updated} · editorMD v${PROJECT.appVersion} · Licencia MIT`;
+})();
+
+// Fases
+$("phases").innerHTML = PROJECT.phases.map((p) => {
+  const s = phaseStats(p);
+  return `<details class="phase" id="phase-${p.id}" ${p.id === PROJECT.currentPhase ? "open" : ""}>
+    <summary><span class="pid">${p.id}</span>
+      <span class="pname">${esc(p.name)} <small>→ v${p.target} · <span class="pill ${s.status}">${LABEL[s.status]}</span></small></span>
+      ${bar(s.ok, s.wip, s.n)}<span class="count">${s.ok}/${s.n} hechas</span></summary>
+    <ul>${p.tasks.map(([st, t]) => `<li><span class="pill ${st}">${LABEL[st]}</span><span>${esc(t)}</span></li>`).join("")}</ul>
+  </details>`;
+}).join("");
+
+// Diario
+$("journal").innerHTML = PROJECT.journal.map((j, i) => ({ ...j, n: i + 1 })).reverse().map((j) => `
+  <article class="step card ${j.pending ? "pending" : ""}" id="paso-${j.n}">
+    <div class="meta"><a href="#paso-${j.n}">Paso ${j.n}</a><span>${j.date}</span>
+      ${j.branch !== "—" ? `<code>${esc(j.branch)}</code>` : ""}${j.commit ? `<code>${j.commit}</code>` : ""}
+      ${j.pending ? '<span class="pill wip">pendiente</span>' : ""}</div>
+    <h3>${esc(j.title)}</h3>
+    <dl>
+      <dt>Qué se hizo</dt><dd><ul>${j.did.map((d) => `<li>${d}</li>`).join("")}</ul></dd>
+      <dt>Por qué</dt><dd>${j.why}</dd>
+      ${j.cmds ? `<dt>Comandos</dt><dd><pre><code>${esc(j.cmds)}</code></pre></dd>` : ""}
+      ${j.concepts?.length ? `<dt>Conceptos</dt><dd class="tags">${j.concepts.map((c) => `<a href="#c-${c}">${PROJECT.concepts[c][0]}</a>`).join(" · ")}</dd>` : ""}
+    </dl>
+  </article>`).join("");
+
+// Git
+$("branches").innerHTML = PROJECT.git.branches.map((b) =>
+  `<tr><td><code>${esc(b.name)}</code></td><td>${esc(b.goal)}</td><td><span class="pill ${b.status[0]}">${esc(b.status[1])}</span></td><td>${b.commits}</td></tr>`).join("");
+$("gitgraph").textContent = "gitGraph\n" + PROJECT.git.events.map((e) => {
+  if (e.t === "commit") return `  checkout ${e.branch}\n  commit id: "${e.id} ${e.msg.replace(/"/g, "'")}"`;
+  if (e.t === "branch") return `  branch ${e.name}`;
+  if (e.t === "merge") return `  checkout ${e.into}\n  merge ${e.from} tag: "${e.tag || ""}"`;
+  return "";
+}).join("\n");
+
+// Componentes con filtro por capa
+function renderComponents(layer) {
+  $("components").innerHTML = PROJECT.components.filter((c) => !layer || c[1] === layer).map(([id, l, side, name, resp, ver, ph]) =>
+    `<tr id="comp-${id}"><td><strong>${id}</strong></td><td><span class="pill ${l}">${LAYER[l]}</span></td><td>${side}</td>
+     <td><code>${esc(name)}</code></td><td>${esc(resp)}</td><td><span class="ver ${ver === "0.0.0" ? "zero" : ""}">${ver}</span></td><td>${ph}</td></tr>`).join("");
+}
+$("filters").innerHTML = [["", "Todos"], ["M", "Modelo"], ["V", "Vista"], ["C", "Controlador"]]
+  .map(([k, t]) => `<button type="button" data-layer="${k}" aria-pressed="${k === ""}">${t}</button>`).join("");
+$("filters").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  $("filters").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", x === b));
+  renderComponents(b.dataset.layer);
+});
+renderComponents("");
+
+// Decisiones y conceptos
+$("decisions").innerHTML = PROJECT.decisions.map(([id, t, c]) =>
+  `<tr><td><strong>${id}</strong></td><td>${esc(t)}</td><td>${esc(c)}</td><td><span class="pill ok">decidido</span></td></tr>`).join("");
+$("concepts").innerHTML = Object.entries(PROJECT.concepts).map(([k, [t, d]]) =>
+  `<article class="card concept" id="c-${k}"><h3>${t}</h3><p>${d}</p></article>`).join("");
+
+// Resaltar en el índice la sección visible
+const links = [...document.querySelectorAll("nav.toc a")];
+const spy = new IntersectionObserver((entries) => entries.forEach((en) => {
+  if (en.isIntersecting) links.forEach((a) => a.classList.toggle("active", a.getAttribute("href") === "#" + en.target.id));
+}), { rootMargin: "-20% 0px -70% 0px" });
+document.querySelectorAll("main section").forEach((s) => spy.observe(s));
+</script>
+<!-- Diagramas: Mermaid desde CDN (necesita conexión; sin ella se ve el texto del diagrama). -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>
+  if (window.mermaid) {
+    const dark = matchMedia("(prefers-color-scheme: dark)").matches;
+    mermaid.initialize({ startOnLoad: false, theme: dark ? "dark" : "default", gitGraph: { mainBranchName: "main" } });
+    mermaid.run({ querySelector: "pre.mermaid" });
+  }
+</script>
+</body>
+</html>

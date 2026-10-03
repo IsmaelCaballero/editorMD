@@ -1,0 +1,22 @@
+/* Estilos globales y paleta (claro/oscuro según el SO; el selector manual llega en F7). */
+:root {
+  --bg: #ffffff;
+  --fg: #1f2328;
+  --panel: #f6f8fa;
+  --border: #d0d7de;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Ubuntu, sans-serif;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1117;
+    --fg: #e6edf3;
+    --panel: #161b22;
+    --border: #30363d;
+  }
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+}
