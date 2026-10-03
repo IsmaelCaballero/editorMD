@@ -1,0 +1,22 @@
+# Dependencias y builds
+node_modules/
+dist/
+build/
+.svelte-kit/
+src-tauri/target/
+src-tauri/gen/
+
+# Documentación de API generada (se regenera con npm run docs)
+docs/api/
+
+# Cobertura de tests
+coverage/
+*.lcov
+
+# Editores / SO
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.log
