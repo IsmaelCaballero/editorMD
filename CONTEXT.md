@@ -34,7 +34,8 @@ Un editor Markdown de escritorio con GUI, **ligero** (poca memoria) y **portable
 
 ## Entorno de desarrollo
 - Máquina principal: Windows 11, carpeta `C:\ProgsConIA\editorMD`.
-- Git 2.51, Node 24.16, npm 11.13 y WebView2 instalados. **Faltan Rust (rustup) y Visual Studio Build Tools (C++)**, que el usuario instalará con permisos de administrador. `gh` (GitHub CLI) no está instalado y aún no hay remoto en GitHub.
+- Git 2.51, Node 24.16, npm 11.13, WebView2, Rust 1.99 (MSVC), VS Build Tools 2026 y gh 2.102 instalados. `gh` aún no autenticado; todavía no hay remoto en GitHub.
+- Nota: en PowerShell puede hacer falta recargar el PATH para ver `cargo`/`gh`.
 - Usuario git: Ismael Caballero.
 
 ## Retomar el trabajo

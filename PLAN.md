@@ -266,12 +266,12 @@ Asociación de `.md`, `.markdown`, `.Rmd` (y opcionalmente `.txt`), iconos y ent
 ### F0 — Decisiones y entorno
 - [x] F0.1 Crear PLAN.md, STATUS.md y CONTEXT.md
 - [x] F0.2 Cerrar las decisiones pendientes (§8)
-- [~] F0.3 Instalar la toolchain: Rust, Node LTS, Tauri CLI, WebView2 (ya viene en Win11), Pandoc (opcional)
+- [x] F0.3 Instalar la toolchain: Rust, Node LTS, Tauri CLI, WebView2 (ya viene en Win11), Pandoc (opcional)
 - [x] F0.4 Repositorio git, `.gitignore`, licencia, README
 - [~] F0.5 Proyecto Tauri + Vite + Svelte; estructura `src/` (frontend: `model/`, `view/`, `controller/`), `src-tauri/src/` (`model/`, `commands/`), `tests/`, `fixtures/`
 - [~] F0.6 Tests + cobertura (✔) + CI multiplataforma (`.github/workflows/ci.yml` escrito; se activa al subir a GitHub)
 - [ ] F0.7 Linters/formateadores: rustfmt, clippy, ESLint, Prettier
-- [~] F0.8 Documentación del código: rustdoc (`cargo doc`) + TSDoc/TypeDoc, publicada en `docs/api/`
+- [x] F0.8 Documentación del código: rustdoc (`cargo doc`) + TSDoc/TypeDoc, publicada en `docs/api/`
 - [x] F0.9 Página web del proyecto `docs/index.html` (plan, progreso, diario de aprendizaje, ramas y PR)
 
 ### F1 — Esqueleto MVC

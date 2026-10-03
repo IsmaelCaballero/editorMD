@@ -267,7 +267,7 @@ const PROJECT = {
   updated: "2026-10-03",
   appVersion: "0.0.1",
   currentPhase: "F0",
-  tests: { passed: 29, total: 29, coverage: "98 %" },
+  tests: { passed: 33, total: 33, coverage: "98 %" },
   summary: `
     <p><strong>Sesión 1 (2026-10-03).</strong> Se definió el proyecto completo y se tomaron las 16 decisiones del plan
     (stack, WYSIWYG, formatos, codificaciones, licencia MIT, convenciones). Se creó el repositorio git
@@ -279,19 +279,19 @@ const PROJECT = {
       <li>generación de documentación con TypeDoc;</li>
       <li>configuración de finales de línea para un repositorio multiplataforma.</li>
     </ul>`,
-  next: `<strong>Siguiente paso:</strong> instalar <strong>Visual Studio Build Tools (C++)</strong> y <strong>Rust</strong> para compilar el backend
-    y abrir la ventana nativa. Después, revisar el <a href="#git">pull request</a> de <code>feature/F0-scaffold</code>.`,
+  next: `<strong>Siguiente paso:</strong> <code>gh auth login</code>, crear el repositorio público en GitHub y abrir el
+    <a href="#git">pull request</a> de <code>feature/F0-scaffold</code>.`,
 
   phases: [
     { id: "F0", name: "Decisiones y entorno", target: "0.0.x", tasks: [
       ["ok", "F0.1 Crear PLAN.md, STATUS.md y CONTEXT.md"],
       ["ok", "F0.2 Cerrar las decisiones (D-01 … D-16)"],
-      ["wip", "F0.3 Toolchain: Node 24 ✔ · Rust y Build Tools pendientes"],
+      ["ok", "F0.3 Toolchain: Node 24, Rust 1.99, MSVC Build Tools, gh 2.102"],
       ["ok", "F0.4 Repositorio git, .gitignore, .gitattributes, licencia MIT, README, CHANGELOG"],
-      ["wip", "F0.5 Proyecto Tauri + Vite + Svelte creado; falta compilarlo con Rust"],
+      ["wip", "F0.5 Proyecto Tauri + Vite + Svelte: compila; falta abrir la ventana con tauri dev"],
       ["wip", "F0.6 Vitest y cobertura ✔ · workflow de CI escrito; se activará al subir a GitHub"],
       ["todo", "F0.7 Linters/formateadores (rustfmt, clippy, ESLint, Prettier)"],
-      ["wip", "F0.8 Documentación: TypeDoc ✔ · rustdoc escrito, falta generarlo"],
+      ["ok", "F0.8 Documentación: TypeDoc ✔ · rustdoc ✔ (sin avisos de missing_docs)"],
       ["ok", "F0.9 Página web del proyecto (esta página)"],
     ]},
     { id: "F1", name: "Esqueleto MVC", target: "0.0.x", tasks: [
@@ -387,7 +387,7 @@ const PROJECT = {
       did: ["<code>tauri init</code> genera <code>src-tauri/</code>; se renombró el crate a <code>editormd</code> (v0.0.1) y se ajustó la ventana a 1100×750.",
             "Organización MVC del backend: <code>model/</code> (lógica que se puede probar) y <code>commands.rs</code> (capa IPC fina).",
             "Primer componente Rust <a href=\"#comp-M00\">M00 AppInfo</a> con <code>#![warn(missing_docs)]</code>, un doctest y 3 tests unitarios."],
-      cmds: "npx tauri init --ci --app-name editorMD ...\ncargo test        # pendiente: requiere Rust\ncargo doc --no-deps",
+      cmds: "npx tauri init --ci --app-name editorMD ...\ncargo test        # 3 passed + 1 doctest\ncargo doc --no-deps",
       why: "Separar los comandos del modelo permite probar la lógica en Rust sin abrir ninguna ventana.",
       concepts: ["tauri", "ipc", "rustdoc", "doctest"] },
     { date: "2026-10-03", title: "Primer componente del Modelo: M17 SemVer (TDD)", branch: "feature/F0-scaffold", commit: "f5e2f7b",
@@ -408,14 +408,19 @@ const PROJECT = {
             "En cada push o PR: comprobación de tipos, tests TS con cobertura, build, <code>cargo test</code> (incluidos los doctests) y generación de documentación."],
       why: "Desarrollamos en Windows, pero la app debe funcionar en 4 SO; la CI detecta un fallo en Linux o macOS antes de fusionar.",
       concepts: ["ci", "pr"] },
-    { date: "2026-10-03", title: "Pendiente: instalar Rust y revisar el PR de F0", branch: "feature/F0-scaffold", pending: true,
-      did: ["Instalar Visual Studio Build Tools 2022 (carga «Desarrollo para el escritorio con C++») y Rust (rustup).",
-            "GitHub CLI dio problemas al instalarse. No es imprescindible: se puede usar el MSI de su página de releases, o crear el repositorio y el PR desde la web de GitHub con <code>git push</code> normal.",
-            "Sesión pausada: el estado queda guardado en STATUS.md («Punto de reanudación») y en git.",
-            "Compilar con <code>npm run tauri dev</code>, ejecutar <code>cargo test</code> y generar rustdoc.",
-            "Tú decides si se fusiona <code>feature/F0-scaffold</code> en <code>main</code>."],
-      why: "En Windows, Rust necesita el enlazador de Microsoft (MSVC) para compilar.",
-      concepts: ["pr"] },
+    { date: "2026-10-03", title: "Toolchain instalada y backend Rust probado", branch: "feature/F0-scaffold",
+      did: ["Instalados Rust 1.99 (MSVC), Visual Studio Build Tools y GitHub CLI 2.102.",
+            "<code>cargo test</code>: 3 tests unitarios de <a href=\"#comp-M00\">M00 AppInfo</a> y 1 doctest, todos superados.",
+            "<code>npm run docs:rust</code>: documentación generada sin ningún aviso de <code>missing_docs</code>."],
+      cmds: "cargo test --manifest-path src-tauri/Cargo.toml\nnpm run docs:rust",
+      why: "La primera compilación descarga y compila todas las dependencias de Tauri (varios minutos); las siguientes son incrementales.",
+      concepts: ["doctest", "rustdoc"] },
+    { date: "2026-10-03", title: "Próxima sesión: GitHub y PR de F0", branch: "feature/F0-scaffold", pending: true,
+      did: ["<code>gh auth login</code> (lo haces tú).",
+            "<code>npm run tauri dev</code>: abrir la ventana nativa por primera vez.",
+            "Crear el repositorio público, subir las ramas y abrir el PR; fusionar con tu aprobación cuando la CI esté en verde."],
+      why: "Con el PR en GitHub, la CI comprueba el proyecto en los 4 sistemas antes de fusionarlo en main.",
+      concepts: ["pr", "ci"] },
   ],
 
   git: {

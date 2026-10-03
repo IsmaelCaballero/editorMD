@@ -5,24 +5,16 @@
 
 ## ⏸ Punto de reanudación (2026-10-03, fin de la sesión #1)
 
-**Dónde estamos:** F0 casi terminada. Rama activa `feature/F0-scaffold` (4 commits sobre `main`, árbol limpio). PR → `main` **en espera** (el usuario decidió fusionar cuando compile Rust y pasen sus tests).
+**Dónde estamos:** F0 casi terminada. Rama activa `feature/F0-scaffold` (árbol limpio). PR → `main` **en espera**: el usuario lo aprobará cuando se suba a GitHub y la CI esté en verde.
 
-**Herramientas del usuario:**
-| Herramienta | Estado |
-|---|---|
-| git 2.51, Node 24.16, npm 11.13, WebView2 | ✅ |
-| Visual Studio Build Tools 2022 (C++) | ❓ instalación pendiente o en curso |
-| Rust (rustup) | ❓ pendiente (no estaba en PATH al cerrar) |
-| GitHub CLI (`gh`) | ⚠️ **el usuario tuvo problemas para instalarlo** |
+**Comprobado al cerrar:** Rust 1.99 + cargo, VS Build Tools 2026 (MSVC) y `gh` 2.102 instalados. `cargo test`: 3 tests unitarios + 1 doctest ✅. `npm test`: 29 ✅. `npm run build` ✅. `npm run docs:rust`: sin avisos de `missing_docs` ✅.
 
 **Al retomar (en orden):**
-1. Comprobar `rustc --version`, `cargo --version`, `gh --version`, `where.exe link.exe`.
-2. Si hay Rust: `npm run tauri dev` (abrir la app), `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run docs:rust`. Corregir lo que falle **en la misma rama**.
-3. GitHub: si `gh` sigue dando problemas, **no es imprescindible**. Alternativas:
-   - (a) Instalador MSI desde https://github.com/cli/cli/releases (fichero `gh_*_windows_amd64.msi`) y abrir un terminal nuevo.
-   - (b) Sin `gh`: crear el repositorio público vacío en la web de GitHub, `git remote add origin <url>`, `git push -u origin main feature/F0-scaffold` y abrir el PR desde la web.
-4. Con la CI en verde, **preguntar al usuario** antes de fusionar el PR de F0. Después, etiquetar y pasar a F1.
-5. Actualizar la web `docs/index.html` (diario, ramas y KPIs; corregir `commits: 3` → número real) y este fichero.
+1. El usuario ejecuta `! gh auth login` (aún **no** se ha autenticado).
+2. `npm run tauri dev`: abrir por primera vez la ventana nativa y comprobar que se ve.
+3. Crear el repositorio **público** (`gh repo create editorMD --public --source . --remote origin`), hacer `git push -u origin main feature/F0-scaffold` y abrir el PR (`gh pr create`).
+4. Esperar a que la CI esté en verde en los 4 SO y **preguntar al usuario** antes de fusionar. Después, etiquetar y pasar a F1.
+5. Actualizar `docs/index.html` y este fichero.
 
 ## Resumen
 
@@ -31,8 +23,8 @@
 | Fase actual | **F0 — Decisiones y entorno** |
 | Versión de la app | 0.0.1 (esqueleto F0, rama `feature/F0-scaffold`) |
 | Stack | Rust + Tauri 2 · WYSIWYG |
-| Salud | 🟡 Todas las decisiones tomadas; **bloqueado por falta de Rust y MSVC Build Tools** para compilar el backend |
-| Tests | TS: 29/29 ✅ · Rust: 3 unitarios + 1 doctest escritos, sin ejecutar (falta Rust) |
+| Salud | 🟢 Toolchain completa; backend compilado y probado. Falta subir a GitHub |
+| Tests | TS: 29/29 ✅ · Rust: 3/3 + 1 doctest ✅ |
 | Cobertura | TS Modelo: 97,95 % líneas |
 | CI | — (no configurado; F0.6) |
 | Git | `main` (1 commit) · `feature/F0-scaffold` (abierta, PR pendiente de aprobación) |
@@ -61,15 +53,14 @@ Implementados: **M00 AppInfo 0.1.0**, **M17 SemVer 0.1.0**, **V01 MainWindow 0.1
 | Componente | Tests | Pasan | Cobertura |
 |---|---|---|---|
 | M17 SemVer (TS) | 29 | 29 | 97,95 % |
-| M00 AppInfo (Rust) | 3 + 1 doctest | sin ejecutar | — |
+| M00 AppInfo (Rust) | 3 + 1 doctest | 4 | — |
 
 ## Bloqueos / pendiente del usuario
-- **Instalar Visual Studio Build Tools 2022 (C++) y Rust (rustup)**: requieren permisos de administrador.
-- Instalar **GitHub CLI** (`gh`) y autenticarse (`gh auth login`) para crear el repositorio **público**.
+- Autenticarse en GitHub (`gh auth login`) para crear el repositorio **público**.
 - PR de `feature/F0-scaffold` → `main`: **el usuario decidió esperar a que Rust compile y pasen los tests**.
 
 ## Próximos pasos
-1. Instalar Rust y Build Tools → `npm run tauri dev`, `cargo test`, `npm run docs:rust`.
+1. `gh auth login` → crear el repositorio y abrir el PR de F0; `npm run tauri dev`.
 2. F0.6 CI en GitHub Actions (cuando exista el remoto) y F0.7 linters.
 3. PR de `feature/F0-scaffold` y, después, F1 (esqueleto MVC con Milkdown).
 
@@ -79,6 +70,7 @@ Implementados: **M00 AppInfo 0.1.0**, **M17 SemVer 0.1.0**, **V01 MainWindow 0.1
 | 2026-10-03 | #1 | Plan inicial; creados PLAN.md, STATUS.md y CONTEXT.md; propuesta de stacks y arquitectura MVC |
 | 2026-10-03 | #1 | Decididos D-01 (Tauri), D-02 (WYSIWYG), D-03 (formatos), D-15 (codificaciones y fin de línea). Añadido el soporte .Rmd. Plan reescrito para Tauri |
 | 2026-10-03 | #1 | Decididos D-05 (extras + barra de accesos directos), D-07 (MIT), D-11 (Typst), D-12 (modo fuente). Nuevos componentes M14–M16, V09–V11 |
+| 2026-10-03 | #1 | Toolchain instalada (Rust 1.99, MSVC, gh 2.102). cargo test ✅, rustdoc ✅. Fin de la sesión. |
 | 2026-10-03 | #1 | CI GitHub Actions (4 SO) preparada. Decidido: GitHub público y PR F0 tras compilar Rust. Sesión cerrada por el usuario (problemas instalando `gh`). |
 | 2026-10-03 | #1 | Convenciones (SemVer 2.0.0, rustdoc/TSDoc, rama por feature + PR, web). Git init + commit en main. Rama `feature/F0-scaffold`: Vite+Svelte+TS, Tauri 2, M00 AppInfo, M17 SemVer (29 tests), TypeDoc, .gitattributes, web `docs/index.html` |
 
