@@ -3,9 +3,9 @@
 > Fotografía del estado actual. Se actualiza **al final de cada sesión de trabajo**.
 > Última actualización: 2026-10-05
 
-## ⏸ Punto de reanudación (2026-10-05, sesión #4 = F2 sesión B, en el ordenador nuevo `C:\ProgIA`)
+## ⏸ Punto de reanudación (2026-10-05, fin de la sesión #4 = F2 sesión B, en el ordenador nuevo `C:\ProgIA`)
 
-**Dónde estamos:** F2 pasos 1-4 terminados. **Paso 4** (`feature/F2-file-service`, M08 `FileService` v0.1.0 + comandos `open_file`/`save_file`) → **PR #18**, pendiente de tu revisión. Experimento **RQ.1 T2** terminado: **gana Sonnet 5.5** otra vez (49 % más barato y mejor puntuado en la revisión ciega). Respuesta provisional a la RQ.1 en `docs/ai-usage/README.md` §4.6.
+**Dónde estamos:** F2 pasos 1-4 terminados. **Paso 4** (`feature/F2-file-service`, M08 `FileService` v0.1.0 + comandos `open_file`/`save_file`) → **PR #18**, con la CI en verde. El usuario lo fusiona al cerrar la sesión; si al retomar sigue abierto, fusionarlo primero. Experimento **RQ.1 T2** terminado: **gana Sonnet 5.5** otra vez (49 % más barato y mejor puntuado en la revisión ciega). Respuesta provisional a la RQ.1 en `docs/ai-usage/README.md` §4.6.
 
 **Siguiente paso:** F2 5/8 `feature/F2-file-controller`: C02 `FileController` (Nuevo, Abrir, Guardar, Guardar como, Cerrar, aviso de cambios) + puerto TS `IBackend.openFile/saveFile` sobre los comandos de M08. Antes, decidir si el paso se delega en Sonnet 5.5 (propuesta de §4.6).
 
@@ -13,11 +13,13 @@
 - **En este ordenador (`C:\ProgIA\editorMD`):** `git checkout main && git pull`, y `claude`.
 - **En el ordenador original (`C:\ProgsConIA\editorMD`):** igual. La identidad git de este repositorio en el ordenador nuevo está configurada solo en el repositorio.
 
-Texto de arranque si se abre una sesión nueva:
+Se recomienda **una sesión nueva** (`claude` sin `--continue`): esta acabó con ≈ 100 k tokens de contexto por llamada y una sesión limpia es más barata. Texto de arranque:
 
-> Retomamos editorMD, F2 sesión B. Lee CONTEXT.md, STATUS.md, PLAN.md (§7 F2) y docs/ai-usage/README.md. Comprueba el estado de git y de los PR abiertos y preséntame el paso 5/8 (FileController) con su estimación de tokens. No empieces hasta que te dé el ok.
+> Retomamos editorMD, F2 pasos 5-8 (sesión C). Lee CONTEXT.md, STATUS.md, PLAN.md (§7 F2) y docs/ai-usage/README.md. Comprueba el estado de git y de los PR abiertos y preséntame el paso 5/8 (FileController) con su estimación de tokens. No empieces hasta que te dé el ok.
 
 **Uso de IA:** F0 10,38 · F1 15,54 · F2 sesión A ≈ 18,1 · **F2 paso 4 ≈ 10,9 USD eq.** (orquestador + 6 ejecuciones de T2). Detalle en `docs/ai-usage/README.md` §5.1.
+
+**Lo que queda hasta la 1.0** (PLAN.md §11.1): ≈ 38 pasos en 10-12 sesiones, ≈ 120 USD eq. (90-160) solo con Opus, o ≈ 90-100 si los pasos bien especificados se delegan en Sonnet 5.5.
 
 **Reglas de trabajo** (CONTEXT.md 16-22): tú fusionas los PR; las ramas se renombran al cerrar la fase; cada etiqueta se enlaza en la web; avisar antes de medir en la app real; documentar el uso de IA en cada paso; guardar todo antes de cambiar de sesión; `npm run lint` antes de cada push.
 

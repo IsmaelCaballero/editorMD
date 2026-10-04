@@ -311,7 +311,7 @@ Asociación de `.md`, `.markdown`, `.Rmd` (y opcionalmente `.txt`), iconos y ent
 
 ### F2 — Ficheros y codificaciones → 0.1.0 · plan aprobado el 2026-10-04
 
-Ocho pasos en **dos sesiones** de Claude Code (A: pasos 1-3; B: pasos 4-8; al principio eran 1-4 y 5-8, y se adelantó el cambio para que el experimento T2 empiece con el contexto limpio) para que el contexto no supere ~350 k tokens. En los pasos 1 y 4 se hace el **experimento RQ.1** (3 ejecuciones de Opus 5.5 y 3 de Sonnet 5.5, revisión ciega; ver `docs/ai-usage/README.md` §4.2).
+Ocho pasos en **dos sesiones** de Claude Code (A: pasos 1-3; B: pasos 4-8; al principio eran 1-4 y 5-8, y se adelantó el cambio para que el experimento T2 empiece con el contexto limpio; la sesión B terminó tras el paso 4 y los pasos 5-8 van en una **sesión C**) para que el contexto no supere ~350 k tokens. En los pasos 1 y 4 se hace el **experimento RQ.1** (3 ejecuciones de Opus 5.5 y 3 de Sonnet 5.5, revisión ciega; ver `docs/ai-usage/README.md` §4.2).
 
 | Paso | Sesión | Rama | Tareas | Estimación (llamadas · USD eq.) | Nombre al cerrar F2 |
 |---|---|---|---|---|---|
@@ -531,6 +531,27 @@ Detalle completo, análisis y diseño del experimento de la RQ.1 en [`docs/ai-us
 | F2 2/8 | Opus 5.5 | 32 | 9,1 M | 3,00 | 1,9 |
 | F2 3/8 | Opus 5.5 | 30 | 9,6 M | 2,62 (+ cierre de la sesión A) | 1,7 |
 | F2 4/8 | Opus 5.5 (orquestador) + 3 Opus 5.5 y 3 Sonnet 5.5 (subagentes) | 195 (69 del orquestador) | 18,0 M | ≈ 10,9 (6,5 de las ejecuciones) | ≈ 9 |
+
+### 11.1 Estimación de lo que queda hasta la 1.0 (2026-10-05, tras F2 paso 4)
+
+Calibración con los datos reales: un paso normal cuesta ≈ 3 USD eq. con Opus 5.5 (en F2, los pasos 2 y 3 costaron 1,5 veces lo estimado) y cerrar una fase cuesta ≈ 1,5. Las fases con más riesgo técnico llevan un margen extra.
+
+| Fase | Pasos (aprox.) | USD eq. (rango) | Riesgo principal |
+|---|--:|--:|---|
+| F2 pasos 5-8 → 0.1.0 | 4 | ≈ 15 (12-18) | Primer flujo completo interfaz ⇄ disco (C02, diálogos) |
+| F3 Edición → 0.2.0 | 4 | ≈ 12 (9-15) | Pegar HTML → MD; buscar con regex dentro del WYSIWYG |
+| F4 Formato → 0.3.0 | 5 | ≈ 17 (13-22) | Modo fuente (CodeMirror) y conmutación **sin pérdidas** |
+| F5 Objetos → 0.4.0 | 4 | ≈ 14 (10-18) | Tablas en Milkdown |
+| F6 Importar/Exportar → 0.5.0 | 6 | ≈ 22 (16-30) | Conversor MD → Typst para el PDF; Pandoc |
+| F7 Preferencias y extras → 0.6.0 | 7 | ≈ 21 (16-27) | Pestañas multidocumento y autoguardado |
+| F8 Empaquetado → 0.9.0 | 4 | ≈ 12 (8-20) | Pipeline de *release* en los 4 SO (cada fallo de CI cuesta ciclos) |
+| F9 QA y release → 1.0.0 | 4 | ≈ 8 (6-12) | Pruebas manuales en los 4 SO (requieren tu tiempo y acceso a Linux y macOS) |
+| **Total** | **≈ 38** | **≈ 120 (90-160)** | |
+
+- **Si se aplica la RQ.1** (Opus orquesta y especifica; Sonnet implementa los pasos bien especificados, en una sola ejecución), el ahorro estimado es del 20-25 %: **≈ 90-100 USD eq.** No es la mitad, porque el orquestador (especificar, integrar, documentar) sigue siendo Opus.
+- **Sesiones:** a 3-4 pasos por sesión, unas **10-12 sesiones** más.
+- **Tiempo humano:** ≈ 5-10 min de revisión por PR (≈ 38 PR) más las pruebas manuales de F9.
+- Llevamos gastados ≈ 55 USD eq. (F0 10,4 · F1 15,5 · F2 hasta el paso 4 ≈ 29). El proyecto completo saldría por ≈ 145-215 USD eq. (≈ 175 sin delegar en Sonnet).
 
 - **Medición:** `node scripts/ai-usage.mjs <transcripción.jsonl> docs/ai-usage/phases.json`, con el uso real que registra Claude Code.
 - **Norma desde F2:** estimar antes de cada paso (llamadas y USD eq.), medir al fusionar y registrar aquí y en la web. **Cada fase empieza en una sesión nueva**, porque el contexto acumulado multiplica el coste de cada llamada.
