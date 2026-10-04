@@ -5,9 +5,12 @@
 // *rework* (órdenes cargo/npm que terminaron con error y obligaron a corregir).
 //
 // Uso:  node scripts/rq1-metrics.mjs <runs.json> [salida.json]
-// runs.json: { "task": "T1", "runs": [ { "label": "r1", "transcript": "<ruta .jsonl>" }, … ] }
+// runs.json: { "task", "project", "session", "runs": [ { "label": "r1", "agent": "<id>" }, … ] }
+// Transcripción de cada ejecución: ~/.claude/projects/<project>/<session>/subagents/agent-<id>.jsonl
 // El modelo de cada ejecución se lee de la propia transcripción (message.model).
 import { readFileSync, writeFileSync } from 'node:fs'
+import { homedir } from 'node:os'
+import { join } from 'node:path'
 import { PRICES } from './ai-usage-prices.mjs'
 
 const [, , runsFile, outFile] = process.argv
@@ -15,7 +18,8 @@ if (!runsFile) {
   console.error('Uso: node scripts/rq1-metrics.mjs <runs.json> [salida.json]')
   process.exit(1)
 }
-const { task, runs } = JSON.parse(readFileSync(runsFile, 'utf8'))
+const { task, project, session, runs } = JSON.parse(readFileSync(runsFile, 'utf8'))
+const subagents = join(homedir(), '.claude', 'projects', project, session, 'subagents')
 
 /** Coste equivalente en USD de una llamada. */
 function cost(model, u) {
@@ -32,6 +36,9 @@ function cost(model, u) {
     1e6
   )
 }
+
+/** Caracteres visibles por token de salida (calibrado en las sesiones principales: 2,0-2,2). */
+const CHARS_PER_TOKEN = 2.1
 
 // Una orden «comprobadora» que falla y va seguida de cambios cuenta como un ciclo de rework.
 const CHECK = /\b(cargo\s+(test|clippy|fmt|build|check)|npm\s+(test|run\s+(lint|check|test)))\b/
@@ -56,9 +63,20 @@ function analyse(path) {
     }
     const content = Array.isArray(o.message?.content) ? o.message.content : []
     if (o.type === 'assistant' && o.message?.usage) {
-      calls.set(o.message.id, { model: o.message.model, u: o.message.usage })
-      for (const c of content)
-        if (c.type === 'tool_use') toolUses.set(c.id, { name: c.name, cmd: c.input?.command ?? '' })
+      const prev = calls.get(o.message.id)
+      let chars = prev?.chars ?? 0
+      for (const c of content) {
+        if (c.type === 'tool_use') {
+          toolUses.set(c.id, { name: c.name, cmd: c.input?.command ?? '' })
+          chars += JSON.stringify(c.input).length
+        } else if (c.type === 'text') chars += c.text.length
+      }
+      const out = Math.max(prev?.u.output_tokens ?? 0, o.message.usage.output_tokens ?? 0)
+      calls.set(o.message.id, {
+        model: o.message.model,
+        u: { ...o.message.usage, output_tokens: out },
+        chars,
+      })
     }
     if (o.type === 'user')
       for (const c of content)
@@ -77,7 +95,20 @@ function analyse(path) {
         }
   }
   const r = { calls: 0, input: 0, cacheWrite: 0, cacheRead: 0, output: 0, usd: 0, models: {} }
-  for (const { model, u } of calls.values()) {
+  r.outputRecorded = 0
+  r.patched = 0
+  for (const { model, u: raw, chars } of calls.values()) {
+    // Las transcripciones de subagentes en segundo plano guardan a veces solo el uso
+    // parcial del inicio del streaming: la salida se queda en unos pocos tokens aunque
+    // el mensaje escriba un fichero entero. En ese caso se estima con el contenido visible
+    // (≈ CHARS_PER_TOKEN caracteres por token, calibrado con la sesión principal). El
+    // razonamiento interno de esos mensajes no queda registrado: es una cota inferior.
+    let u = raw
+    r.outputRecorded += raw.output_tokens ?? 0
+    if (chars > 400 && (raw.output_tokens ?? 0) < chars / 20) {
+      u = { ...raw, output_tokens: Math.round(chars / CHARS_PER_TOKEN) }
+      r.patched++
+    }
     r.calls++
     r.input += u.input_tokens ?? 0
     r.cacheWrite += u.cache_creation_input_tokens ?? 0
@@ -96,16 +127,19 @@ function analyse(path) {
   return r
 }
 
-const rows = runs.map((run) => ({ label: run.label, ...analyse(run.transcript) }))
+const rows = runs.map((run) => ({
+  label: run.label,
+  ...analyse(join(subagents, `agent-${run.agent}.jsonl`)),
+}))
 const fmt = (n) => Math.round(n).toLocaleString('es-ES')
 console.log(`Tarea ${task}`)
 console.log(
-  '| Ejecución | Modelo | Llamadas | Lect. caché | Escr. caché | Salida | USD eq. | Órdenes | Comprobaciones (fallidas) | Minutos |',
+  '| Ejecución | Modelo | Llamadas | Lect. caché | Escr. caché | Salida (registrada; mensajes corregidos) | USD eq. | Órdenes | Comprobaciones (fallidas) | Minutos |',
 )
 console.log('|---|---|--:|--:|--:|--:|--:|--:|--:|--:|')
 for (const r of rows)
   console.log(
-    `| ${r.label} | ${r.model} | ${r.calls} | ${fmt(r.cacheRead)} | ${fmt(r.cacheWrite)} | ${fmt(r.output)} | ${r.usd.toFixed(2)} | ${r.toolCalls} | ${r.checks} (${r.failedChecks}) | ${r.minutes.toFixed(0)} |`,
+    `| ${r.label} | ${r.model} | ${r.calls} | ${fmt(r.cacheRead)} | ${fmt(r.cacheWrite)} | ${fmt(r.output)} (${fmt(r.outputRecorded)}; ${r.patched}) | ${r.usd.toFixed(2)} | ${r.toolCalls} | ${r.checks} (${r.failedChecks}) | ${r.minutes.toFixed(0)} |`,
   )
 
 // Media y desviación típica por modelo.
