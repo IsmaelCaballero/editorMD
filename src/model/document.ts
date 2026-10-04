@@ -129,6 +129,15 @@ export class DocumentState {
     )
   }
 
+  /**
+   * Número de palabras (secuencias de letras o dígitos Unicode).
+   * No cuenta la sintaxis Markdown ni las casillas de las listas de tareas.
+   */
+  get wordCount(): number {
+    const text = this.#content.replace(/^\s*[-*+]\s+\[[ xX]\]/gm, '')
+    return text.match(/[\p{L}\p{N}]+/gu)?.length ?? 0
+  }
+
   /** Nombre del fichero (sin carpetas), o {@link UNTITLED}. Acepta rutas Unix y Windows. */
   get fileName(): string {
     if (this.#path === null) return UNTITLED
