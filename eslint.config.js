@@ -16,6 +16,8 @@ export default ts.config(
       'src-tauri/target/',
       'src-tauri/gen/',
       'node_modules/',
+      // Worktrees de subagentes (experimento RQ.1): copias del repositorio, no código propio.
+      '.claude/',
     ],
   },
   js.configs.recommended,
