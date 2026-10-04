@@ -10,6 +10,8 @@ const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 
 // https://vite.dev/config/  ·  https://v2.tauri.app/start/frontend/vite/
 export default defineConfig({
   plugins: [svelte()],
+  // En los tests de componentes, Svelte debe resolverse en su versión de navegador.
+  resolve: process.env.VITEST ? { conditions: ['browser'] } : undefined,
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
