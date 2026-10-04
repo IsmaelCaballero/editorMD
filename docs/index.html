@@ -315,7 +315,7 @@ const PROJECT = {
       ["F1", "5/5 Cierre F1 (PR #9)", "—", 13, 6.34, 1.73, 485],
       ["F2", "1/8 Decodificar M09 + RQ.1 T1 (PR #11, #13)", "≈ 7", 228, 23.4, 12.5, 163],
       ["F2", "2/8 Codificar + fin de línea (PR #14)", "1,9", 32, 9.1, 3.0, 280],
-      ["F2", "3/8 Pérdidas y transliteración (provisional)", "1,7", 30, 9.5, 2.6, 314],
+      ["F2", "3/8 Pérdidas y transliteración (PR #15)", "1,7", 30, 9.6, 2.62, 318],
     ],
   },
   tags: [
@@ -325,6 +325,9 @@ const PROJECT = {
       summary: "F1: editor WYSIWYG Milkdown, menús, C01 AppController, puertos y adaptadores, diálogos; linters (F0.7)" },
   ],
   summary: `
+    <p><strong>Fin de la sesión A de F2.</strong> Pasos 1-3 hechos: <a href="#comp-M09">M09 TextCodec</a> ya lee, escribe y avisa de pérdidas.
+    El cambio a la sesión B se adelantó un paso para que el experimento T2 empiece con el contexto limpio.
+    Para continuar en otro ordenador: <a href="https://github.com/IsmaelCaballero/editorMD/blob/main/docs/retomar-en-otro-ordenador.md">guía para retomar el trabajo</a>.</p>
     <p><strong>F2 · paso 3/8.</strong> Guardar en una codificación más pequeña ya no pierde nada <i>en silencio</i>:
     <a href="#comp-M09">M09 v0.3.0</a> hace un <b>informe de pérdidas</b> (qué caracteres no caben y en qué líneas) y permite
     sustituirlos por <code>?</code>, <a href="#c-transliteration">transliterarlos</a> (<code>€</code> → <code>EUR</code>) o
@@ -367,8 +370,8 @@ const PROJECT = {
     <a href="#c-rename">renombrar las ramas</a> a <code>hecha/F0.&lt;n&gt;de4/…</code> en lugar de borrarlas (PR #4).</p>
     <p><strong>Sesión 1 (2026-10-03).</strong> Plan completo, 16 decisiones, esqueleto Tauri 2 + Svelte 5,
     primer componente <a href="#comp-M17">M17 SemVer</a> (29 tests) y documentación con rustdoc y TypeDoc.</p>`,
-  next: `<strong>Siguiente paso:</strong> revisar y fusionar el PR #14 (paso 2 hacia <code>main</code>).
-    Luego, F2 paso 3/8: informe de pérdidas y transliteración (sesión A).`,
+  next: `<strong>Siguiente paso:</strong> revisar y fusionar el PR #15 (paso 3) y abrir la <b>sesión B</b> (en otro ordenador, siguiendo la
+    <a href="https://github.com/IsmaelCaballero/editorMD/blob/main/docs/retomar-en-otro-ordenador.md">guía</a>). Empezará por el paso 4/8: FileService con el experimento RQ.1 T2.`,
 
   phases: [
     { id: "F0", name: "Decisiones y entorno", target: "0.0.x", tasks: [
@@ -814,7 +817,8 @@ const PROJECT = {
       { name: "chore/F1-close", step: "F1 · 5/5", final: "hecha/F1.5de5/chore/F1-close", renamed: true, goal: "Cierre de F1: versión 0.0.2, CHANGELOG, sincronización de versiones", status: ["ok", "fusionada (PR #9)"], commits: 2, pr: 9 },
       { name: "docs/ai-usage", step: "Post-F1", goal: "Métricas de uso de IA (F0, F1) y diseño de la RQ.1", status: ["ok", "fusionada (PR #10)"], commits: 1, pr: 10 },
       { name: "feature/F2-text-codec-decode", step: "F2 · 1/8", final: "hecha/F2.1de8/feature/F2-text-codec-decode", goal: "M09 TextCodec: detección y decodificación + experimento RQ.1 T1", status: ["ok", "fusionada (PR #13)"], commits: 6, pr: 13 },
-      { name: "feature/F2-text-codec-encode", step: "F2 · 2/8", final: "hecha/F2.2de8/feature/F2-text-codec-encode", goal: "M09 v0.2.0: codificación, BOM, finales de línea, ida y vuelta byte a byte", status: ["wip", "PR #14 · pendiente de CI y de tu revisión"], commits: 4, pr: 14 },
+      { name: "feature/F2-text-codec-encode", step: "F2 · 2/8", final: "hecha/F2.2de8/feature/F2-text-codec-encode", goal: "M09 v0.2.0: codificación, BOM, finales de línea, ida y vuelta byte a byte", status: ["ok", "fusionada (PR #14)"], commits: 5, pr: 14 },
+      { name: "feature/F2-text-codec-loss", step: "F2 · 3/8", final: "hecha/F2.3de8/feature/F2-text-codec-loss", goal: "M09 v0.3.0: informe de pérdidas, sustitución, transliteración y entidades HTML; cierre de la sesión A", status: ["wip", "PR #15 · pendiente de CI y de tu revisión"], commits: 6, pr: 15 },
       { name: "rq1/T1/A (= r1, Sonnet 5.5)", step: "RQ.1 T1", goal: "Candidata ganadora de la revisión ciega", status: ["ok", "fusionada en la rama del paso (PR #11)"], commits: 2, pr: 11 },
       { name: "rq1/T1/B (= r2, Opus 5.5)", step: "RQ.1 T1", goal: "Candidata de la revisión ciega (calidad equivalente, más cara)", status: ["ok", "cerrada sin fusionar (PR #12)"], commits: 2, pr: 12 },
       { name: "rq1/T1/r3 … r6", step: "RQ.1 T1", goal: "Repeticiones del experimento (Opus r3, r6; Sonnet r4, r5): se conservan sin PR", status: ["ok", "medidas"], commits: 2, pr: "" },

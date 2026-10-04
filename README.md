@@ -8,6 +8,7 @@ Editor Markdown **WYSIWYG** de escritorio, ligero y multiplataforma (Windows, Ub
 | Fichero | Para qué |
 |---|---|
 | [CONTEXT.md](CONTEXT.md) | Contexto, requisitos y decisiones. **Léelo primero.** |
+| [docs/retomar-en-otro-ordenador.md](docs/retomar-en-otro-ordenador.md) | Cómo instalar, clonar y continuar el desarrollo en otro equipo |
 | [STATUS.md](STATUS.md) | Estado actual y registro de sesiones |
 | [PLAN.md](PLAN.md) | Plan por fases, arquitectura, componentes y versiones, convenciones |
 | [CHANGELOG.md](CHANGELOG.md) | Cambios por versión (Keep a Changelog + SemVer 2.0.0) |

@@ -310,14 +310,14 @@ Asociación de `.md`, `.markdown`, `.Rmd` (y opcionalmente `.txt`), iconos y ent
 
 ### F2 — Ficheros y codificaciones → 0.1.0 · plan aprobado el 2026-10-04
 
-Ocho pasos en **dos sesiones** de Claude Code (A: pasos 1-4, Rust; B: pasos 5-8, interfaz) para que el contexto no supere ~350 k tokens. En los pasos 1 y 4 se hace el **experimento RQ.1** (3 ejecuciones de Opus 5.5 y 3 de Sonnet 5.5, revisión ciega; ver `docs/ai-usage/README.md` §4.2).
+Ocho pasos en **dos sesiones** de Claude Code (A: pasos 1-3; B: pasos 4-8; al principio eran 1-4 y 5-8, y se adelantó el cambio para que el experimento T2 empiece con el contexto limpio) para que el contexto no supere ~350 k tokens. En los pasos 1 y 4 se hace el **experimento RQ.1** (3 ejecuciones de Opus 5.5 y 3 de Sonnet 5.5, revisión ciega; ver `docs/ai-usage/README.md` §4.2).
 
 | Paso | Sesión | Rama | Tareas | Estimación (llamadas · USD eq.) | Nombre al cerrar F2 |
 |---|---|---|---|---|---|
 | 1/8 🧪 | A | `feature/F2-text-codec-decode` | F2.1 | 25 + 6 ejecuciones · ≈ 7 | `hecha/F2.1de8/feature/F2-text-codec-decode` |
 | 2/8 | A | `feature/F2-text-codec-encode` | F2.2 | 25 · 1,9 | `hecha/F2.2de8/feature/F2-text-codec-encode` |
 | 3/8 | A | `feature/F2-text-codec-loss` | F2.3 | 20 · 1,7 | `hecha/F2.3de8/feature/F2-text-codec-loss` |
-| 4/8 🧪 | A | `feature/F2-file-service` | F2.4 | 20 + 6 ejecuciones · ≈ 7 | `hecha/F2.4de8/feature/F2-file-service` |
+| 4/8 🧪 | B | `feature/F2-file-service` | F2.4 | 20 + 6 ejecuciones · ≈ 7 | `hecha/F2.4de8/feature/F2-file-service` |
 | 5/8 | B | `feature/F2-file-controller` | F2.5 | 45 · 3,2 | `hecha/F2.5de8/feature/F2-file-controller` |
 | 6/8 | B | `feature/F2-encoding-ui` | F2.6 + F2.7 | 40 · 3,6 | `hecha/F2.6de8/feature/F2-encoding-ui` |
 | 7/8 | B | `feature/F2-recent-files` | F2.8 | 20 · 2,1 | `hecha/F2.7de8/feature/F2-recent-files` |
@@ -325,11 +325,11 @@ Ocho pasos en **dos sesiones** de Claude Code (A: pasos 1-4, Rust; B: pasos 5-8,
 
 Total estimado: ≈ 28 USD eq. (rango 20-38), de los que ≈ 11 son el experimento con 3 repeticiones.
 
-**Protocolo de cambio de sesión (A → B), al fusionarse el PR del paso 4:**
-1. Sesión A: medir el uso (`scripts/ai-usage.mjs`) de los pasos 1-4 y de las ejecuciones del experimento; registrarlo en `docs/ai-usage/README.md`, §11 y la web.
-2. Sesión A: actualizar STATUS.md («⏸ Punto de reanudación»), CONTEXT.md (decisiones nuevas) y este plan; commit en una rama `docs/F2-session-A` → PR.
-3. El usuario fusiona el PR, cierra la sesión A (`/exit`) y abre una nueva en `C:\ProgsConIA\editorMD` con el texto de arranque que figura en STATUS.md.
-4. Sesión B: leer CONTEXT → STATUS → PLAN (F2) → `docs/ai-usage/README.md`, confirmar el estado de git y empezar el paso 5.
+**Protocolo de cambio de sesión (A → B), aplicado al terminar el paso 3:**
+1. Sesión A: medir el uso (`scripts/ai-usage.mjs`) de los pasos y de las ejecuciones del experimento; registrarlo en `docs/ai-usage/README.md`, §11 y la web. Copiar al repositorio los artefactos locales (pruebas ocultas, métricas, `usage-session3.json`).
+2. Sesión A: actualizar STATUS.md («⏸ Punto de reanudación»), CONTEXT.md y este plan, en la rama del último paso (PR #15).
+3. El usuario fusiona el PR, cierra la sesión A (`/exit`) y abre una nueva con el texto de arranque de STATUS.md. Si es en otro ordenador, antes sigue `docs/retomar-en-otro-ordenador.md`.
+4. Sesión B: leer CONTEXT → STATUS → PLAN (F2) → `docs/ai-usage/README.md`, confirmar el estado de git y empezar el paso 4.
 
 - [x] F2.1 M09 `TextCodec`: detección (BOM, UTF-8, chardetng), decodificación de las 8 codificaciones + tests
 - [x] F2.2 M09 codificación de salida, BOM, LF/CRLF/CR, detección de fin de línea mixto + tests de ida y vuelta byte a byte
@@ -528,7 +528,7 @@ Detalle completo, análisis y diseño del experimento de la RQ.1 en [`docs/ai-us
 | F1 | Claude Opus 5.5 (`claude-opus-5-5`) | 131 | 50,2 M | 15,54 | no se hizo |
 | F2 1/8 | Opus 5.5 (orquestador) + 3 Opus 5.5 y 3 Sonnet 5.5 (subagentes) | 228 | 23,4 M | ≈ 12,5 | ≈ 7 |
 | F2 2/8 | Opus 5.5 | 32 | 9,1 M | 3,00 | 1,9 |
-| F2 3/8 | Opus 5.5 | ≈ 30 | ≈ 9,5 M | ≈ 2,6 (provisional) | 1,7 |
+| F2 3/8 | Opus 5.5 | 30 | 9,6 M | 2,62 (+ cierre de la sesión A) | 1,7 |
 
 - **Medición:** `node scripts/ai-usage.mjs <transcripción.jsonl> docs/ai-usage/phases.json`, con el uso real que registra Claude Code.
 - **Norma desde F2:** estimar antes de cada paso (llamadas y USD eq.), medir al fusionar y registrar aquí y en la web. **Cada fase empieza en una sesión nueva**, porque el contexto acumulado multiplica el coste de cada llamada.
