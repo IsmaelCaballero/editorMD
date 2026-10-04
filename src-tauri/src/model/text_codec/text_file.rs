@@ -10,9 +10,32 @@
 use serde::Serialize;
 
 use super::{
-    DecodeError, DetectionMethod, EncodeError, Encoding, LineEnding, LineEndingStats, decode,
-    decode_auto, encode, normalize_line_endings,
+    DecodeError, DetectionMethod, EncodeError, Encoding, LineEnding, LineEndingStats, LossStrategy,
+    decode, decode_auto, encode, encode_lossy, normalize_line_endings,
 };
+
+/// Como [`write_text`], pero los caracteres que no caben en `encoding` se
+/// tratan con `strategy` en lugar de dar error (ver [`super::loss_report`]).
+///
+/// # Examples
+///
+/// ```
+/// use editormd_lib::model::text_codec::{write_text_lossy, Encoding, LineEnding, LossStrategy};
+///
+/// let bytes = write_text_lossy("10 €\n", Encoding::Ascii, LineEnding::Crlf, LossStrategy::Transliterate);
+/// assert_eq!(bytes, b"10 EUR\r\n");
+/// ```
+pub fn write_text_lossy(
+    text: &str,
+    encoding: Encoding,
+    line_ending: LineEnding,
+    strategy: LossStrategy,
+) -> Vec<u8> {
+    todo!(
+        "{text} {encoding:?} {line_ending:?} {strategy:?} {}",
+        stringify!(encode_lossy)
+    )
+}
 
 /// Un fichero de texto leído, listo para el editor.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]

@@ -8,8 +8,9 @@
 //!   [`normalize_line_endings`]).
 //! - **Ficheros completos** ([`read_text`], [`read_text_as`], [`write_text`]):
 //!   ida y vuelta byte a byte.
-//!
-//! El informe de pérdidas y la transliteración llegarán en el paso 3 de F2.
+//! - **Conversión con pérdida** ([`loss_report`], [`encode_lossy`],
+//!   [`write_text_lossy`]): informe de los caracteres que no caben y
+//!   sustitución, transliteración o entidades HTML.
 
 use std::fmt;
 
@@ -17,11 +18,13 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 mod encode;
 mod line_ending;
+mod loss;
 mod text_file;
 
 pub use encode::{EncodeError, encode};
 pub use line_ending::{LineEnding, LineEndingStats, normalize_line_endings};
-pub use text_file::{TextFile, read_text, read_text_as, write_text};
+pub use loss::{LossItem, LossReport, LossStrategy, can_encode, encode_lossy, loss_report};
+pub use text_file::{TextFile, read_text, read_text_as, write_text, write_text_lossy};
 
 /// Codificaciones soportadas (D-15).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
