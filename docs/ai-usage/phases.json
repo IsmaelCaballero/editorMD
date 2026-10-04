@@ -63,7 +63,12 @@
     },
     {
       "phase": "F2",
-      "step": "3/8 Pérdidas y transliteración",
+      "step": "3/8 Pérdidas y transliteración (PR #15)",
+      "end": "2026-10-04T12:10:50Z"
+    },
+    {
+      "phase": "F2",
+      "step": "4/8 FileService + RQ.1 T2 (PR #16, sesión B)",
       "end": "2099-01-01T00:00:00Z"
     }
   ]

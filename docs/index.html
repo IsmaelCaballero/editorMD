@@ -298,7 +298,7 @@ const PROJECT = {
   repo: "https://github.com/IsmaelCaballero/editorMD",
   appVersion: "0.0.2",
   currentPhase: "F2",
-  tests: { passed: 418, total: 418, coverage: "100 %" },
+  tests: { passed: 453, total: 453, coverage: "100 %" },
   metrics: { ram: "113 MB", bundle: "508 kB (158 kB gzip)" },
   ci: "4/4 SO en verde",
   ai: {
@@ -316,6 +316,7 @@ const PROJECT = {
       ["F2", "1/8 Decodificar M09 + RQ.1 T1 (PR #11, #13)", "≈ 7", 228, 23.4, 12.5, 163],
       ["F2", "2/8 Codificar + fin de línea (PR #14)", "1,9", 32, 9.1, 3.0, 280],
       ["F2", "3/8 Pérdidas y transliteración (PR #15)", "1,7", 30, 9.6, 2.62, 318],
+      ["F2", "4/8 FileService + RQ.1 T2 (PR #16, #18)", "≈ 9", 195, 18.0, 10.9, 88],
     ],
   },
   tags: [
@@ -325,6 +326,11 @@ const PROJECT = {
       summary: "F1: editor WYSIWYG Milkdown, menús, C01 AppController, puertos y adaptadores, diálogos; linters (F0.7)" },
   ],
   summary: `
+    <p><strong>F2 · paso 4/8 y segundo experimento <a href="#c-rq1">RQ.1</a> (sesión B, en el ordenador nuevo).</strong>
+    <a href="#comp-M08">M08 FileService</a> ya lee y guarda ficheros en disco con <a href="#c-atomic-write">escritura atómica</a>,
+    y expone al frontend los comandos <code>open_file</code> y <code>save_file</code>. Otra vez lo hicieron 3 × Opus 5.5 y 3 × Sonnet 5.5:
+    las 6 superaron las 28 <a href="#c-hidden-tests">pruebas ocultas</a>. En la revisión ciega puntuaste mejor a A (<b>Sonnet</b>, 4,8) que a B (Opus, 4,2),
+    y Sonnet costó <b>0,73 ± 0,05</b> frente a <b>1,44 ± 0,03 USD eq.</b> por ejecución → <b>gana Sonnet en T1 y en T2</b>.</p>
     <p><strong>Fin de la sesión A de F2.</strong> Pasos 1-3 hechos: <a href="#comp-M09">M09 TextCodec</a> ya lee, escribe y avisa de pérdidas.
     El cambio a la sesión B se adelantó un paso para que el experimento T2 empiece con el contexto limpio.
     Para continuar en otro ordenador: <a href="https://github.com/IsmaelCaballero/editorMD/blob/main/docs/retomar-en-otro-ordenador.md">guía para retomar el trabajo</a>.</p>
@@ -370,8 +376,8 @@ const PROJECT = {
     <a href="#c-rename">renombrar las ramas</a> a <code>hecha/F0.&lt;n&gt;de4/…</code> en lugar de borrarlas (PR #4).</p>
     <p><strong>Sesión 1 (2026-10-03).</strong> Plan completo, 16 decisiones, esqueleto Tauri 2 + Svelte 5,
     primer componente <a href="#comp-M17">M17 SemVer</a> (29 tests) y documentación con rustdoc y TypeDoc.</p>`,
-  next: `<strong>Siguiente paso:</strong> revisar y fusionar el PR #15 (paso 3) y abrir la <b>sesión B</b> (en otro ordenador, siguiendo la
-    <a href="https://github.com/IsmaelCaballero/editorMD/blob/main/docs/retomar-en-otro-ordenador.md">guía</a>). Empezará por el paso 4/8: FileService con el experimento RQ.1 T2.`,
+  next: `<strong>Siguiente paso:</strong> revisar y fusionar el PR #18 (paso 4). Después, el paso 5/8: <a href="#comp-C02">C02 FileController</a>
+    (Nuevo, Abrir, Guardar, Guardar como, Cerrar), que usará los comandos de M08 desde la interfaz.`,
 
   phases: [
     { id: "F0", name: "Decisiones y entorno", target: "0.0.x", tasks: [
@@ -396,7 +402,7 @@ const PROJECT = {
       ["ok", "F2.1 TextCodec: detección y decodificación de las 8 codificaciones (RQ.1 T1)"],
       ["ok", "F2.2 TextCodec: codificación, BOM, LF/CRLF/CR, ida y vuelta byte a byte"],
       ["ok", "F2.3 Informe de pérdidas, transliteración y sustitución"],
-      ["todo", "F2.4 FileService (escritura atómica) + comandos Tauri"],
+      ["ok", "F2.4 FileService (escritura atómica) + comandos Tauri (RQ.1 T2)"],
       ["todo", "F2.5 FileController: nuevo, abrir, guardar, guardar como, cerrar"],
       ["todo", "F2.6 EncodingDialog y perfiles Windows / Linux-macOS / ASCII"],
       ["todo", "F2.7 Barra de estado con codificación y fin de línea"],
@@ -745,6 +751,15 @@ const PROJECT = {
       cmds: "cargo test   # 63 + 14 doctests\nnpm run lint",
       why: "Elegir otra codificación es una decisión del usuario; el programa debe enseñarle qué se va a perder antes de hacerlo (PLAN.md §2.5, punto 6).",
       concepts: ["transliteration", "encoding"] },
+    { date: "2026-10-05", title: "F2 paso 4/8: guardar sin miedo a perder el fichero (y RQ.1 T2)", branch: "feature/F2-file-service",
+      did: ["Sesión B en el <b>ordenador nuevo</b> (<code>C:\\ProgIA</code>): clonar, instalar y comprobar el entorno fue suficiente para seguir, porque todo el contexto está en el repositorio. Faltaba la identidad de git; se configuró solo para el repositorio.",
+            "Especificación T2 con API exacta (<code>read_file</code>, <code>write_atomic</code>, <code>open_text</code>, <code>save_text</code>, <code>FileError</code>) y 28 pruebas ocultas: atomicidad, solo lectura, carpetas, ida y vuelta disco → texto → disco y serialización de los errores.",
+            "6 subagentes (3 Opus 5.5, 3 Sonnet 5.5), sin incidencias. Las 6 pasan todo, y la CI de las dos candidatas también ejecutó en Linux y macOS sus pruebas solo de Unix.",
+            "Revisión ciega: A (Sonnet) 5·5·4·5·5 en 5 min, «la fusionaría tal cual»; B (Opus) 4·5·4·4·4 en 6 min. Se fusionó A (PR #16) y se cerró B (PR #17).",
+            "<b>Respuesta provisional a la RQ.1:</b> con especificación cerrada, pruebas y CI, Sonnet cuesta la mitad y su <i>rework</i> extra lo detectan las herramientas antes de que llegue a la revisión."],
+      cmds: "scripts/rq1-eval.sh <agente> T2-hidden-tests.rs c5f2feb src-tauri/src/model/file_service.rs   # 28 passed en las 6\nnode scripts/rq1-metrics.mjs docs/ai-usage/rq1/T2-runs.json",
+      why: "Guardar es la operación más delicada de un editor: si se corta a mitad, el usuario no debe perder el fichero que ya tenía. Escribir en un temporal y renombrarlo convierte el guardado en un todo o nada.",
+      concepts: ["atomic-write", "rq1", "hidden-tests", "ipc"] },
   ],
 
   git: {
@@ -803,6 +818,17 @@ const PROJECT = {
       { t: "commit", branch: "feature/F2-text-codec-decode", id: "01b96b1", msg: "docs(rq1): especificación T1" },
       { t: "commit", branch: "feature/F2-text-codec-decode", id: "c204e6b", msg: "docs: plan de F2" },
       { t: "commit", branch: "feature/F2-text-codec-decode", id: "PR #11", msg: "M09 (candidata A)" },
+      { t: "merge", into: "main", from: "feature/F2-text-codec-decode", id: "2133898 Merge PR #13" },
+      { t: "branch", name: "feature/F2-text-codec-encode" },
+      { t: "commit", branch: "feature/F2-text-codec-encode", id: "PR #14", msg: "feat(M09): codificar y fin de línea" },
+      { t: "merge", into: "main", from: "feature/F2-text-codec-encode", id: "9f0d36b Merge PR #14" },
+      { t: "branch", name: "feature/F2-text-codec-loss" },
+      { t: "commit", branch: "feature/F2-text-codec-loss", id: "PR #15", msg: "feat(M09): informe de pérdidas" },
+      { t: "merge", into: "main", from: "feature/F2-text-codec-loss", id: "8418318 Merge PR #15" },
+      { t: "branch", name: "feature/F2-file-service" },
+      { t: "commit", branch: "feature/F2-file-service", id: "c5f2feb", msg: "docs(rq1): especificación T2" },
+      { t: "commit", branch: "feature/F2-file-service", id: "60e2531", msg: "M08 (candidata A, PR #16)" },
+      { t: "commit", branch: "feature/F2-file-service", id: "PR #18", msg: "docs: F2 paso 4" },
     ],
     branches: [
       { name: "main", goal: "Rama estable", status: ["ok", "estable · CI verde · v0.0.1"], commits: 9, pr: "" },
@@ -818,10 +844,14 @@ const PROJECT = {
       { name: "docs/ai-usage", step: "Post-F1", goal: "Métricas de uso de IA (F0, F1) y diseño de la RQ.1", status: ["ok", "fusionada (PR #10)"], commits: 1, pr: 10 },
       { name: "feature/F2-text-codec-decode", step: "F2 · 1/8", final: "hecha/F2.1de8/feature/F2-text-codec-decode", goal: "M09 TextCodec: detección y decodificación + experimento RQ.1 T1", status: ["ok", "fusionada (PR #13)"], commits: 6, pr: 13 },
       { name: "feature/F2-text-codec-encode", step: "F2 · 2/8", final: "hecha/F2.2de8/feature/F2-text-codec-encode", goal: "M09 v0.2.0: codificación, BOM, finales de línea, ida y vuelta byte a byte", status: ["ok", "fusionada (PR #14)"], commits: 5, pr: 14 },
-      { name: "feature/F2-text-codec-loss", step: "F2 · 3/8", final: "hecha/F2.3de8/feature/F2-text-codec-loss", goal: "M09 v0.3.0: informe de pérdidas, sustitución, transliteración y entidades HTML; cierre de la sesión A", status: ["wip", "PR #15 · pendiente de CI y de tu revisión"], commits: 6, pr: 15 },
+      { name: "feature/F2-text-codec-loss", step: "F2 · 3/8", final: "hecha/F2.3de8/feature/F2-text-codec-loss", goal: "M09 v0.3.0: informe de pérdidas, sustitución, transliteración y entidades HTML; cierre de la sesión A", status: ["ok", "fusionada (PR #15)"], commits: 6, pr: 15 },
+      { name: "feature/F2-file-service", step: "F2 · 4/8", final: "hecha/F2.4de8/feature/F2-file-service", goal: "M08 FileService: lectura, escritura atómica, comandos open_file/save_file + experimento RQ.1 T2", status: ["wip", "PR #18 · pendiente de tu revisión"], commits: 6, pr: 18 },
       { name: "rq1/T1/A (= r1, Sonnet 5.5)", step: "RQ.1 T1", goal: "Candidata ganadora de la revisión ciega", status: ["ok", "fusionada en la rama del paso (PR #11)"], commits: 2, pr: 11 },
       { name: "rq1/T1/B (= r2, Opus 5.5)", step: "RQ.1 T1", goal: "Candidata de la revisión ciega (calidad equivalente, más cara)", status: ["ok", "cerrada sin fusionar (PR #12)"], commits: 2, pr: 12 },
       { name: "rq1/T1/r3 … r6", step: "RQ.1 T1", goal: "Repeticiones del experimento (Opus r3, r6; Sonnet r4, r5): se conservan sin PR", status: ["ok", "medidas"], commits: 2, pr: "" },
+      { name: "rq1/T2/A (= r1, Sonnet 5.5)", step: "RQ.1 T2", goal: "Candidata ganadora de la revisión ciega (4,8 de 5)", status: ["ok", "fusionada en la rama del paso (PR #16)"], commits: 2, pr: 16 },
+      { name: "rq1/T2/B (= r3, Opus 5.5)", step: "RQ.1 T2", goal: "Candidata de la revisión ciega (4,2 de 5, el doble de cara)", status: ["ok", "cerrada sin fusionar (PR #17)"], commits: 3, pr: 17 },
+      { name: "rq1/T2/r1 … r6", step: "RQ.1 T2", goal: "Repeticiones del experimento (Sonnet r1, r4, r6; Opus r2, r3, r5): solo en el ordenador nuevo, sin subir", status: ["ok", "medidas"], commits: 2, pr: "" },
     ],
   },
 
@@ -834,7 +864,7 @@ const PROJECT = {
     ["M05","M","TS","TableModel","Tablas GFM","0.0.0","F5"],
     ["M06","M","TS","SearchEngine","Buscar/reemplazar","0.0.0","F3"],
     ["M07","M","TS","MarkdownCodec","MD ⇄ árbol mdast fiel (GFM, front matter, Rmd), estilo canónico, protección para el editor","0.2.0","F1"],
-    ["M08","M","Rust","FileService","Lectura/escritura atómica","0.0.0","F2"],
+    ["M08","M","Rust","FileService","Lectura con aviso de solo lectura, escritura atómica, abrir/guardar texto con M09, comandos open_file/save_file","0.1.0","F2"],
     ["M09","M","Rust","TextCodec","Lectura y escritura en 9 codificaciones, BOM, LF/CRLF/CR, ida y vuelta byte a byte, informe de pérdidas y transliteración","0.3.0","F2"],
     ["M10","M","Rust","Importers","TXT, HTML → MD","0.0.0","F6"],
     ["M11","M","Rust","Exporters","HTML, TXT, PDF (Typst)","0.0.0","F6"],
@@ -878,6 +908,7 @@ const PROJECT = {
   ],
 
   concepts: {
+    "atomic-write": ["Escritura atómica", "Guardar «todo o nada»: se escribe el contenido en un fichero temporal de la misma carpeta, se fuerza su volcado al disco y se <b>renombra</b> sobre el original. El renombrado es instantáneo, así que si el programa o el equipo fallan a mitad, el original sigue intacto y nunca queda un fichero a medias."],
     "transliteration": ["Transliteración", "Escribir un carácter con letras de otro alfabeto o juego de caracteres: <code>ñ</code> → <code>n</code>, <code>€</code> → <code>EUR</code>, <code>日</code> → <code>Ri</code>. Se usa cuando la codificación destino (p. ej. ASCII) no tiene el carácter original."],
     "roundtrip": ["Ida y vuelta byte a byte", "Abrir un fichero y guardarlo sin editar debe producir exactamente los mismos bytes: misma codificación, mismo BOM y mismos finales de línea. Se comprueba con ficheros de prueba binarios que git no puede alterar."],
     "worktree": ["git worktree", "Una segunda (o sexta) copia de trabajo del mismo repositorio, en otra carpeta y con su propia rama, que comparte el historial. Permite que varios agentes trabajen a la vez sin pisarse."],
