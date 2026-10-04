@@ -282,16 +282,21 @@ flowchart LR
 const PROJECT = {
   updated: "2026-10-04",
   repo: "https://github.com/IsmaelCaballero/editorMD",
-  appVersion: "0.0.1",
-  currentPhase: "F1",
-  tests: { passed: 340, total: 340, coverage: "100 %" },
+  appVersion: "0.0.2",
+  currentPhase: "F2",
+  tests: { passed: 345, total: 345, coverage: "100 %" },
   metrics: { ram: "113 MB", bundle: "508 kB (158 kB gzip)" },
   ci: "4/4 SO en verde",
   tags: [
     { name: "v0.0.1", date: "2026-10-04", pre: true, commit: "86df753", url: "https://github.com/IsmaelCaballero/editorMD/releases/tag/v0.0.1",
       summary: "Esqueleto F0: Tauri 2 + Svelte 5, M17 SemVer, rustdoc/TypeDoc, CI en 4 SO, web del proyecto" },
+    { name: "v0.0.2", date: "2026-10-04", pre: true, commit: "merge PR #9", url: "https://github.com/IsmaelCaballero/editorMD/releases/tag/v0.0.2",
+      summary: "F1: editor WYSIWYG Milkdown, menús, C01 AppController, puertos y adaptadores, diálogos; linters (F0.7)" },
   ],
   summary: `
+    <p><strong>✅ F1 completada → versión 0.0.2.</strong> Cinco pasos (PR #5-#9): modelo, codec con corpus de fidelidad,
+    editor Milkdown, controlador con puertos y adaptadores, y cierre. Al fusionar el PR #9 se publicará la etiqueta
+    <a href="#versiones">v0.0.2</a> y las ramas se renombrarán a <code>hecha/F1.&lt;n&gt;de5/…</code>.</p>
     <p><strong>F1 · paso 4/5.</strong> ¡Los menús ya <b>hacen</b> cosas! <a href="#comp-C01">C01 AppController</a>
     (TDD con <i>mocks</i>) conecta modelo y vistas mediante <a href="#c-ports">puertos</a>; los <a href="#c-adapters">adaptadores</a>
     de Tauri y los diálogos propios los implementan, y <code>main.ts</code> es el <a href="#c-composition-root">composition root</a>.
@@ -317,8 +322,8 @@ const PROJECT = {
     <a href="#c-rename">renombrar las ramas</a> a <code>hecha/F0.&lt;n&gt;de4/…</code> en lugar de borrarlas (PR #4).</p>
     <p><strong>Sesión 1 (2026-10-03).</strong> Plan completo, 16 decisiones, esqueleto Tauri 2 + Svelte 5,
     primer componente <a href="#comp-M17">M17 SemVer</a> (29 tests) y documentación con rustdoc y TypeDoc.</p>`,
-  next: `<strong>Siguiente paso:</strong> revisar y fusionar el <a href="https://github.com/IsmaelCaballero/editorMD/pull/8">PR #8</a>
-    (F1 · paso 4/5). Después: paso 5/5, <code>chore/F1-close</code> (versión <b>0.0.2</b>, etiqueta y renombrado de las ramas de F1).`,
+  next: `<strong>Siguiente paso:</strong> revisar y fusionar el <a href="https://github.com/IsmaelCaballero/editorMD/pull/9">PR #9</a>
+    (cierre de F1) → etiqueta <code>v0.0.2</code> y renombrado de ramas. Después, el plan de <a href="#phase-F2">F2 · ficheros y codificaciones</a> para tu ok.`,
 
   phases: [
     { id: "F0", name: "Decisiones y entorno", target: "0.0.x", tasks: [
@@ -637,6 +642,26 @@ const PROJECT = {
             "Conclusión provisional: probablemente fue una edición real (p. ej. al probar la app). El diagnóstico se retiró sin commit. Si vuelve a pasar, se reabrirá con datos."],
       why: "Un error que no se puede reproducir no se «arregla» a ciegas: se documenta lo probado y se deja preparado cómo investigarlo.",
       concepts: ["spike"] },
+    { date: "2026-10-04", title: "Resuelto: el «*» fantasma era una edición real", branch: "—",
+      did: ["Confirmaste que, al aparecer la ventana, escribiste algo y marcaste una casilla: el <code>*</code> era <b>correcto</b>.",
+            "La aplicación hizo lo que debía; lo que falló fue la medición, hecha mientras alguien usaba la ventana.",
+            "Nueva norma: antes de comprobar algo en la app real, avisar para no interactuar durante la medición."],
+      why: "Un buen informe de error incluye cómo se reprodujo; aquí la pieza que faltaba era «el usuario estaba usando la ventana».",
+      concepts: ["spike"] },
+    { date: "2026-10-04", title: "Entorno: el antivirus también «participa»", branch: "—",
+      did: ["Norton inspecciona cada <code>editormd.exe</code> nuevo (compilación de depuración, sin firmar) al ejecutarlo.",
+            "Efectos: arranque más lento, medidas de tiempo y memoria distorsionadas y posiblemente compilaciones más lentas en <code>src-tauri/target/</code>.",
+            "Decisiones: las métricas de rendimiento (F9) se tomarán con la versión <i>release</i> y anotando si el antivirus estaba activo. Excluir <code>target/</code> del antivirus es decisión tuya, porque implica un riesgo. Firmar el código (D-08) reducirá estos análisis a los usuarios finales."],
+      why: "Al medir rendimiento hay que conocer todo lo que se ejecuta en la máquina; si no, se atribuyen a la aplicación retrasos que no son suyos.",
+      concepts: ["memory"] },
+    { date: "2026-10-04", title: "F1 · 5/5 — Versión 0.0.2 y sincronización de versiones", branch: "chore/F1-close", commit: "2f66a7b",
+      did: ["Fusionaste el PR #8; revisión correcta (<code>5034771</code>).",
+            "Nueva prueba <code>tests/version-sync.test.ts</code>: las 3 fuentes de versión (<code>package.json</code>, <code>Cargo.toml</code>, <code>tauri.conf.json</code>) coinciden, son SemVer válido (usando M17) y el CHANGELOG tiene la sección de la versión actual.",
+            "Al subir a <code>0.0.2</code>, la prueba <b>falló</b> porque faltaba <code>## [0.0.2]</code> en el CHANGELOG. Se escribió la sección, con <i>Known issues</i>, y la prueba pasó: es el tipo de olvido que conviene que detecte una máquina.",
+            "SemVer: en <code>0.0.z</code> cualquier cambio sube el último número; la <code>0.1.0</code> llegará al cerrar F2, con abrir y guardar."],
+      cmds: "npx vitest run tests/version-sync.test.ts   # 1 failed → CHANGELOG → 5 passed\ncargo test   # Cargo.lock actualizado a 0.0.2",
+      why: "Las reglas que dependen de la memoria humana («acuérdate de actualizar los tres ficheros») acaban fallando; una prueba no se olvida.",
+      concepts: ["semver", "keep-a-changelog", "ci"] },
   ],
 
   git: {
@@ -682,10 +707,14 @@ const PROJECT = {
       { t: "commit", branch: "feature/F1-app-controller", id: "d965a3c", msg: "test(C01): fase roja" },
       { t: "commit", branch: "feature/F1-app-controller", id: "55b7fb4", msg: "feat(C01): fase verde" },
       { t: "commit", branch: "feature/F1-app-controller", id: "e146cf6", msg: "feat: adaptadores y composition root" },
-      { t: "commit", branch: "feature/F1-app-controller", id: "PR #8", msg: "docs: F1 paso 4" },
+      { t: "commit", branch: "feature/F1-app-controller", id: "769a822", msg: "docs: F1 paso 4" },
+      { t: "merge", into: "main", from: "feature/F1-app-controller", id: "5034771 Merge PR #8" },
+      { t: "branch", name: "chore/F1-close" },
+      { t: "commit", branch: "chore/F1-close", id: "2f66a7b", msg: "chore(release): 0.0.2" },
+      { t: "commit", branch: "chore/F1-close", id: "PR #9", msg: "docs: cierre de F1" },
     ],
     branches: [
-      { name: "main", goal: "Rama estable", status: ["ok", "estable · CI verde · v0.0.1"], commits: 8, pr: "" },
+      { name: "main", goal: "Rama estable", status: ["ok", "estable · CI verde · v0.0.1"], commits: 9, pr: "" },
       { name: "feature/F0-scaffold", step: "F0 · 1/4", final: "hecha/F0.1de4/feature/F0-scaffold", renamed: true, goal: "F0: esqueleto, tests, documentación, CI y web", status: ["ok", "fusionada (PR #1)"], commits: 6, pr: 1 },
       { name: "chore/release-0.0.1", step: "F0 · 2/4", final: "hecha/F0.2de4/chore/release-0.0.1", renamed: true, goal: "CHANGELOG 0.0.1 y actualización de la documentación", status: ["ok", "fusionada (PR #2)"], commits: 1, pr: 2 },
       { name: "feature/F0-linters", step: "F0 · 3/4", final: "hecha/F0.3de4/feature/F0-linters", renamed: true, goal: "F0.7: linters, formateadores y job lint en CI", status: ["ok", "fusionada (PR #3)"], commits: 3, pr: 3 },
@@ -693,7 +722,8 @@ const PROJECT = {
       { name: "feature/F1-document-model", step: "F1 · 1/5", final: "hecha/F1.1de5/feature/F1-document-model", goal: "Interfaces MVC + M01 DocumentState (TDD)", status: ["ok", "fusionada (PR #5)"], commits: 3, pr: 5 },
       { name: "feature/F1-markdown-codec", step: "F1 · 2/5", final: "hecha/F1.2de5/feature/F1-markdown-codec", goal: "M07 MarkdownCodec + corpus de fidelidad (TDD)", status: ["ok", "fusionada (PR #6)"], commits: 3, pr: 6 },
       { name: "feature/F1-milkdown-editor", step: "F1 · 3/5", final: "hecha/F1.3de5/feature/F1-milkdown-editor", goal: "Spike + M07 v0.2.0 + V01 menús + V02 editor Milkdown kit", status: ["ok", "fusionada (PR #7)"], commits: 5, pr: 7 },
-      { name: "feature/F1-app-controller", step: "F1 · 4/5", final: "hecha/F1.4de5/feature/F1-app-controller", goal: "C01 AppController (TDD) + adaptadores + diálogos + composition root", status: ["wip", "PR #8 · pendiente de CI y de tu revisión"], commits: 4, pr: 8 },
+      { name: "feature/F1-app-controller", step: "F1 · 4/5", final: "hecha/F1.4de5/feature/F1-app-controller", goal: "C01 AppController (TDD) + adaptadores + diálogos + composition root", status: ["ok", "fusionada (PR #8)"], commits: 4, pr: 8 },
+      { name: "chore/F1-close", step: "F1 · 5/5", final: "hecha/F1.5de5/chore/F1-close", goal: "Cierre de F1: versión 0.0.2, CHANGELOG, sincronización de versiones", status: ["wip", "PR #9 · pendiente de CI y de tu revisión"], commits: 2, pr: 9 },
     ],
   },
 

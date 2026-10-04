@@ -231,7 +231,8 @@ Cada componente lleva su propia versión **[Semantic Versioning 2.0.0](https://s
 ### 4.5 Versionado de la aplicación (hitos)
 | Versión | Contenido | Fase |
 |---|---|---|
-| 0.0.1 | Esqueleto F0 (Tauri + Svelte + SemVer) | F0 |
+| 0.0.1 | Esqueleto F0 (Tauri + Svelte + SemVer) ✅ [v0.0.1](https://github.com/IsmaelCaballero/editorMD/releases/tag/v0.0.1) | F0 |
+| 0.0.2 | Esqueleto MVC con editor WYSIWYG, menús y controlador ✅ (etiqueta tras el PR #9) | F1 |
 | 0.1.0 | Esqueleto MVC, abrir/editar/guardar con codificaciones | F1–F2 |
 | 0.2.0 | Edición completa + buscar/reemplazar | F3 |
 | 0.3.0 | Formato | F4 |
@@ -288,7 +289,7 @@ Asociación de `.md`, `.markdown`, `.Rmd` (y opcionalmente `.txt`), iconos y ent
 - [x] F0.8 Documentación del código: rustdoc (`cargo doc`) + TSDoc/TypeDoc, publicada en `docs/api/`
 - [x] F0.9 Página web del proyecto `docs/index.html` (plan, progreso, diario de aprendizaje, ramas y PR)
 
-### F1 — Esqueleto MVC  → app 0.0.2 · aprobado por el usuario el 2026-10-04
+### F1 — Esqueleto MVC  → app 0.0.2 · ✅ COMPLETADA el 2026-10-04
 
 | Paso | Rama | Contenido | Nombre al cerrar F1 |
 |---|---|---|---|
@@ -479,3 +480,13 @@ Regla: un PR no se fusiona con el job `lint` de la CI en rojo. Los cambios de so
 | 2/4 | `chore/release-0.0.1` | `hecha/F0.2de4/chore/release-0.0.1` | #2 |
 | 3/4 | `feature/F0-linters` | `hecha/F0.3de4/feature/F0-linters` | #3 |
 | 4/4 | `chore/F0-close` | `hecha/F0.4de4/chore/F0-close` | #4 |
+
+**F1 (5 pasos) — se renombrarán al fusionar el PR #9, con el ok del usuario:**
+
+| Paso | Rama | Nombre al cerrar F1 | PR |
+|---|---|---|---|
+| 1/5 | `feature/F1-document-model` | `hecha/F1.1de5/feature/F1-document-model` | #5 |
+| 2/5 | `feature/F1-markdown-codec` | `hecha/F1.2de5/feature/F1-markdown-codec` | #6 |
+| 3/5 | `feature/F1-milkdown-editor` | `hecha/F1.3de5/feature/F1-milkdown-editor` | #7 |
+| 4/5 | `feature/F1-app-controller` | `hecha/F1.4de5/feature/F1-app-controller` | #8 |
+| 5/5 | `chore/F1-close` | `hecha/F1.5de5/chore/F1-close` | #9 |

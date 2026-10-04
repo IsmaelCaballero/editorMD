@@ -41,6 +41,7 @@ Un editor Markdown de escritorio con GUI, **ligero** (poca memoria) y **portable
 - Repositorio **público**: https://github.com/IsmaelCaballero/editorMD (remoto `origin`). La CI se ejecuta en cada push a `main` y en cada PR.
 - Nota: en PowerShell puede hacer falta recargar el PATH para ver `cargo`/`gh`.
 - Usuario git: Ismael Caballero.
+- **Antivirus Norton** en la máquina de desarrollo: inspecciona cada `editormd.exe` nuevo (debug, sin firmar) al ejecutarlo. Retrasa el arranque y puede distorsionar las medidas de tiempo y memoria; también puede ralentizar la compilación en `src-tauri/target/`. Las métricas de rendimiento (F9) se tomarán con la versión *release* y anotando si Norton estaba activo. Una exclusión del antivirus para `src-tauri	arget` es decisión del usuario (implica un riesgo de seguridad). Para los usuarios finales, firmar el código (D-08, en la 1.0) reduce estos análisis.
 
 ## Retomar el trabajo
 Lee el apartado **«⏸ Punto de reanudación»** al principio de STATUS.md.
@@ -59,7 +60,8 @@ Lee el apartado **«⏸ Punto de reanudación»** al principio de STATUS.md.
 - **D-11 PDF**: Typst embebido (sin dependencias externas).
 - **D-12**: modo fuente Markdown en la v1.0, además del WYSIWYG.
 - **D-17 Milkdown *kit*** (no *Crepe*): núcleo mínimo; menús y barra de herramientas propios en su capa MVC.
-- **Plan de F1 aprobado** (5 pasos/ramas, PLAN.md §7 F1).
+- **F1 completada** (5 pasos, PR #5-#9) → versión **0.0.2**. Siguiente: F2 (ficheros y codificaciones → 0.1.0), cuyo plan se presentará al usuario antes de empezar.
+- Al comprobar la app real (`tauri dev`), **avisar al usuario antes de medir** para que no interactúe con la ventana mientras tanto (un `*` «fantasma» en F1 resultó ser una edición suya).
 
 ## Decisiones abiertas
 Ninguna bloqueante. Confirmadas por el usuario el 2026-10-03: D-06 GitHub, D-08 sin firma hasta la 1.0, D-10 SO mínimos, D-13 Svelte 5, D-14 Milkdown, D-16 convenciones. GitHub **público**. Ver PLAN.md §8.
