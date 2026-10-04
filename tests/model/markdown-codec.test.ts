@@ -9,9 +9,12 @@ import { describe, expect, it } from 'vitest'
 import {
   equivalent,
   isRmdChunk,
+  joinFrontMatter,
   normalize,
   parse,
+  remarkCodeMetaIntoLang,
   rmdChunkHeader,
+  splitFrontMatter,
   stringify,
 } from '../../src/model/markdown-codec'
 
@@ -157,5 +160,85 @@ describe('stringify', () => {
 
   it('un documento vacío sigue vacío', () => {
     expect(normalize('')).toBe('')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// M07 v0.2.0 — protección del front matter y de las cabeceras de bloque en el
+// editor WYSIWYG. Un spike con Milkdown demostró que el editor convertía el
+// front matter en un título y recortaba `{r setup, include=FALSE}` a `{r`.
+// ---------------------------------------------------------------------------
+
+describe('splitFrontMatter / joinFrontMatter', () => {
+  const fm = '---\ntitle: "Informe"\ntags: [a, b]\n---\n'
+
+  it('separa el front matter (con sus líneas en blanco) del cuerpo', () => {
+    expect(splitFrontMatter(fm + '\n# Hola\n')).toEqual({
+      frontMatter: fm + '\n',
+      body: '# Hola\n',
+    })
+  })
+
+  it('sin front matter, todo es cuerpo', () => {
+    expect(splitFrontMatter('# Hola\n')).toEqual({ frontMatter: '', body: '# Hola\n' })
+  })
+
+  it('un --- que no está en la primera línea no es front matter', () => {
+    const md = 'Texto\n\n---\ntitle: x\n---\n'
+    expect(splitFrontMatter(md)).toEqual({ frontMatter: '', body: md })
+  })
+
+  it('documento que solo tiene front matter', () => {
+    expect(splitFrontMatter(fm)).toEqual({ frontMatter: fm, body: '' })
+  })
+
+  it('front matter vacío', () => {
+    expect(splitFrontMatter('---\n---\nTexto\n')).toEqual({
+      frontMatter: '---\n---\n',
+      body: 'Texto\n',
+    })
+  })
+
+  it.each(corpus)('join(split(x)) reconstruye %s byte a byte', (_name, original) => {
+    const { frontMatter, body } = splitFrontMatter(original)
+    expect(joinFrontMatter(frontMatter, body)).toBe(original)
+  })
+})
+
+describe('remarkCodeMetaIntoLang', () => {
+  const langOf = (md: string) => {
+    const tree = parse(md)
+    remarkCodeMetaIntoLang()(tree)
+    return tree.children[0] as Code
+  }
+
+  it('une lang y meta en lang (para editores que pierden meta)', () => {
+    const node = langOf('```{r setup, include=FALSE}\nx\n```\n')
+    expect(node.lang).toBe('{r setup, include=FALSE}')
+    expect(node.meta).toBeNull()
+  })
+
+  it('también conserva el meta de bloques normales', () => {
+    expect(langOf('```js title="a.js"\nx\n```\n').lang).toBe('js title="a.js"')
+  })
+
+  it('no toca bloques sin meta', () => {
+    const node = langOf('```ts\nx\n```\n')
+    expect(node.lang).toBe('ts')
+  })
+
+  it('el resultado se serializa igual que el original', () => {
+    const md = '```{r a, echo=FALSE}\nplot(x)\n```\n'
+    const tree = parse(md)
+    remarkCodeMetaIntoLang()(tree)
+    expect(stringify(tree)).toBe(md)
+  })
+
+  it('recorre nodos anidados (bloques dentro de listas y citas)', () => {
+    const md = '- ítem\n\n  ```{r x}\n  1\n  ```\n'
+    const tree = parse(md)
+    remarkCodeMetaIntoLang()(tree)
+    expect(stringify(tree)).toBe(md)
+    expect(JSON.stringify(tree)).toContain('"lang":"{r x}"')
   })
 })
