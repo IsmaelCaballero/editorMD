@@ -358,7 +358,7 @@ const PROJECT = {
     <a href="#c-rename">renombrar las ramas</a> a <code>hecha/F0.&lt;n&gt;de4/…</code> en lugar de borrarlas (PR #4).</p>
     <p><strong>Sesión 1 (2026-10-03).</strong> Plan completo, 16 decisiones, esqueleto Tauri 2 + Svelte 5,
     primer componente <a href="#comp-M17">M17 SemVer</a> (29 tests) y documentación con rustdoc y TypeDoc.</p>`,
-  next: `<strong>Siguiente paso:</strong> fusionar el PR #11 (candidata ganadora) en la rama del paso y después el PR del paso 1 hacia <code>main</code>.
+  next: `<strong>Siguiente paso:</strong> revisar y fusionar el PR #13 (paso 1 hacia <code>main</code>).
     Luego, F2 paso 2/8: codificación, BOM y finales de línea (sesión A).`,
 
   phases: [
@@ -788,8 +788,8 @@ const PROJECT = {
       { name: "feature/F1-app-controller", step: "F1 · 4/5", final: "hecha/F1.4de5/feature/F1-app-controller", renamed: true, goal: "C01 AppController (TDD) + adaptadores + diálogos + composition root", status: ["ok", "fusionada (PR #8)"], commits: 4, pr: 8 },
       { name: "chore/F1-close", step: "F1 · 5/5", final: "hecha/F1.5de5/chore/F1-close", renamed: true, goal: "Cierre de F1: versión 0.0.2, CHANGELOG, sincronización de versiones", status: ["ok", "fusionada (PR #9)"], commits: 2, pr: 9 },
       { name: "docs/ai-usage", step: "Post-F1", goal: "Métricas de uso de IA (F0, F1) y diseño de la RQ.1", status: ["ok", "fusionada (PR #10)"], commits: 1, pr: 10 },
-      { name: "feature/F2-text-codec-decode", step: "F2 · 1/8", final: "hecha/F2.1de8/feature/F2-text-codec-decode", goal: "M09 TextCodec: detección y decodificación + experimento RQ.1 T1", status: ["wip", "esperando la fusión del PR #11 y el PR del paso"], commits: 4, pr: "" },
-      { name: "rq1/T1/A (= r1, Sonnet 5.5)", step: "RQ.1 T1", goal: "Candidata ganadora de la revisión ciega", status: ["wip", "PR #11 → rama del paso"], commits: 2, pr: 11 },
+      { name: "feature/F2-text-codec-decode", step: "F2 · 1/8", final: "hecha/F2.1de8/feature/F2-text-codec-decode", goal: "M09 TextCodec: detección y decodificación + experimento RQ.1 T1", status: ["wip", "PR #13 hacia main · pendiente de CI y de tu revisión"], commits: 6, pr: 13 },
+      { name: "rq1/T1/A (= r1, Sonnet 5.5)", step: "RQ.1 T1", goal: "Candidata ganadora de la revisión ciega", status: ["ok", "fusionada en la rama del paso (PR #11)"], commits: 2, pr: 11 },
       { name: "rq1/T1/B (= r2, Opus 5.5)", step: "RQ.1 T1", goal: "Candidata de la revisión ciega (calidad equivalente, más cara)", status: ["ok", "cerrada sin fusionar (PR #12)"], commits: 2, pr: 12 },
       { name: "rq1/T1/r3 … r6", step: "RQ.1 T1", goal: "Repeticiones del experimento (Opus r3, r6; Sonnet r4, r5): se conservan sin PR", status: ["ok", "medidas"], commits: 2, pr: "" },
     ],
