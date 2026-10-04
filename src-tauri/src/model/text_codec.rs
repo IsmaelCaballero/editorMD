@@ -19,9 +19,9 @@ mod encode;
 mod line_ending;
 mod text_file;
 
-pub use encode::{encode, EncodeError};
-pub use line_ending::{normalize_line_endings, LineEnding, LineEndingStats};
-pub use text_file::{read_text, read_text_as, write_text, TextFile};
+pub use encode::{EncodeError, encode};
+pub use line_ending::{LineEnding, LineEndingStats, normalize_line_endings};
+pub use text_file::{TextFile, read_text, read_text_as, write_text};
 
 /// Codificaciones soportadas (D-15).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

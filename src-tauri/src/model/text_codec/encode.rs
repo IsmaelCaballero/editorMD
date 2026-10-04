@@ -61,7 +61,81 @@ impl std::error::Error for EncodeError {}
 /// assert!(encode("año", Encoding::Ascii).is_err());
 /// ```
 pub fn encode(text: &str, encoding: Encoding) -> Result<Vec<u8>, EncodeError> {
-    todo!("{text} {encoding:?}")
+    let mut out = Vec::with_capacity(encoding.bom().len() + text.len() * 2);
+    out.extend_from_slice(encoding.bom());
+    match encoding {
+        Encoding::Utf8 | Encoding::Utf8Bom => out.extend_from_slice(text.as_bytes()),
+        Encoding::Utf16Le => text
+            .encode_utf16()
+            .for_each(|u| out.extend(u.to_le_bytes())),
+        Encoding::Utf16Be => text
+            .encode_utf16()
+            .for_each(|u| out.extend(u.to_be_bytes())),
+        Encoding::Ascii => encode_by_code_point(text, encoding, 0x7F, &mut out)?,
+        // `encoding_rs` trata «ISO-8859-1» como windows-1252, así que se hace a mano.
+        Encoding::Iso8859_1 => encode_by_code_point(text, encoding, 0xFF, &mut out)?,
+        Encoding::Iso8859_15 => {
+            encode_single_byte(text, encoding, encoding_rs::ISO_8859_15, &mut out)?;
+        }
+        Encoding::Windows1252 => {
+            encode_single_byte(text, encoding, encoding_rs::WINDOWS_1252, &mut out)?;
+        }
+        Encoding::MacRoman => {
+            encode_single_byte(text, encoding, encoding_rs::MACINTOSH, &mut out)?;
+        }
+    }
+    Ok(out)
+}
+
+/// ASCII y Latin-1: el byte es el punto de código, si no pasa de `max`.
+fn encode_by_code_point(
+    text: &str,
+    encoding: Encoding,
+    max: u32,
+    out: &mut Vec<u8>,
+) -> Result<(), EncodeError> {
+    for (offset, ch) in text.char_indices() {
+        match u8::try_from(u32::from(ch)) {
+            Ok(b) if u32::from(b) <= max => out.push(b),
+            _ => {
+                return Err(EncodeError::Unmappable {
+                    encoding,
+                    ch,
+                    offset,
+                });
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Codificaciones de un byte de `encoding_rs`, sin sustituciones.
+fn encode_single_byte(
+    text: &str,
+    encoding: Encoding,
+    codec: &'static encoding_rs::Encoding,
+    out: &mut Vec<u8>,
+) -> Result<(), EncodeError> {
+    let mut encoder = codec.new_encoder();
+    let mut read = 0;
+    loop {
+        // Cada carácter ocupa al menos un byte en UTF-8 y exactamente uno aquí.
+        out.reserve(text.len() - read + 1);
+        let (result, consumed) =
+            encoder.encode_from_utf8_to_vec_without_replacement(&text[read..], out, true);
+        read += consumed;
+        match result {
+            encoding_rs::EncoderResult::InputEmpty => return Ok(()),
+            encoding_rs::EncoderResult::OutputFull => {}
+            encoding_rs::EncoderResult::Unmappable(ch) => {
+                return Err(EncodeError::Unmappable {
+                    encoding,
+                    ch,
+                    offset: read - ch.len_utf8(),
+                });
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -95,7 +169,10 @@ mod tests {
 
     #[test]
     fn ascii_rejects_non_ascii_with_offset() {
-        assert_eq!(encode("abc~\t\r\n", Encoding::Ascii).unwrap(), b"abc~\t\r\n");
+        assert_eq!(
+            encode("abc~\t\r\n", Encoding::Ascii).unwrap(),
+            b"abc~\t\r\n"
+        );
         assert_eq!(
             encode("Año", Encoding::Ascii),
             Err(EncodeError::Unmappable {
@@ -124,10 +201,19 @@ mod tests {
     #[test]
     fn single_byte_codecs() {
         assert_eq!(encode("€Š", Encoding::Iso8859_15).unwrap(), [0xA4, 0xA6]);
-        assert_eq!(encode("€—“”", Encoding::Windows1252).unwrap(), [0x80, 0x97, 0x93, 0x94]);
-        assert_eq!(encode("ñé•", Encoding::MacRoman).unwrap(), [0x96, 0x8E, 0xA5]);
+        assert_eq!(
+            encode("€—“”", Encoding::Windows1252).unwrap(),
+            [0x80, 0x97, 0x93, 0x94]
+        );
+        assert_eq!(
+            encode("ñé•", Encoding::MacRoman).unwrap(),
+            [0x96, 0x8E, 0xA5]
+        );
         // Los C1 «no definidos» de Windows-1252 vuelven a su byte (WHATWG).
-        assert_eq!(encode("\u{81}\u{9D}", Encoding::Windows1252).unwrap(), [0x81, 0x9D]);
+        assert_eq!(
+            encode("\u{81}\u{9D}", Encoding::Windows1252).unwrap(),
+            [0x81, 0x9D]
+        );
     }
 
     #[test]
@@ -189,6 +275,9 @@ mod tests {
             offset: 1,
         }
         .to_string();
-        assert!(msg.contains('ñ') && msg.contains("U+00F1") && msg.contains("ascii"), "{msg}");
+        assert!(
+            msg.contains('ñ') && msg.contains("U+00F1") && msg.contains("ascii"),
+            "{msg}"
+        );
     }
 }

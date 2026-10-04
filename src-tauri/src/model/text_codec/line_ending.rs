@@ -30,12 +30,16 @@ impl LineEnding {
 
     /// Identificador estable: `"lf"`, `"crlf"` o `"cr"`.
     pub fn id(self) -> &'static str {
-        todo!()
+        match self {
+            LineEnding::Lf => "lf",
+            LineEnding::Crlf => "crlf",
+            LineEnding::Cr => "cr",
+        }
     }
 
     /// Inverso de [`LineEnding::id`]; `None` si el identificador no existe.
     pub fn from_id(id: &str) -> Option<LineEnding> {
-        todo!("{id}")
+        LineEnding::ALL.into_iter().find(|le| le.id() == id)
     }
 
     /// La secuencia de caracteres: `"\n"`, `"\r\n"` o `"\r"`.
@@ -48,13 +52,21 @@ impl LineEnding {
     /// assert_eq!(LineEnding::Crlf.as_str(), "\r\n");
     /// ```
     pub fn as_str(self) -> &'static str {
-        todo!()
+        match self {
+            LineEnding::Lf => "\n",
+            LineEnding::Crlf => "\r\n",
+            LineEnding::Cr => "\r",
+        }
     }
 
     /// El fin de línea habitual del sistema en el que se compiló: CRLF en
     /// Windows y LF en los demás.
     pub fn native() -> LineEnding {
-        todo!()
+        if cfg!(windows) {
+            LineEnding::Crlf
+        } else {
+            LineEnding::Lf
+        }
     }
 }
 
@@ -83,23 +95,52 @@ impl LineEndingStats {
     /// assert!(s.is_mixed());
     /// ```
     pub fn of(text: &str) -> LineEndingStats {
-        todo!("{text}")
+        let mut stats = LineEndingStats::default();
+        let mut bytes = text.bytes().peekable();
+        while let Some(b) = bytes.next() {
+            match b {
+                b'\r' if bytes.peek() == Some(&b'\n') => {
+                    bytes.next();
+                    stats.crlf += 1;
+                }
+                b'\r' => stats.cr += 1,
+                b'\n' => stats.lf += 1,
+                _ => {}
+            }
+        }
+        stats
     }
 
     /// Número total de saltos de línea.
     pub fn total(&self) -> usize {
-        todo!()
+        self.lf + self.crlf + self.cr
     }
 
     /// `true` si aparece más de un tipo de fin de línea.
     pub fn is_mixed(&self) -> bool {
-        todo!()
+        [self.lf, self.crlf, self.cr]
+            .iter()
+            .filter(|&&n| n > 0)
+            .count()
+            > 1
     }
 
     /// El tipo más frecuente; en caso de empate, el primero de [`LineEnding::ALL`].
     /// `None` si el texto no tiene saltos de línea.
     pub fn dominant(&self) -> Option<LineEnding> {
-        todo!()
+        let counts = [
+            (LineEnding::Lf, self.lf),
+            (LineEnding::Crlf, self.crlf),
+            (LineEnding::Cr, self.cr),
+        ];
+        // `max_by_key` se queda con el último de los empatados: se recorre al revés
+        // para que gane el primero de `LineEnding::ALL`.
+        counts
+            .into_iter()
+            .rev()
+            .filter(|&(_, n)| n > 0)
+            .max_by_key(|&(_, n)| n)
+            .map(|(le, _)| le)
     }
 }
 
@@ -114,7 +155,31 @@ impl LineEndingStats {
 /// assert_eq!(normalize_line_endings("a\r\nb\rc", LineEnding::Lf), "a\nb\nc");
 /// ```
 pub fn normalize_line_endings(text: &str, target: LineEnding) -> Cow<'_, str> {
-    todo!("{text} {target:?}")
+    let stats = LineEndingStats::of(text);
+    let already = match target {
+        LineEnding::Lf => stats.crlf == 0 && stats.cr == 0,
+        LineEnding::Crlf => stats.lf == 0 && stats.cr == 0,
+        LineEnding::Cr => stats.lf == 0 && stats.crlf == 0,
+    };
+    if already {
+        return Cow::Borrowed(text);
+    }
+    let eol = target.as_str();
+    let mut out = String::with_capacity(text.len() + stats.total());
+    let mut chars = text.chars().peekable();
+    while let Some(c) = chars.next() {
+        match c {
+            '\r' => {
+                if chars.peek() == Some(&'\n') {
+                    chars.next();
+                }
+                out.push_str(eol);
+            }
+            '\n' => out.push_str(eol),
+            _ => out.push(c),
+        }
+    }
+    Cow::Owned(out)
 }
 
 #[cfg(test)]
@@ -132,7 +197,10 @@ mod tests {
             assert_eq!(le.as_str(), s);
             assert_eq!(LineEnding::from_id(id), Some(le));
             assert_eq!(serde_json::to_string(&le).unwrap(), format!("\"{id}\""));
-            assert_eq!(serde_json::from_str::<LineEnding>(&format!("\"{id}\"")).unwrap(), le);
+            assert_eq!(
+                serde_json::from_str::<LineEnding>(&format!("\"{id}\"")).unwrap(),
+                le
+            );
         }
         assert_eq!(LineEnding::from_id("CRLF"), None);
         assert_eq!(LineEnding::from_id(""), None);
@@ -140,7 +208,11 @@ mod tests {
 
     #[test]
     fn native_depends_on_os() {
-        let expected = if cfg!(windows) { LineEnding::Crlf } else { LineEnding::Lf };
+        let expected = if cfg!(windows) {
+            LineEnding::Crlf
+        } else {
+            LineEnding::Lf
+        };
         assert_eq!(LineEnding::native(), expected);
     }
 
@@ -150,7 +222,14 @@ mod tests {
         assert_eq!(LineEndingStats::of("sin saltos").total(), 0);
         let s = LineEndingStats::of("a\r\n\r\nb\n\rc\r");
         // \r\n, \r\n, \n, \r, \r  → el «\n\r» son un LF y un CR, no un CRLF
-        assert_eq!(s, LineEndingStats { lf: 1, crlf: 2, cr: 2 });
+        assert_eq!(
+            s,
+            LineEndingStats {
+                lf: 1,
+                crlf: 2,
+                cr: 2
+            }
+        );
         assert_eq!(s.total(), 5);
         assert_eq!(LineEndingStats::of("\r\r\n").cr, 1);
     }
@@ -174,7 +253,10 @@ mod tests {
     fn normalize_to_each_target() {
         let mixed = "a\nb\r\nc\rd";
         assert_eq!(normalize_line_endings(mixed, LineEnding::Lf), "a\nb\nc\nd");
-        assert_eq!(normalize_line_endings(mixed, LineEnding::Crlf), "a\r\nb\r\nc\r\nd");
+        assert_eq!(
+            normalize_line_endings(mixed, LineEnding::Crlf),
+            "a\r\nb\r\nc\r\nd"
+        );
         assert_eq!(normalize_line_endings(mixed, LineEnding::Cr), "a\rb\rc\rd");
         assert_eq!(normalize_line_endings("\r\n\r\n", LineEnding::Lf), "\n\n");
         assert_eq!(normalize_line_endings("\n\r", LineEnding::Crlf), "\r\n\r\n");
@@ -194,6 +276,9 @@ mod tests {
                 "{text:?}"
             );
         }
-        assert!(matches!(normalize_line_endings("a\nb", LineEnding::Crlf), Cow::Owned(_)));
+        assert!(matches!(
+            normalize_line_endings("a\nb", LineEnding::Crlf),
+            Cow::Owned(_)
+        ));
     }
 }

@@ -10,8 +10,8 @@
 use serde::Serialize;
 
 use super::{
-    decode, decode_auto, encode, normalize_line_endings, DecodeError, DetectionMethod,
-    EncodeError, Encoding, LineEnding, LineEndingStats,
+    DecodeError, DetectionMethod, EncodeError, Encoding, LineEnding, LineEndingStats, decode,
+    decode_auto, encode, normalize_line_endings,
 };
 
 /// Un fichero de texto leído, listo para el editor.
@@ -48,7 +48,12 @@ pub struct TextFile {
 /// assert_eq!((f.encoding, f.line_ending), (Encoding::Utf8Bom, LineEnding::Crlf));
 /// ```
 pub fn read_text(bytes: &[u8]) -> Result<TextFile, DecodeError> {
-    todo!("{bytes:?} {}", stringify!(decode_auto))
+    let decoded = decode_auto(bytes)?;
+    Ok(TextFile::new(
+        decoded.text,
+        decoded.encoding,
+        Some(decoded.method),
+    ))
 }
 
 /// Lee un fichero con la codificación indicada («Reabrir con codificación…»).
@@ -57,7 +62,7 @@ pub fn read_text(bytes: &[u8]) -> Result<TextFile, DecodeError> {
 ///
 /// Los de [`decode`].
 pub fn read_text_as(bytes: &[u8], encoding: Encoding) -> Result<TextFile, DecodeError> {
-    todo!("{bytes:?} {encoding:?} {}", stringify!(decode))
+    Ok(TextFile::new(decode(bytes, encoding)?, encoding, None))
 }
 
 /// Prepara los bytes de un fichero: normaliza los finales de línea de `text` a
@@ -84,12 +89,25 @@ pub fn write_text(
     encoding: Encoding,
     line_ending: LineEnding,
 ) -> Result<Vec<u8>, EncodeError> {
-    todo!(
-        "{text} {encoding:?} {line_ending:?} {} {} {}",
-        stringify!(encode),
-        stringify!(normalize_line_endings),
-        stringify!(LineEndingStats)
-    )
+    encode(&normalize_line_endings(text, line_ending), encoding)
+}
+
+impl TextFile {
+    /// Analiza los finales de línea del texto decodificado y lo normaliza a `\n`.
+    fn new(raw: String, encoding: Encoding, detection: Option<DetectionMethod>) -> TextFile {
+        let stats = LineEndingStats::of(&raw);
+        let text = match normalize_line_endings(&raw, LineEnding::Lf) {
+            std::borrow::Cow::Borrowed(_) => raw,
+            std::borrow::Cow::Owned(normalized) => normalized,
+        };
+        TextFile {
+            text,
+            encoding,
+            line_ending: stats.dominant().unwrap_or(LineEnding::Lf),
+            mixed_line_endings: stats.is_mixed(),
+            detection,
+        }
+    }
 }
 
 #[cfg(test)]
@@ -150,7 +168,11 @@ mod tests {
     fn roundtrip_byte_for_byte_with_declared_encoding() {
         for (e, le, bytes) in each_fixture() {
             let f = read_text_as(&bytes, e).unwrap();
-            assert_eq!(write_text(&f.text, f.encoding, f.line_ending).unwrap(), bytes, "{e:?} {le:?}");
+            assert_eq!(
+                write_text(&f.text, f.encoding, f.line_ending).unwrap(),
+                bytes,
+                "{e:?} {le:?}"
+            );
         }
     }
 
@@ -216,10 +238,16 @@ mod tests {
         let text = "uno\ndos\n";
         assert_eq!(
             write_text(text, Encoding::Utf16Be, LineEnding::Cr).unwrap(),
-            [0xFE, 0xFF, 0, b'u', 0, b'n', 0, b'o', 0, b'\r', 0, b'd', 0, b'o', 0, b's', 0, b'\r']
+            [
+                0xFE, 0xFF, 0, b'u', 0, b'n', 0, b'o', 0, b'\r', 0, b'd', 0, b'o', 0, b's', 0,
+                b'\r'
+            ]
         );
         // Un texto con \r\n o \r sueltos (p. ej. pegado) también se normaliza.
-        assert_eq!(write_text("a\r\nb\rc", Encoding::Utf8, LineEnding::Lf).unwrap(), b"a\nb\nc");
+        assert_eq!(
+            write_text("a\r\nb\rc", Encoding::Utf8, LineEnding::Lf).unwrap(),
+            b"a\nb\nc"
+        );
     }
 
     #[test]
