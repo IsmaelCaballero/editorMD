@@ -1,40 +1,38 @@
 # STATUS.md — Estado del proyecto editorMD
 
 > Fotografía del estado actual. Se actualiza **al final de cada sesión de trabajo**.
-> Última actualización: 2026-10-03
+> Última actualización: 2026-10-04
 
-## ⏸ Punto de reanudación (2026-10-03, fin de la sesión #1)
+## ⏸ Punto de reanudación (2026-10-04, sesión #2)
 
-**Dónde estamos:** F0 casi terminada. Rama activa `feature/F0-scaffold` (árbol limpio). PR → `main` **en espera**: el usuario lo aprobará cuando se suba a GitHub y la CI esté en verde.
+**Dónde estamos:** F0 cerrada salvo **F0.7 (linters)**. PR #1 fusionado por el usuario en GitHub (merge `1b4d036`). Rama `chore/release-0.0.1` con CHANGELOG `[0.0.1]` y la actualización de la documentación → PR #2. **Tras fusionarlo: etiquetar `v0.0.1`** sobre el merge.
 
-**Comprobado al cerrar:** Rust 1.99 + cargo, VS Build Tools 2026 (MSVC) y `gh` 2.102 instalados. `cargo test`: 3 tests unitarios + 1 doctest ✅. `npm test`: 29 ✅. `npm run build` ✅. `npm run docs:rust`: sin avisos de `missing_docs` ✅.
+**Repositorio:** https://github.com/IsmaelCaballero/editorMD · CI: Actions (Windows, Ubuntu 22.04, macOS, Fedora).
 
-**Al retomar (en orden):**
-1. El usuario ejecuta `! gh auth login` (aún **no** se ha autenticado).
-2. `npm run tauri dev`: abrir por primera vez la ventana nativa y comprobar que se ve.
-3. Crear el repositorio **público** (`gh repo create editorMD --public --source . --remote origin`), hacer `git push -u origin main feature/F0-scaffold` y abrir el PR (`gh pr create`).
-4. Esperar a que la CI esté en verde en los 4 SO y **preguntar al usuario** antes de fusionar. Después, etiquetar y pasar a F1.
-5. Actualizar `docs/index.html` y este fichero.
+**Siguientes pasos:**
+1. PR #2 (`chore/release-0.0.1`) → aprobación del usuario → `git tag -a v0.0.1` + `git push origin v0.0.1` (+ GitHub Release).
+2. Rama `feature/F0-linters`: rustfmt, clippy (`-D warnings`), ESLint + Prettier, integrados en la CI.
+3. Rama `feature/F1-mvc-skeleton`: interfaces, M01 DocumentState, M07 MarkdownCodec + corpus de fidelidad, Milkdown, C01 AppController.
 
 ## Resumen
 
 | Campo | Valor |
 |---|---|
 | Fase actual | **F0 — Decisiones y entorno** |
-| Versión de la app | 0.0.1 (esqueleto F0, rama `feature/F0-scaffold`) |
+| Versión de la app | 0.0.1 (en `main`; etiqueta `v0.0.1` pendiente del PR #2) |
 | Stack | Rust + Tauri 2 · WYSIWYG |
-| Salud | 🟢 Toolchain completa; backend compilado y probado. Falta subir a GitHub |
+| Salud | 🟢 CI en verde en los 4 SO; app arranca en Windows 11 |
 | Tests | TS: 29/29 ✅ · Rust: 3/3 + 1 doctest ✅ |
 | Cobertura | TS Modelo: 97,95 % líneas |
-| CI | — (no configurado; F0.6) |
-| Git | `main` (1 commit) · `feature/F0-scaffold` (abierta, PR pendiente de aprobación) |
+| CI | ✅ GitHub Actions: Windows, Ubuntu 22.04, macOS y Fedora |
+| Git | https://github.com/IsmaelCaballero/editorMD · `main` con PR #1 fusionado · `chore/release-0.0.1` (PR #2) |
 | Web del proyecto | `docs/index.html` |
 
 ## Progreso por fase
 
 | Fase | Estado | Avance |
 |---|---|---|
-| F0 Decisiones y entorno | 🔄 En curso | 4/9 (4 en curso) |
+| F0 Decisiones y entorno | 🔄 Casi cerrada | 8/9 (falta F0.7) |
 | F1 Esqueleto MVC | ⏳ Pendiente | 0/5 |
 | F2 Ficheros y codificaciones | ⏳ Pendiente | 0/8 |
 | F3 Edición | ⏳ Pendiente | 0/3 |
@@ -56,13 +54,12 @@ Implementados: **M00 AppInfo 0.1.0**, **M17 SemVer 0.1.0**, **V01 MainWindow 0.1
 | M00 AppInfo (Rust) | 3 + 1 doctest | 4 | — |
 
 ## Bloqueos / pendiente del usuario
-- Autenticarse en GitHub (`gh auth login`) para crear el repositorio **público**.
-- PR de `feature/F0-scaffold` → `main`: **el usuario decidió esperar a que Rust compile y pasen los tests**.
+- Aprobar el PR #2 (`chore/release-0.0.1`).
 
 ## Próximos pasos
-1. `gh auth login` → crear el repositorio y abrir el PR de F0; `npm run tauri dev`.
-2. F0.6 CI en GitHub Actions (cuando exista el remoto) y F0.7 linters.
-3. PR de `feature/F0-scaffold` y, después, F1 (esqueleto MVC con Milkdown).
+1. PR #2 y etiqueta `v0.0.1`.
+2. F0.7 linters.
+3. F1 (esqueleto MVC con Milkdown).
 
 ## Registro de sesiones
 | Fecha | Sesión | Hecho |
@@ -70,6 +67,7 @@ Implementados: **M00 AppInfo 0.1.0**, **M17 SemVer 0.1.0**, **V01 MainWindow 0.1
 | 2026-10-03 | #1 | Plan inicial; creados PLAN.md, STATUS.md y CONTEXT.md; propuesta de stacks y arquitectura MVC |
 | 2026-10-03 | #1 | Decididos D-01 (Tauri), D-02 (WYSIWYG), D-03 (formatos), D-15 (codificaciones y fin de línea). Añadido el soporte .Rmd. Plan reescrito para Tauri |
 | 2026-10-03 | #1 | Decididos D-05 (extras + barra de accesos directos), D-07 (MIT), D-11 (Typst), D-12 (modo fuente). Nuevos componentes M14–M16, V09–V11 |
+| 2026-10-04 | #2 | `tauri dev` ✅ (la app arranca). Repositorio público creado; PR #1 con CI verde en los 4 SO; fusionado por el usuario. Rama `chore/release-0.0.1`: CHANGELOG 0.0.1 y actualización de la documentación y de la web. |
 | 2026-10-03 | #1 | Toolchain instalada (Rust 1.99, MSVC, gh 2.102). cargo test ✅, rustdoc ✅. Fin de la sesión. |
 | 2026-10-03 | #1 | CI GitHub Actions (4 SO) preparada. Decidido: GitHub público y PR F0 tras compilar Rust. Sesión cerrada por el usuario (problemas instalando `gh`). |
 | 2026-10-03 | #1 | Convenciones (SemVer 2.0.0, rustdoc/TSDoc, rama por feature + PR, web). Git init + commit en main. Rama `feature/F0-scaffold`: Vite+Svelte+TS, Tauri 2, M00 AppInfo, M17 SemVer (29 tests), TypeDoc, .gitattributes, web `docs/index.html` |

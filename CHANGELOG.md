@@ -7,6 +7,10 @@ y el proyecto usa [Semantic Versioning 2.0.0](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+## [0.0.1] - 2026-10-04
+
+Esqueleto de la fase F0 ([PR #1](https://github.com/IsmaelCaballero/editorMD/pull/1)).
+
 ### Added
 - Planificación inicial: PLAN.md, STATUS.md, CONTEXT.md, licencia MIT.
 - Esqueleto de la aplicación: Tauri 2 (Rust) + Vite + Svelte 5 + TypeScript.
@@ -15,3 +19,11 @@ y el proyecto usa [Semantic Versioning 2.0.0](https://semver.org/lang/es/).
 - Documentación de la API con TypeDoc (`npm run docs:ts`) y rustdoc (`npm run docs:rust`).
 - Web del proyecto `docs/index.html` (plan, diario de pasos, ramas, componentes).
 - `.gitattributes` con normalización LF y fixtures binarios.
+- CI con GitHub Actions: Windows, Ubuntu 22.04, macOS y Fedora.
+- `Cargo.lock` versionado.
+
+### Changed
+- `Cargo.toml`: `features = []` explícito en `tauri` y `tauri-build` (lo sincroniza `tauri dev`).
+
+[Unreleased]: https://github.com/IsmaelCaballero/editorMD/compare/v0.0.1...HEAD
+[0.0.1]: https://github.com/IsmaelCaballero/editorMD/releases/tag/v0.0.1

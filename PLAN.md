@@ -268,8 +268,8 @@ Asociación de `.md`, `.markdown`, `.Rmd` (y opcionalmente `.txt`), iconos y ent
 - [x] F0.2 Cerrar las decisiones pendientes (§8)
 - [x] F0.3 Instalar la toolchain: Rust, Node LTS, Tauri CLI, WebView2 (ya viene en Win11), Pandoc (opcional)
 - [x] F0.4 Repositorio git, `.gitignore`, licencia, README
-- [~] F0.5 Proyecto Tauri + Vite + Svelte; estructura `src/` (frontend: `model/`, `view/`, `controller/`), `src-tauri/src/` (`model/`, `commands/`), `tests/`, `fixtures/`
-- [~] F0.6 Tests + cobertura (✔) + CI multiplataforma (`.github/workflows/ci.yml` escrito; se activa al subir a GitHub)
+- [x] F0.5 Proyecto Tauri + Vite + Svelte; estructura `src/` (frontend: `model/`, `view/`, `controller/`), `src-tauri/src/` (`model/`, `commands/`), `tests/`, `fixtures/`
+- [x] F0.6 Tests + cobertura + CI multiplataforma (verde en los 4 SO, PR #1)
 - [ ] F0.7 Linters/formateadores: rustfmt, clippy, ESLint, Prettier
 - [x] F0.8 Documentación del código: rustdoc (`cargo doc`) + TSDoc/TypeDoc, publicada en `docs/api/`
 - [x] F0.9 Página web del proyecto `docs/index.html` (plan, progreso, diario de aprendizaje, ramas y PR)

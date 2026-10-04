@@ -189,7 +189,7 @@
       <div class="mermaid-box"><pre class="mermaid" id="gitgraph"></pre></div>
       <h3>Estado de las ramas</h3>
       <div class="table-wrap"><table>
-        <thead><tr><th>Rama</th><th>Objetivo</th><th>Estado</th><th>Commits</th></tr></thead>
+        <thead><tr><th>Rama</th><th>Objetivo</th><th>Estado</th><th>Commits</th><th>PR</th></tr></thead>
         <tbody id="branches"></tbody>
       </table></div>
     </section>
@@ -246,6 +246,8 @@ flowchart LR
       <div class="links">
         <a class="card" href="api/ts/index.html"><strong>API TypeScript</strong><span>Generada con TypeDoc a partir de TSDoc · <code>npm run docs:ts</code></span></a>
         <a class="card" href="api/rust/index.html"><strong>API Rust</strong><span>Generada con rustdoc · <code>npm run docs:rust</code> (requiere Rust)</span></a>
+        <a class="card" href="https://github.com/IsmaelCaballero/editorMD"><strong>Repositorio GitHub</strong><span>Código, PR, CI (Actions) y releases</span></a>
+        <a class="card" href="https://github.com/IsmaelCaballero/editorMD/actions"><strong>CI · GitHub Actions</strong><span>Resultados de los tests en los 4 SO</span></a>
         <a class="card" href="../PLAN.md"><strong>PLAN.md</strong><span>Plan completo, arquitectura y convenciones</span></a>
         <a class="card" href="../STATUS.md"><strong>STATUS.md</strong><span>Estado actual y registro de sesiones</span></a>
         <a class="card" href="../CONTEXT.md"><strong>CONTEXT.md</strong><span>Contexto y requisitos; léelo primero</span></a>
@@ -264,23 +266,22 @@ flowchart LR
  * Estados: "ok" (hecho) · "wip" (en curso) · "todo" (pendiente) · "bad" (bloqueado)
  * ===================================================================== */
 const PROJECT = {
-  updated: "2026-10-03",
+  updated: "2026-10-04",
+  repo: "https://github.com/IsmaelCaballero/editorMD",
   appVersion: "0.0.1",
   currentPhase: "F0",
   tests: { passed: 33, total: 33, coverage: "98 %" },
+  ci: "4/4 SO en verde",
   summary: `
-    <p><strong>Sesión 1 (2026-10-03).</strong> Se definió el proyecto completo y se tomaron las 16 decisiones del plan
-    (stack, WYSIWYG, formatos, codificaciones, licencia MIT, convenciones). Se creó el repositorio git
-    y, en la rama <code>feature/F0-scaffold</code>, el esqueleto de la app:</p>
-    <ul>
-      <li>frontend Vite + Svelte 5 + TypeScript con la ventana inicial;</li>
-      <li>backend Tauri 2 en Rust, documentado con rustdoc;</li>
-      <li>el primer componente del Modelo, <a href="#comp-M17">M17 SemVer</a>, con 29 tests unitarios y un 98 % de cobertura;</li>
-      <li>generación de documentación con TypeDoc;</li>
-      <li>configuración de finales de línea para un repositorio multiplataforma.</li>
-    </ul>`,
-  next: `<strong>Siguiente paso:</strong> <code>gh auth login</code>, crear el repositorio público en GitHub y abrir el
-    <a href="#git">pull request</a> de <code>feature/F0-scaffold</code>.`,
+    <p><strong>Sesión 2 (2026-10-04).</strong> La app <b>arranca</b> en Windows 11 (<code>npm run tauri dev</code>).
+    Se creó el <a href="https://github.com/IsmaelCaballero/editorMD">repositorio público en GitHub</a> y se abrió el
+    <a href="https://github.com/IsmaelCaballero/editorMD/pull/1">PR #1</a>. La <a href="#c-ci">CI</a> pasó a la primera en
+    <b>Windows, Ubuntu, macOS y Fedora</b>, y lo fusionaste desde GitHub. Se revisó la fusión y se preparó la versión
+    <a href="#c-semver">0.0.1</a> en la rama <code>chore/release-0.0.1</code>.</p>
+    <p><strong>Sesión 1 (2026-10-03).</strong> Plan completo, 16 decisiones, esqueleto Tauri 2 + Svelte 5,
+    primer componente <a href="#comp-M17">M17 SemVer</a> (29 tests) y documentación con rustdoc y TypeDoc.</p>`,
+  next: `<strong>Siguiente paso:</strong> aprobar el <a href="https://github.com/IsmaelCaballero/editorMD/pulls">PR #2</a>
+    (versión 0.0.1) y crear la etiqueta <code>v0.0.1</code>. Después: <b>F0.7 linters</b> y empezar <a href="#phase-F1">F1 · Esqueleto MVC</a>.`,
 
   phases: [
     { id: "F0", name: "Decisiones y entorno", target: "0.0.x", tasks: [
@@ -288,8 +289,8 @@ const PROJECT = {
       ["ok", "F0.2 Cerrar las decisiones (D-01 … D-16)"],
       ["ok", "F0.3 Toolchain: Node 24, Rust 1.99, MSVC Build Tools, gh 2.102"],
       ["ok", "F0.4 Repositorio git, .gitignore, .gitattributes, licencia MIT, README, CHANGELOG"],
-      ["wip", "F0.5 Proyecto Tauri + Vite + Svelte: compila; falta abrir la ventana con tauri dev"],
-      ["wip", "F0.6 Vitest y cobertura ✔ · workflow de CI escrito; se activará al subir a GitHub"],
+      ["ok", "F0.5 Proyecto Tauri + Vite + Svelte: compila y arranca (tauri dev)"],
+      ["ok", "F0.6 Vitest + cobertura + CI en GitHub Actions: verde en los 4 SO"],
       ["todo", "F0.7 Linters/formateadores (rustfmt, clippy, ESLint, Prettier)"],
       ["ok", "F0.8 Documentación: TypeDoc ✔ · rustdoc ✔ (sin avisos de missing_docs)"],
       ["ok", "F0.9 Página web del proyecto (esta página)"],
@@ -415,12 +416,40 @@ const PROJECT = {
       cmds: "cargo test --manifest-path src-tauri/Cargo.toml\nnpm run docs:rust",
       why: "La primera compilación descarga y compila todas las dependencias de Tauri (varios minutos); las siguientes son incrementales.",
       concepts: ["doctest", "rustdoc"] },
-    { date: "2026-10-03", title: "Próxima sesión: GitHub y PR de F0", branch: "feature/F0-scaffold", pending: true,
-      did: ["<code>gh auth login</code> (lo haces tú).",
-            "<code>npm run tauri dev</code>: abrir la ventana nativa por primera vez.",
-            "Crear el repositorio público, subir las ramas y abrir el PR; fusionar con tu aprobación cuando la CI esté en verde."],
-      why: "Con el PR en GitHub, la CI comprueba el proyecto en los 4 sistemas antes de fusionarlo en main.",
-      concepts: ["pr", "ci"] },
+    { date: "2026-10-04", title: "Primera ejecución de la app nativa", branch: "feature/F0-scaffold",
+      did: ["<code>npm run tauri dev</code> arranca Vite (puerto 5173), compila el binario Rust y abre <code>editormd.exe</code> con el WebView2 de Windows.",
+            "Gracias a la caché de la compilación anterior, solo tardó unos 3 s.",
+            "Efecto secundario: <code>tauri dev</code> reescribe <code>Cargo.toml</code> añadiendo <code>features = []</code>; se versiona para que el árbol de trabajo no aparezca modificado."],
+      cmds: "npm run tauri dev",
+      why: "Es la primera prueba de punta a punta: frontend + backend + WebView del SO funcionando juntos.",
+      concepts: ["tauri", "vite"] },
+    { date: "2026-10-04", title: "Repositorio público en GitHub y PR #1", branch: "feature/F0-scaffold",
+      did: ["<code>gh repo create</code> crea <a href='https://github.com/IsmaelCaballero/editorMD'>IsmaelCaballero/editorMD</a> (público) y configura el remoto <code>origin</code>.",
+            "<code>git push -u</code> de <code>main</code> y <code>feature/F0-scaffold</code>.",
+            "<a href='https://github.com/IsmaelCaballero/editorMD/pull/1'>PR #1</a> con descripción, versiones y checklist de pruebas."],
+      cmds: "gh repo create editorMD --public --source . --remote origin\ngit push -u origin main feature/F0-scaffold\ngh pr create --base main --head feature/F0-scaffold",
+      why: "Con un remoto, el PR es una revisión real y la CI comprueba el código en máquinas limpias de cada SO.",
+      concepts: ["pr", "branch"] },
+    { date: "2026-10-04", title: "CI en verde en los 4 sistemas operativos", branch: "feature/F0-scaffold",
+      did: ["Fedora 2 min 33 s · Ubuntu 22.04 2 min 42 s · macOS 3 min 7 s · Windows 5 min 36 s: <b>todos superados a la primera</b>.",
+            "Cada SO ejecutó la comprobación de tipos, los tests TS con cobertura, el build, <code>cargo test</code> (con los doctests) y la generación de documentación."],
+      cmds: "gh pr checks 1",
+      why: "Desarrollamos en Windows; la CI demuestra que el mismo código compila y pasa los tests también en Linux y macOS.",
+      concepts: ["ci"] },
+    { date: "2026-10-04", title: "Fusión del PR #1 y revisión", branch: "main", commit: "1b4d036",
+      did: ["Lo fusionaste desde GitHub con un <b>merge commit</b>, así que la rama sigue visible en el historial.",
+            "Comprobaciones: el PR consta como <code>MERGED</code>, el contenido de <code>main</code> es idéntico al de la rama probada y no hubo conflictos.",
+            "<code>git pull --ff-only</code> trae el merge sin crear commits locales."],
+      cmds: "gh pr view 1 --json state,mergeCommit\ngit switch main && git pull --ff-only\ngit diff --quiet origin/feature/F0-scaffold main",
+      why: "Revisar después de fusionar asegura que <code>main</code> contiene exactamente lo que pasó la CI.",
+      concepts: ["pr", "branch"] },
+    { date: "2026-10-04", title: "Preparación de la versión 0.0.1", branch: "chore/release-0.0.1",
+      did: ["CHANGELOG: <code>[Unreleased]</code> pasa a <code>[0.0.1] - 2026-10-04</code>, con enlaces de comparación.",
+            "STATUS, PLAN, CONTEXT y esta web actualizados (F0.5 y F0.6 cerradas).",
+            "Tras fusionar este PR se crea la <b>etiqueta anotada</b> <code>v0.0.1</code> y su <i>GitHub Release</i>."],
+      cmds: "git switch -c chore/release-0.0.1\ngit tag -a v0.0.1 -m \"editorMD 0.0.1\"   # después del merge\ngit push origin v0.0.1",
+      why: "Una etiqueta SemVer marca exactamente qué commit corresponde a cada versión publicada.",
+      concepts: ["semver", "keep-a-changelog", "tag"] },
   ],
 
   git: {
@@ -431,10 +460,16 @@ const PROJECT = {
       { t: "commit", branch: "feature/F0-scaffold", id: "0075509", msg: "docs(web): hash en la bitácora" },
       { t: "commit", branch: "feature/F0-scaffold", id: "3430064", msg: "ci: GitHub Actions en 4 SO" },
       { t: "commit", branch: "feature/F0-scaffold", id: "939859b", msg: "docs(web): bitácora CI" },
+      { t: "commit", branch: "feature/F0-scaffold", id: "f9d9b59", msg: "docs: punto de reanudación" },
+      { t: "commit", branch: "feature/F0-scaffold", id: "155ce1b", msg: "build: Cargo.lock" },
+      { t: "merge", into: "main", from: "feature/F0-scaffold", id: "1b4d036 Merge PR #1" },
+      { t: "branch", name: "chore/release-0.0.1" },
+      { t: "commit", branch: "chore/release-0.0.1", id: "PR #2", msg: "chore(release): 0.0.1" },
     ],
     branches: [
-      { name: "main", goal: "Rama estable", status: ["ok", "estable"], commits: 1 },
-      { name: "feature/F0-scaffold", goal: "F0: esqueleto, tests, documentación y web", status: ["wip", "en curso · PR en espera de que compile Rust"], commits: 4 },
+      { name: "main", goal: "Rama estable", status: ["ok", "estable · CI verde"], commits: 2, pr: "" },
+      { name: "feature/F0-scaffold", goal: "F0: esqueleto, tests, documentación, CI y web", status: ["ok", "fusionada (PR #1)"], commits: 6, pr: 1 },
+      { name: "chore/release-0.0.1", goal: "CHANGELOG 0.0.1 y actualización de la documentación", status: ["wip", "PR #2 pendiente de tu aprobación"], commits: 1, pr: 2 },
     ],
   },
 
@@ -479,7 +514,7 @@ const PROJECT = {
   decisions: [
     ["D-01","Stack","Rust + Tauri 2"], ["D-02","Modo de edición","WYSIWYG"],
     ["D-03","Importar/exportar","HTML, PDF, TXT + DOCX/ODT (Pandoc)"], ["D-04","Dialecto","CommonMark + GFM + front matter + Rmd"],
-    ["D-05","Extras v1.0","Tema, es/en, autoguardado, pestañas, accesos directos"], ["D-06","Repositorio/CI","GitHub (público) + Actions"],
+    ["D-05","Extras v1.0","Tema, es/en, autoguardado, pestañas, accesos directos"], ["D-06","Repositorio/CI","GitHub público (IsmaelCaballero/editorMD) + Actions"],
     ["D-07","Licencia","MIT"], ["D-08","Firma de código","No hasta la 1.0"], ["D-09","Idioma de la UI","es + en"],
     ["D-10","SO mínimos","Win10+, Ubuntu 22.04+, Fedora 39+, macOS 11+"], ["D-11","PDF","Typst embebido"],
     ["D-12","Modo fuente","Sí, en la v1.0"], ["D-13","Frontend","Svelte 5 + Vite"], ["D-14","Editor WYSIWYG","Milkdown"],
@@ -503,6 +538,7 @@ const PROJECT = {
     "vite": ["Vite", "Servidor de desarrollo con recarga instantánea y empaquetador para producción. Tauri carga la interfaz desde Vite en desarrollo y desde <code>dist/</code> en el instalador."],
     "svelte": ["Svelte 5", "Framework de interfaz que <i>compila</i> los componentes a JavaScript directo, sin DOM virtual. El resultado son bundles pequeños y rápidos."],
     "ci": ["Integración continua (CI)", "Un servicio (aquí, GitHub Actions) compila y ejecuta los tests automáticamente en cada push o PR, en máquinas limpias de cada SO. Un PR con la CI en rojo no se fusiona."],
+    "tag": ["Etiqueta git (tag)", "Nombre fijo que apunta a un commit concreto, p. ej. <code>v0.0.1</code>. Las <i>anotadas</i> (<code>git tag -a</code>) guardan autor, fecha y mensaje. GitHub las usa para crear <i>Releases</i> descargables."],
     "tdd": ["TDD", "Desarrollo guiado por pruebas: se escribe un test que falla, luego el código mínimo que lo hace pasar y después se refactoriza. Encaja con el Modelo, que está formado por funciones puras."],
     "coverage": ["Cobertura", "Porcentaje de líneas o ramas que ejecutan los tests. Es un indicador, no una garantía: el 100 % no implica ausencia de errores. Objetivo del proyecto: ≥ 85 % en Modelo y Controlador."],
     "encoding": ["Codificación de caracteres", "Cómo se convierten los caracteres en bytes. UTF-8 representa cualquier carácter; ASCII solo 128; Windows-1252 e ISO-8859-1 representan el alfabeto occidental con 1 byte. El BOM es una marca inicial opcional que identifica UTF-8 o UTF-16."],
@@ -535,8 +571,10 @@ const bar = (ok, wip, n) => `<div class="bar" role="img" aria-label="${ok} de ${
     ["Fase actual", PROJECT.currentPhase, PROJECT.phases.find((p) => p.id === PROJECT.currentPhase).name],
     ["Tareas", `${ok}/${all.length}`, `${Math.round((ok / all.length) * 100)} % del plan`],
     ["Tests", `${PROJECT.tests.passed}/${PROJECT.tests.total}`, "cobertura " + PROJECT.tests.coverage],
+    ["CI", "✔", PROJECT.ci],
     ["Componentes", `${impl}/${PROJECT.components.length}`, "implementados"],
     ["Ramas abiertas", open, "pendientes de PR"],
+    ["Repositorio", `<a href="${PROJECT.repo}">GitHub</a>`, "público"],
   ];
   $("kpis").innerHTML = k.map(([l, v, s]) => `<div class="kpi"><div class="label">${l}</div><div class="value">${v}</div><div class="sub">${esc(s)}</div></div>`).join("");
   $("summary").innerHTML = PROJECT.summary;
@@ -572,11 +610,11 @@ $("journal").innerHTML = PROJECT.journal.map((j, i) => ({ ...j, n: i + 1 })).rev
 
 // Git
 $("branches").innerHTML = PROJECT.git.branches.map((b) =>
-  `<tr><td><code>${esc(b.name)}</code></td><td>${esc(b.goal)}</td><td><span class="pill ${b.status[0]}">${esc(b.status[1])}</span></td><td>${b.commits}</td></tr>`).join("");
+  `<tr><td><code>${esc(b.name)}</code></td><td>${esc(b.goal)}</td><td><span class="pill ${b.status[0]}">${esc(b.status[1])}</span></td><td>${b.commits}</td><td>${b.pr ? `<a href="${PROJECT.repo}/pull/${b.pr}">#${b.pr}</a>` : "—"}</td></tr>`).join("");
 $("gitgraph").textContent = "gitGraph\n" + PROJECT.git.events.map((e) => {
   if (e.t === "commit") return `  checkout ${e.branch}\n  commit id: "${e.id} ${e.msg.replace(/"/g, "'")}"`;
   if (e.t === "branch") return `  branch ${e.name}`;
-  if (e.t === "merge") return `  checkout ${e.into}\n  merge ${e.from} tag: "${e.tag || ""}"`;
+  if (e.t === "merge") return `  checkout ${e.into}\n  merge ${e.from} id: "${e.id}"` + (e.tag ? ` tag: "${e.tag}"` : "");
   return "";
 }).join("\n");
 
