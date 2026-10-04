@@ -5,3 +5,4 @@
 //! registro de `PLAN.md` §4.3 y lleva su propia versión SemVer.
 
 pub mod app_info;
+pub mod text_codec;
