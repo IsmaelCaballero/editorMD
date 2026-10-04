@@ -236,3 +236,61 @@ export function formatShortcut(shortcut: string, platform: Platform): string {
 export function detectPlatform(userAgent: string): Platform {
   return /Mac|iPhone|iPad/.test(userAgent) ? 'mac' : 'other'
 }
+
+/** Teclas de un evento de teclado relevantes para los atajos. */
+export type KeyInput = Pick<
+  KeyboardEvent,
+  'key' | 'code' | 'ctrlKey' | 'metaKey' | 'shiftKey' | 'altKey'
+>
+
+/**
+ * Indica si un evento de teclado corresponde a un atajo.
+ *
+ * @remarks
+ * `Mod` es Ctrl en Windows/Linux y ⌘ en macOS. La tecla se compara por
+ * `key` y también por `code` (`KeyN`, `Digit8`), porque con Mayúsculas o con
+ * otras distribuciones de teclado `key` cambia (`Shift+8` → `*` o `(`).
+ *
+ * @param event - Evento de teclado.
+ * @param shortcut - Atajo neutro, p. ej. `"Mod+Shift+S"`.
+ * @param platform - Plataforma.
+ */
+export function matchShortcut(event: KeyInput, shortcut: string, platform: Platform): boolean {
+  const parts = shortcut.split('+')
+  const key = (parts.pop() as string).toUpperCase()
+  const mod = platform === 'mac' ? event.metaKey : event.ctrlKey
+  const extraCtrl = platform === 'mac' ? event.ctrlKey : false
+  if (mod !== parts.includes('Mod')) return false
+  if (event.shiftKey !== parts.includes('Shift')) return false
+  if (event.altKey !== parts.includes('Alt')) return false
+  if (extraCtrl !== parts.includes('Ctrl')) return false
+  if (platform !== 'mac' && event.metaKey) return false
+  return (
+    event.key.toUpperCase() === key || event.code === `Key${key}` || event.code === `Digit${key}`
+  )
+}
+
+/**
+ * Busca la orden disponible cuyo atajo coincide con un evento de teclado.
+ *
+ * @param event - Evento de teclado.
+ * @param platform - Plataforma.
+ * @param options - Fase actual y órdenes que no deben interceptarse (p. ej.
+ *   deshacer/rehacer, que el editor ya gestiona con su propio teclado).
+ * @returns La orden, o `null` si no hay ninguna.
+ */
+export function commandForKey(
+  event: KeyInput,
+  platform: Platform,
+  options: { phase?: Phase; exclude?: readonly CommandId[] } = {},
+): CommandId | null {
+  const { phase = CURRENT_PHASE, exclude = [] } = options
+  const hit = allItems().find(
+    (i) =>
+      i.shortcut !== undefined &&
+      !exclude.includes(i.id) &&
+      isAvailable(i, phase) &&
+      matchShortcut(event, i.shortcut, platform),
+  )
+  return hit?.id ?? null
+}
