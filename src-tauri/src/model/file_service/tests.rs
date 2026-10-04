@@ -215,7 +215,7 @@ fn write_atomic_on_a_directory() {
     );
     assert!(sub.is_dir());
     assert_eq!(entries(dir.path()), vec!["carpeta"]);
-    assert!(entries(&sub).is_empty());
+    assert_eq!(entries(&sub), Vec::<String>::new());
 }
 
 #[test]
@@ -238,7 +238,7 @@ fn write_atomic_missing_parent_is_not_found() {
         write_atomic(&path, b"x"),
         Err(FileError::NotFound { path: shown(&path) })
     );
-    assert!(entries(dir.path()).is_empty());
+    assert_eq!(entries(dir.path()), Vec::<String>::new());
 }
 
 #[test]
@@ -275,7 +275,7 @@ fn write_atomic_failed_rename_of_a_new_file_leaves_nothing() {
         result,
         Err(FileError::PermissionDenied { path: shown(&path) })
     );
-    assert!(entries(dir.path()).is_empty());
+    assert_eq!(entries(dir.path()), Vec::<String>::new());
 }
 
 #[test]
@@ -333,7 +333,7 @@ fn write_atomic_in_a_read_only_directory_is_permission_denied() {
             result,
             Err(FileError::PermissionDenied { path: shown(&path) })
         );
-        assert!(entries(&sub).is_empty());
+        assert_eq!(entries(&sub), Vec::<String>::new());
     }
 }
 
@@ -490,7 +490,7 @@ fn save_text_unmappable_without_strategy_does_not_touch_the_disk() {
             report: loss_report(text, Encoding::Ascii)
         })
     );
-    assert!(entries(dir.path()).is_empty());
+    assert_eq!(entries(dir.path()), Vec::<String>::new());
 }
 
 #[test]
