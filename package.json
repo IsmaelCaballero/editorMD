@@ -1,7 +1,7 @@
 {
   "name": "editormd",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Editor Markdown WYSIWYG ligero y multiplataforma (Tauri 2 + Svelte 5)",
   "license": "MIT",
   "author": "Ismael Caballero",

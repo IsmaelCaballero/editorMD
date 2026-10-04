@@ -5,32 +5,31 @@
 
 ## ⏸ Punto de reanudación (2026-10-04, sesión #2)
 
-**Dónde estamos:** **F1 en curso, paso 4/5.** PR #7 (paso 3) fusionado (`efc4b42`). Rama `feature/F1-app-controller` → **PR #8**: C01 `AppController` (TDD con mocks), adaptadores A01/A02, diálogos V12, atajos y composition root. Siguiente: paso 5/5 `chore/F1-close` (versión 0.0.2, etiqueta y renombrado de las ramas de F1).
+**Dónde estamos:** **F1 completada.** PR #8 fusionado (`5034771`). Rama `chore/F1-close` (paso 5/5) → **PR #9**: versión **0.0.2** (package.json, Cargo.toml, tauri.conf.json, CHANGELOG) + prueba de sincronización de versiones + documentación.
 
-**Plan de F1 (aprobado, Milkdown *kit*):**
+**Al fusionar el PR #9 (con el ok del usuario):**
+1. Etiqueta anotada `v0.0.2` sobre el merge + GitHub Release (pre-release) con las notas del CHANGELOG.
+2. Renombrar las 5 ramas de F1 a `hecha/F1.<n>de5/…` (local + GitHub).
+3. En la primera rama de F2: completar en la web el hash de la etiqueta y marcar las ramas de F1 como renombradas.
 
-| Paso | Rama | Contenido | Nombre al cerrar F1 |
-|---|---|---|---|
-| 1/5 | `feature/F1-document-model` | Interfaces MVC (`ports.ts`) + M01 `DocumentState` | `hecha/F1.1de5/feature/F1-document-model` |
-| 2/5 | `feature/F1-markdown-codec` | M07 `MarkdownCodec` (GFM, front matter, Rmd) + corpus de fidelidad | `hecha/F1.2de5/feature/F1-markdown-codec` |
-| 3/5 | `feature/F1-milkdown-editor` | V02 editor Milkdown *kit* + V01 menús declarativos | `hecha/F1.3de5/feature/F1-milkdown-editor` |
-| 4/5 | `feature/F1-app-controller` | C01 `AppController` + composition root (Nuevo, Acerca de, marca `*`) | `hecha/F1.4de5/feature/F1-app-controller` |
-| 5/5 | `chore/F1-close` | Versión 0.0.2, etiqueta, documentación y renombrado | `hecha/F1.5de5/chore/F1-close` |
+**Siguiente fase:** F2 · ficheros y codificaciones (→ 0.1.0). Presentar el plan detallado (pasos/ramas) y esperar el ok.
 
-**Reglas de trabajo** (CONTEXT.md 16-18): el usuario fusiona los PR; las ramas no se borran: se renombran al cerrar la fase; cada etiqueta se enlaza en la web.
+**Reglas de trabajo** (CONTEXT.md 16-18): el usuario fusiona los PR; las ramas se renombran al cerrar la fase; cada etiqueta se enlaza en la web; avisar antes de medir en la app real.
+
+**Entorno:** Norton inspecciona cada `editormd.exe` nuevo al ejecutarlo (ver CONTEXT.md): tenerlo en cuenta al medir el arranque o la memoria.
 
 ## Resumen
 
 | Campo | Valor |
 |---|---|
-| Fase actual | **F1 — Esqueleto MVC** (paso 4/5) |
-| Versión de la app | **0.0.1** · etiqueta [v0.0.1](https://github.com/IsmaelCaballero/editorMD/releases/tag/v0.0.1) |
+| Fase actual | **F1 completada** · cierre en el PR #9 → siguiente: F2 |
+| Versión de la app | **0.0.2** (PR #9) · última etiqueta publicada: [v0.0.1](https://github.com/IsmaelCaballero/editorMD/releases/tag/v0.0.1) |
 | Stack | Rust + Tauri 2 · WYSIWYG |
 | Salud | 🟢 CI en verde en los 4 SO; app arranca en Windows 11 |
-| Tests | TS: 336/336 ✅ · Rust: 3/3 + 1 doctest ✅ |
+| Tests | TS: 341/341 ✅ · Rust: 3/3 + 1 doctest ✅ |
 | Cobertura | Modelo + Controlador + Adaptadores: **100 % de líneas** |
 | CI | ✅ GitHub Actions: Windows, Ubuntu 22.04, macOS y Fedora |
-| Git | https://github.com/IsmaelCaballero/editorMD · F0: PR #1-#4 fusionados y ramas renombradas `hecha/F0.*de4/…` · F1: pasos 1-3 fusionados (PR #5-#7) · `feature/F1-app-controller` (PR #8) |
+| Git | https://github.com/IsmaelCaballero/editorMD · F0: PR #1-#4 fusionados y ramas renombradas `hecha/F0.*de4/…` · F1: pasos 1-4 fusionados (PR #5-#8) · `chore/F1-close` (PR #9) |
 | Web del proyecto | `docs/index.html` |
 
 ## Progreso por fase
@@ -38,7 +37,7 @@
 | Fase | Estado | Avance |
 |---|---|---|
 | F0 Decisiones y entorno | ✅ Cerrada (ramas renombradas) | 9/9 |
-| F1 Esqueleto MVC | 🔄 En curso (paso 4/5) | 5/5 tareas · falta el cierre |
+| F1 Esqueleto MVC | ✅ Completa · cierre en el PR #9 | 5/5 |
 | F2 Ficheros y codificaciones | ⏳ Pendiente | 0/8 |
 | F3 Edición | ⏳ Pendiente | 0/3 |
 | F4 Formato | ⏳ Pendiente | 0/4 |
@@ -66,11 +65,12 @@ Implementados: **M00 AppInfo 0.1.0**, **M01 DocumentState 0.2.0**, **M07 Markdow
 | M00 AppInfo (Rust) | 3 + 1 doctest | 4 | — |
 
 ## Bloqueos / pendiente del usuario
-- Revisar y fusionar el PR #8 (`feature/F1-app-controller`).
+- Revisar y fusionar el PR #9 (`chore/F1-close`); dar el ok a la etiqueta `v0.0.2` y al renombrado de las ramas de F1.
+- Dar el ok al plan de F2 cuando se presente.
 
 ## Próximos pasos
-1. PR #8.
-2. F1 paso 5/5: `chore/F1-close` (0.0.2 + etiqueta + renombrado).
+1. PR #9 → etiqueta v0.0.2 + renombrado de F1.
+2. Plan de F2.
 
 ## Registro de sesiones
 | Fecha | Sesión | Hecho |
@@ -78,6 +78,7 @@ Implementados: **M00 AppInfo 0.1.0**, **M01 DocumentState 0.2.0**, **M07 Markdow
 | 2026-10-03 | #1 | Plan inicial; creados PLAN.md, STATUS.md y CONTEXT.md; propuesta de stacks y arquitectura MVC |
 | 2026-10-03 | #1 | Decididos D-01 (Tauri), D-02 (WYSIWYG), D-03 (formatos), D-15 (codificaciones y fin de línea). Añadido el soporte .Rmd. Plan reescrito para Tauri |
 | 2026-10-03 | #1 | Decididos D-05 (extras + barra de accesos directos), D-07 (MIT), D-11 (Typst), D-12 (modo fuente). Nuevos componentes M14–M16, V09–V11 |
+| 2026-10-04 | #2 | PR #8 fusionado. El `*` «fantasma» era una edición del usuario (resuelto). F1 paso 5: versión 0.0.2, CHANGELOG, prueba de sincronización de versiones → PR #9. **F1 completada.** |
 | 2026-10-04 | #2 | PR #7 fusionado. F1 paso 4: C01 con TDD (mocks), adaptadores Tauri, diálogos propios, atajos y composition root; investigación de un `*` en el título que no se pudo reproducir (jsdom, Edge con y sin ventana, 3 arranques de la app) → PR #8. |
 | 2026-10-04 | #2 | PR #6 fusionado. F1 paso 3: spike Milkdown (2 pérdidas de datos descubiertas) → M07 v0.2.0 con TDD → V01 menús → V02 editor real; RAM 113 MB privados; bundle 508 kB → PR #7. |
 | 2026-10-04 | #2 | PR #5 fusionado. F1 paso 2: M07 MarkdownCodec + corpus de 24 documentos, TDD (101 tests, todos en verde a la primera) → PR #6. |

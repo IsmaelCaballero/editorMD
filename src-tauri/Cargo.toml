@@ -1,6 +1,6 @@
 [package]
 name = "editormd"
-version = "0.0.1"
+version = "0.0.2"
 description = "Editor Markdown WYSIWYG ligero y multiplataforma"
 authors = ["Ismael Caballero"]
 license = "MIT"
