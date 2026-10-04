@@ -4,7 +4,11 @@
 //! argumentos/resultados. La lógica va en el modelo, donde se prueba.
 //! Desde TypeScript se invocan con `invoke("nombre_comando", { ...args })`.
 
+use std::path::Path;
+
 use crate::model::app_info::AppInfo;
+use crate::model::file_service::{self, FileError, OpenedFile, SavedFile};
+use crate::model::text_codec::{Encoding, LineEnding, LossStrategy};
 
 /// Devuelve el nombre y la versión de la aplicación al frontend.
 ///
@@ -17,4 +21,59 @@ use crate::model::app_info::AppInfo;
 #[tauri::command]
 pub fn app_info() -> AppInfo {
     AppInfo::current()
+}
+
+/// Abre un documento de texto (ver [`file_service::open_text`]).
+///
+/// Con `encoding` nulo la codificación se detecta; con un identificador
+/// (`"windows-1252"`, …) se fuerza («Reabrir con codificación…»). Se ejecuta
+/// fuera del hilo principal para no bloquear la interfaz con ficheros grandes.
+///
+/// Uso desde TypeScript:
+///
+/// ```ts
+/// import { invoke } from "@tauri-apps/api/core";
+/// const opened = await invoke<OpenedFile>("open_file", { path, encoding: null });
+/// // opened.file.text, opened.file.encoding, opened.file.lineEnding, opened.readOnly
+/// // Si falla, la promesa se rechaza con un FileError: { kind: "not-found", path }…
+/// ```
+///
+/// # Errors
+///
+/// Los de [`file_service::open_text`].
+#[tauri::command(async)]
+#[allow(clippy::needless_pass_by_value)] // Tauri entrega los argumentos por valor
+pub fn open_file(path: String, encoding: Option<Encoding>) -> Result<OpenedFile, FileError> {
+    file_service::open_text(Path::new(&path), encoding)
+}
+
+/// Guarda un documento de texto (ver [`file_service::save_text`]).
+///
+/// Sin `strategy`, si hay caracteres que no caben en `encoding` se rechaza con
+/// `{ kind: "unmappable", path, report }` y no se toca el disco; el frontend
+/// puede entonces preguntar al usuario y repetir con una estrategia.
+///
+/// Uso desde TypeScript:
+///
+/// ```ts
+/// import { invoke } from "@tauri-apps/api/core";
+/// const saved = await invoke<SavedFile>("save_file", {
+///   path, text, encoding: "utf-8", lineEnding: "crlf", strategy: null,
+/// });
+/// // saved.bytesWritten, saved.losses (null si no hubo pérdidas)
+/// ```
+///
+/// # Errors
+///
+/// Los de [`file_service::save_text`].
+#[tauri::command(async)]
+#[allow(clippy::needless_pass_by_value)] // Tauri entrega los argumentos por valor
+pub fn save_file(
+    path: String,
+    text: String,
+    encoding: Encoding,
+    line_ending: LineEnding,
+    strategy: Option<LossStrategy>,
+) -> Result<SavedFile, FileError> {
+    file_service::save_text(Path::new(&path), &text, encoding, line_ending, strategy)
 }
