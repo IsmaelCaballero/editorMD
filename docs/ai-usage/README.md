@@ -92,7 +92,7 @@ Errores propios registrados (todos detectados por las herramientas antes de lleg
 
 El *rework* de Opus 5.5 aquí es bajo y barato, porque las herramientas (tests, lint, CI) lo detectan pronto. **Esta es la variable clave de la RQ.1:** el coste de un modelo peor depende de cuántos de sus errores se escapan de esas redes, no solo de cuántos comete.
 
-### 4.2 Diseño del experimento (propuesto, pendiente de aprobación)
+### 4.2 Diseño del experimento (aprobado el 2026-10-04, con 3 repeticiones por modelo)
 
 **Hipótesis.** H₀: el coste total por tarea terminada de Sonnet 5.5 es menor o igual que el de Opus 5.5. H₁: es mayor.
 
@@ -120,6 +120,70 @@ C = Σ tokens × precio + minutos de revisión humana × valor/hora + coste de l
 
 **Coste estimado del experimento:** unos 10-25 USD eq. (2 tareas × 2 modelos × 2-3 repeticiones, en sesiones cortas). El código que gane se integra en F2, así que parte de ese coste no se pierde.
 
+### 4.3 Ejecución
+
+| Tarea | Paso de F2 | Especificación | Ejecuciones | Estado |
+|---|---|---|---|---|
+| T1 | 1/8 M09 detección y decodificación | [`rq1/T1-text-codec-decode.md`](rq1/T1-text-codec-decode.md) | r1-r6 (3 Opus 5.5 + 3 Sonnet 5.5, asignación aleatoria y oculta) | ✅ terminada (§4.4) |
+| T2 | 4/8 M08 FileService | (se escribirá al llegar al paso 4) | r1-r6 | pendiente |
+
+**Procedimiento:**
+1. El orquestador (Opus 5.5, sesión principal) escribe la especificación (es el encargo común) y unas **pruebas de aceptación ocultas** que no están en el repositorio hasta la evaluación.
+2. Se lanzan 6 subagentes en paralelo, cada uno en su *git worktree*, con el mismo encargo; solo cambia la etiqueta de la rama (`rq1/T<n>/r<k>`). Cada ejecución empieza con el contexto vacío.
+3. Evaluación automática: pruebas ocultas, `cargo test`, clippy, rustfmt y métricas de tokens con [`scripts/rq1-metrics.mjs`](../../scripts/rq1-metrics.mjs).
+4. Revisión ciega: el usuario revisa dos PR en borrador («A» y «B», una ejecución de cada modelo) con la lista de comprobación, y anota sus minutos. Después se revela qué modelo hizo cada uno.
+5. Se fusiona el mejor; las demás ramas se conservan sin fusionar.
+
+**Incidencia del primer lanzamiento de T1 (excluida de las métricas):** los *worktrees* de los subagentes se crean desde `main`, no desde la rama de trabajo, así que no contenían la especificación. Las 6 ejecuciones se detuvieron sin hacer nada (≈ 3 llamadas cada una), como pedía el encargo. Al reanudarlas, sus *worktrees* ya se habían borrado (se eliminan solos si no tienen cambios). Se relanzaron 6 ejecuciones nuevas, cuyo encargo empieza con `git merge --ff-only <commit de la especificación>`. El coste de esas 12 transcripciones abortadas se cuenta en el paso, pero no en la comparación entre modelos.
+
+### 4.4 Resultados de T1 (M09 detección y decodificación)
+
+Asignación aleatoria (se reveló tras la revisión): Sonnet 5.5 = r1, r4, r5 · Opus 5.5 = r2, r3, r6. Candidatas de la revisión ciega: **A = r1 (Sonnet)**, **B = r2 (Opus)**.
+
+| Ejecución | Modelo | Llamadas | Lect. caché | Salida estimada (registrada) | USD eq. | Comprobaciones (fallidas) | Pruebas propias | Líneas | Pruebas ocultas |
+|---|---|--:|--:|--:|--:|--:|--:|--:|--:|
+| r1 (A) | Sonnet 5.5 | 14 | 0,69 M | 23,0 k (0,2 k) | 0,48 | 4 (2) | 25 + 3 doc | 709 | 31/31 |
+| r4 | Sonnet 5.5 | 21 | 1,18 M | 30,5 k (0,9 k) | 0,68 | 7 (3) | 30 + 2 doc | 840 | 31/31 |
+| r5 | Sonnet 5.5 | 14 | 0,73 M | 24,4 k (2,6 k) | 0,51 | 6 (5) | 25 + 3 doc | 702 | 31/31 |
+| r2 (B) | Opus 5.5 | 21 | 1,15 M | 25,0 k (18,0 k) | 0,98 | 6 (4) | 38 + 5 doc | 964 | 31/31 |
+| r3 | Opus 5.5 | 19 | 1,07 M | 30,4 k (13,1 k) | 1,12 | 6 (3) | 33 + 5 doc | 923 | 31/31 |
+| r6 | Opus 5.5 | 17 | 0,86 M | 24,1 k (20,5 k) | 0,89 | 6 (3) | 46 + 5 doc | 1 119 | 31/31 |
+
+| Modelo | USD eq. por ejecución (media ± sd) | Llamadas (media ± sd) | Comprobaciones fallidas (media) | Revisión humana | Defectos encontrados |
+|---|--:|--:|--:|--:|--:|
+| **Sonnet 5.5** | **0,56 ± 0,11** | 16,3 ± 4,0 | 3,3 | ≈ 5 min (A) | 0 |
+| Opus 5.5 | 1,00 ± 0,11 | 19,0 ± 2,0 | 3,3 | ≈ 5 min (B) | 0 |
+
+**Conclusión para T1:** las 6 ejecuciones superan todos los criterios objetivos, con el mismo número medio de comprobaciones fallidas (en todas, una es el commit rojo de TDD, que falla a propósito) y sin defectos en la revisión. Sonnet 5.5 cuesta un **44 % menos** por ejecución y la diferencia es unas 4 veces la desviación típica, así que es robusta con n = 3. Según la regla de decisión, **gana Sonnet** y su candidata (A) se integra en el proyecto. Opus escribió más pruebas y documentación (+35 % de líneas), pero el revisor no lo percibió como más calidad. En una tarea de especificación cerrada, el *rework* extra que se temía de Sonnet no apareció.
+
+**Validez y limitaciones:**
+- **La salida registrada no es fiable en los subagentes.** Algunos mensajes guardan solo el uso parcial del inicio del *streaming*. La salida se estima con el contenido visible (2,1 caracteres por token, calibrado con las sesiones principales, que sí registran el uso completo). El razonamiento interno de esos mensajes no queda registrado, así que los costes son **cotas inferiores**, probablemente más para Opus.
+- Es una sola tarea, bien especificada y de dificultad moderada. T2 (FileService, con sistema de ficheros y errores de E/S) dará el segundo punto de datos.
+- El coste del orquestador (especificación, pruebas ocultas, evaluación) no depende del modelo evaluado: ≈ 5,1 USD eq. en este paso, que incluye la planificación de F2.
+
+**Coste total del paso 1/8:** ≈ 10,8 USD eq., frente a ≈ 7 estimados. Se reparte así:
+- orquestador: 64 llamadas, 5,10 USD;
+- 6 ejecuciones válidas: 4,66 USD;
+- primer lanzamiento abortado: 34 llamadas, 1,03 USD.
+
+La desviación viene de las incidencias (relanzamiento, investigación del infrarregistro, *scripts* nuevos), que no se repetirán en T2.
+
 ## 5. Norma a partir de F2
 
-En cada paso: **estimación previa** (llamadas y USD eq., por analogía con la tabla de la §3) → **medición real** al fusionar el PR → registro aquí y en la web. Cada fase empieza en una sesión nueva.
+En cada paso: **estimación previa** (llamadas y USD eq., por analogía con la tabla de la §3) → **medición real** al fusionar el PR → registro aquí y en la web. Cada fase empieza en una sesión nueva, y las fases largas se parten en varias sesiones (F2: A = pasos 1-4, B = pasos 5-8).
+
+**Modelo de estimación:** coste por llamada ≈ 0,04 USD + 0,20 USD por millón de tokens de contexto (ajustado con F0 y F1).
+
+### 5.1 F2: estimación previa frente a coste real
+
+| Paso | Sesión | Estimación (llamadas · USD eq.) | Real (llamadas · USD eq.) |
+|---|---|---|---|
+| 1/8 Decodificar 🧪 | A | 25 + 6 ejecuciones · ≈ 7 | 64 + 6 ejecuciones (+ 6 abortadas) · ≈ 10,8 |
+| 2/8 Codificar + fin de línea | A | 25 · 1,9 | — |
+| 3/8 Pérdidas y transliteración | A | 20 · 1,7 | — |
+| 4/8 FileService 🧪 | A | 20 + 6 ejecuciones · ≈ 7 | — |
+| 5/8 FileController | B | 45 · 3,2 | — |
+| 6/8 Diálogo de codificación + barra de estado | B | 40 · 3,6 | — |
+| 7/8 Ficheros recientes | B | 20 · 2,1 | — |
+| 8/8 Cierre F2 | B | 13 · 1,4 | — |
+| **Total** | | **≈ 28 (20-38)** | — |

@@ -3,20 +3,28 @@
 > Fotografía del estado actual. Se actualiza **al final de cada sesión de trabajo**.
 > Última actualización: 2026-10-04
 
-## ⏸ Punto de reanudación (2026-10-04, fin de la sesión #2)
+## ⏸ Punto de reanudación (2026-10-04, sesión #3 = F2 sesión A)
 
-**Dónde estamos:** **F1 cerrada** (PR #9 fusionado, `d26dea0`). Rama `docs/ai-usage` → **PR #10**: métricas de uso de IA (F0 y F1 medidas), script `scripts/ai-usage.mjs` y análisis y diseño de la RQ.1.
+**Dónde estamos:** F1 cerrada (etiqueta [v0.0.2](https://github.com/IsmaelCaballero/editorMD/releases/tag/v0.0.2), ramas renombradas `hecha/F1.*de5/…`). **Plan de F2 aprobado** (PLAN.md §7): 8 pasos en 2 sesiones. Sesión A = pasos 1-4 (Rust); sesión B = pasos 5-8 (interfaz).
 
-**Pendiente del ok del usuario:**
-1. Etiqueta `v0.0.2` sobre `d26dea0` (o sobre el merge del PR #10, que solo cambia documentación) + GitHub Release.
-2. Renombrar las 5 ramas de F1 a `hecha/F1.<n>de5/…`.
-3. ¿Se hace el experimento de la RQ.1 (Opus 5.5 frente a Sonnet 5.5) en F2?
+**Paso en curso:** F2 1/8 `feature/F2-text-codec-decode` (M09 detección y decodificación), hecho con el **experimento RQ.1 T1**: las 6 ejecuciones (3 Opus 5.5, 3 Sonnet 5.5) pasan las 31 pruebas ocultas. Revisión ciega: calidad equivalente (≈ 5 min cada una) → gana la más barata, **A = Sonnet** (PR #11 → rama del paso). B = Opus (PR #12, cerrado). Coste por ejecución: Sonnet 0,56 ± 0,11 y Opus 1,00 ± 0,11 USD eq. Falta: el usuario fusiona el PR #11 en la rama del paso → PR del paso hacia `main`.
 
-**Siguiente sesión (NUEVA, para abaratar el contexto):** leer CONTEXT → STATUS → PLAN y `docs/ai-usage/README.md`; presentar el plan de F2 con una **estimación de tokens por paso**.
+**Siguiente:** F2 2/8 `feature/F2-text-codec-encode` (sin experimento).
 
-**Uso de IA hasta ahora:** F0 10,38 USD eq. (107 llamadas) · F1 15,54 USD eq. (131 llamadas) · modelo `claude-opus-5-5`.
+**Lección del lanzamiento:** los *worktrees* de los subagentes se crean desde `main`, no desde la rama actual, y se borran solos si el agente termina sin cambios. El encargo debe empezar con `git merge --ff-only <commit de la especificación>` (para el paso 4, igual).
 
-**Reglas de trabajo** (CONTEXT.md 16-20): el usuario fusiona los PR; las ramas se renombran al cerrar la fase; cada etiqueta se enlaza en la web; avisar antes de medir en la app real; documentar el uso de IA en cada paso.
+### Cómo cerrar la sesión A y abrir la sesión B (al fusionarse el PR del paso 4)
+1. **Sesión A** mide el uso de los pasos 1-4 y del experimento (`node scripts/ai-usage.mjs <sesión>.jsonl docs/ai-usage/phases.json` y `node scripts/rq1-metrics.mjs docs/ai-usage/rq1/T<n>-runs.json`) y lo registra en `docs/ai-usage/README.md`, PLAN.md §11 y la web.
+2. **Sesión A** actualiza este apartado (paso siguiente = 5/8), CONTEXT.md y PLAN.md, en una rama `docs/F2-session-A` → PR.
+3. **El usuario** fusiona ese PR, escribe `/exit` y abre una sesión nueva de Claude Code en `C:\ProgsConIA\editorMD` con este texto:
+
+   > Retomamos editorMD, F2 sesión B. Lee CONTEXT.md, STATUS.md, PLAN.md (§7 F2) y docs/ai-usage/README.md. Confirma el estado de git y de los PR, preséntame el paso 5/8 con su estimación de tokens y no empieces hasta que te dé el ok.
+
+4. **Sesión B** sigue con los pasos 5-8 y el cierre de F2 (versión 0.1.0).
+
+**Uso de IA hasta ahora:** F0 10,38 USD eq. (107 llamadas) · F1 15,54 USD eq. (131 llamadas) · modelo `claude-opus-5-5`. F2: estimación ≈ 28 USD eq. con el experimento.
+
+**Reglas de trabajo** (CONTEXT.md 16-21): el usuario fusiona los PR; las ramas se renombran al cerrar la fase; cada etiqueta se enlaza en la web; avisar antes de medir en la app real; documentar el uso de IA en cada paso; guardar todo antes de cambiar de sesión.
 
 **Entorno:** Norton inspecciona cada `editormd.exe` nuevo al ejecutarlo (ver CONTEXT.md): tenerlo en cuenta al medir el arranque o la memoria.
 
@@ -24,14 +32,14 @@
 
 | Campo | Valor |
 |---|---|
-| Fase actual | **F1 completada** · cierre en el PR #9 → siguiente: F2 |
-| Versión de la app | **0.0.2** (PR #9) · última etiqueta publicada: [v0.0.1](https://github.com/IsmaelCaballero/editorMD/releases/tag/v0.0.1) |
+| Fase actual | **F2 en curso** · paso 1/8 terminado, pendiente de fusión (sesión A) |
+| Versión de la app | **0.0.2** (PR #9) · última etiqueta publicada: [v0.0.2](https://github.com/IsmaelCaballero/editorMD/releases/tag/v0.0.2) |
 | Stack | Rust + Tauri 2 · WYSIWYG |
 | Salud | 🟢 CI en verde en los 4 SO; app arranca en Windows 11 |
-| Tests | TS: 341/341 ✅ · Rust: 3/3 + 1 doctest ✅ |
+| Tests | TS: 341/341 ✅ · Rust: 28/28 + 4 doctests ✅ (+ 31 pruebas ocultas de RQ.1) |
 | Cobertura | Modelo + Controlador + Adaptadores: **100 % de líneas** |
 | CI | ✅ GitHub Actions: Windows, Ubuntu 22.04, macOS y Fedora |
-| Git | https://github.com/IsmaelCaballero/editorMD · F0: PR #1-#4 fusionados y ramas renombradas `hecha/F0.*de4/…` · F1: pasos 1-4 fusionados (PR #5-#8) · `chore/F1-close` (PR #9) |
+| Git | https://github.com/IsmaelCaballero/editorMD · F0: PR #1-#4 fusionados y ramas renombradas `hecha/F0.*de4/…` · F1: PR #5-#9 fusionados y ramas renombradas `hecha/F1.*de5/…` · PR #10 métricas de IA |
 | Web del proyecto | `docs/index.html` |
 
 ## Progreso por fase
@@ -39,8 +47,8 @@
 | Fase | Estado | Avance |
 |---|---|---|
 | F0 Decisiones y entorno | ✅ Cerrada (ramas renombradas) | 9/9 |
-| F1 Esqueleto MVC | ✅ Completa · cierre en el PR #9 | 5/5 |
-| F2 Ficheros y codificaciones | ⏳ Pendiente | 0/8 |
+| F1 Esqueleto MVC | ✅ Cerrada (ramas renombradas, v0.0.2) | 5/5 |
+| F2 Ficheros y codificaciones | 🔄 En curso (plan aprobado, paso 1/8) | 0/8 |
 | F3 Edición | ⏳ Pendiente | 0/3 |
 | F4 Formato | ⏳ Pendiente | 0/4 |
 | F5 Objetos | ⏳ Pendiente | 0/3 |
@@ -50,7 +58,7 @@
 | F9 QA y release | ⏳ Pendiente | 0/4 |
 
 ## Versiones de componentes (resumen)
-Implementados: **M00 AppInfo 0.1.0**, **M01 DocumentState 0.2.0**, **M07 MarkdownCodec 0.2.0**, **V02 WysiwygEditorView 0.1.0**, **M17 SemVer 0.1.0**, **V01 MainWindow 0.3.0**, **V12 DialogService 0.1.0**, **C01 AppController 0.1.0**, **A01 TauriBackend 0.1.0**, **A02 TauriWindow 0.1.0**. El resto, en 0.0.0. Ver PLAN.md §4.3.
+Implementados: **M00 AppInfo 0.1.0**, **M09 TextCodec 0.1.0**, **M01 DocumentState 0.2.0**, **M07 MarkdownCodec 0.2.0**, **V02 WysiwygEditorView 0.1.0**, **M17 SemVer 0.1.0**, **V01 MainWindow 0.3.0**, **V12 DialogService 0.1.0**, **C01 AppController 0.1.0**, **A01 TauriBackend 0.1.0**, **A02 TauriWindow 0.1.0**. El resto, en 0.0.0. Ver PLAN.md §4.3.
 
 ## Estado de los tests por componente
 
@@ -65,18 +73,19 @@ Implementados: **M00 AppInfo 0.1.0**, **M01 DocumentState 0.2.0**, **M07 Markdow
 | V12 diálogos + ShellState (jsdom) | 11 | 11 | — |
 | A01/A02 adaptadores Tauri (vi.mock) | 4 | 4 | 100 % |
 | M00 AppInfo (Rust) | 3 + 1 doctest | 4 | — |
+| M09 TextCodec (Rust) | 25 + 3 doctests + 31 ocultas | 59 | — |
 
 ## Bloqueos / pendiente del usuario
-- Revisar y fusionar el PR #9 (`chore/F1-close`); dar el ok a la etiqueta `v0.0.2` y al renombrado de las ramas de F1.
-- Dar el ok al plan de F2 cuando se presente.
+- Ninguno por ahora. Al terminar el paso 1: revisión ciega de los PR «A» y «B» del experimento.
 
 ## Próximos pasos
-1. PR #9 → etiqueta v0.0.2 + renombrado de F1.
-2. Plan de F2.
+1. F2 paso 1/8: experimento RQ.1 (T1) → evaluación → revisión ciega → PR.
+2. Pasos 2-4 (sesión A) → cambio de sesión → pasos 5-8 (sesión B).
 
 ## Registro de sesiones
 | Fecha | Sesión | Hecho |
 |---|---|---|
+| 2026-10-04 | #3 | Sesión nueva para F2. Plan de F2 aprobado (8 pasos, 2 sesiones, RQ.1 con 3 repeticiones). Paso 1/8: especificación T1, pruebas ocultas y 6 ejecuciones del experimento. |
 | 2026-10-03 | #1 | Plan inicial; creados PLAN.md, STATUS.md y CONTEXT.md; propuesta de stacks y arquitectura MVC |
 | 2026-10-03 | #1 | Decididos D-01 (Tauri), D-02 (WYSIWYG), D-03 (formatos), D-15 (codificaciones y fin de línea). Añadido el soporte .Rmd. Plan reescrito para Tauri |
 | 2026-10-03 | #1 | Decididos D-05 (extras + barra de accesos directos), D-07 (MIT), D-11 (Typst), D-12 (modo fuente). Nuevos componentes M14–M16, V09–V11 |

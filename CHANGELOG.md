@@ -7,6 +7,9 @@ y el proyecto usa [Semantic Versioning 2.0.0](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+### Added
+- M09 `TextCodec` (Rust): detección automática de la codificación (BOM, UTF-8 válido, heurística `chardetng`, Windows-1252 por defecto) y decodificación estricta de UTF-8 (±BOM), UTF-16 LE/BE, ASCII, ISO-8859-1, ISO-8859-15, Windows-1252 y Mac Roman, con la posición exacta del primer byte no válido.
+
 ## [0.0.2] - 2026-10-04
 
 Fase F1 · esqueleto MVC con editor WYSIWYG ([PR #5](https://github.com/IsmaelCaballero/editorMD/pull/5) a [PR #9](https://github.com/IsmaelCaballero/editorMD/pull/9)).

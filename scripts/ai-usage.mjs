@@ -2,20 +2,14 @@
 // transcripción (.jsonl) y lo reparte por fase/paso del proyecto.
 //
 // Uso:  node scripts/ai-usage.mjs <transcripcion.jsonl> [docs/ai-usage/phases.json] [salida.json]
-// Las transcripciones están en ~/.claude/projects/<proyecto>/<sesión>.jsonl
+// Las transcripciones están en ~/.claude/projects/<proyecto>/<sesión>.jsonl; las de los
+// subagentes (experimento RQ.1) están en <sesión>/subagents/*.jsonl y se suman solas.
 //
 // Coste: precio de la API de Anthropic (USD por millón de tokens). Con una
 // suscripción (Pro/Max) no se paga por token: es un «coste equivalente» que
 // sirve para comparar modelos y dimensionar la licencia.
-import { readFileSync, writeFileSync } from 'node:fs'
-
-/** Precios por millón de tokens (referencia de la API, 2026-09-25). Escritura de caché a 1 h = 2 × entrada. */
-export const PRICES = {
-  'claude-fable-5-1': { input: 10, output: 50, cacheRead: 0.25 },
-  'claude-opus-5-5': { input: 4, output: 20, cacheRead: 0.2 },
-  'claude-sonnet-5-5': { input: 2, output: 10, cacheRead: 0.2 },
-  'claude-haiku-4-5': { input: 1, output: 5, cacheRead: 0.1 },
-}
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { PRICES } from './ai-usage-prices.mjs'
 
 const [, , transcript, phasesFile = 'docs/ai-usage/phases.json', outFile] = process.argv
 if (!transcript) {
@@ -27,7 +21,11 @@ const { steps } = JSON.parse(readFileSync(phasesFile, 'utf8'))
 // Una misma respuesta de la API aparece en varias líneas (una por bloque):
 // nos quedamos con la última aparición de cada message.id.
 const calls = new Map()
-for (const line of readFileSync(transcript, 'utf8').split('\n')) {
+const subDir = `${transcript.replace(/\.jsonl$/, '')}/subagents`
+const files = [transcript]
+if (existsSync(subDir))
+  for (const f of readdirSync(subDir)) if (f.endsWith('.jsonl')) files.push(`${subDir}/${f}`)
+for (const line of files.flatMap((f) => readFileSync(f, 'utf8').split('\n'))) {
   if (!line.trim()) continue
   let o
   try {
@@ -88,7 +86,9 @@ const total = rows.reduce((a, r) => {
   return a
 }, empty())
 const fmt = (n) => n.toLocaleString('es-ES')
-console.log(`Modelos: ${JSON.stringify(models)} · llamadas: ${calls.size}`)
+console.log(
+  `Ficheros: ${files.length} · modelos: ${JSON.stringify(models)} · llamadas: ${calls.size}`,
+)
 console.log(
   '| Fase | Paso | Llamadas | Entrada | Escr. caché | Lect. caché | Salida (thinking) | Coste eq. USD |',
 )
