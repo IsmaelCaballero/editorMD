@@ -9,7 +9,14 @@ import ts from 'typescript-eslint'
 
 export default ts.config(
   {
-    ignores: ['dist/', 'coverage/', 'docs/', 'src-tauri/target/', 'src-tauri/gen/', 'node_modules/'],
+    ignores: [
+      'dist/',
+      'coverage/',
+      'docs/',
+      'src-tauri/target/',
+      'src-tauri/gen/',
+      'node_modules/',
+    ],
   },
   js.configs.recommended,
   ...ts.configs.recommended,
@@ -36,7 +43,10 @@ export default ts.config(
   {
     rules: {
       // Variables sin usar: error, salvo si empiezan por "_" (parámetros obligatorios no usados).
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
       // Preferir const y prohibir var.
       'prefer-const': 'error',
       'no-var': 'error',
