@@ -4,7 +4,12 @@
 // front matter salgan exactamente igual que entraron.
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import type { Code } from 'mdast'
+import type { Code, Root } from 'mdast'
+import remarkFrontmatter from 'remark-frontmatter'
+import remarkGfm from 'remark-gfm'
+import remarkParse from 'remark-parse'
+import remarkStringify from 'remark-stringify'
+import { unified } from 'unified'
 import { describe, expect, it } from 'vitest'
 import {
   equivalent,
@@ -15,6 +20,7 @@ import {
   remarkCodeMetaIntoLang,
   rmdChunkHeader,
   splitFrontMatter,
+  STRINGIFY_OPTIONS,
   stringify,
 } from '../../src/model/markdown-codec'
 
@@ -206,39 +212,48 @@ describe('splitFrontMatter / joinFrontMatter', () => {
 })
 
 describe('remarkCodeMetaIntoLang', () => {
-  const langOf = (md: string) => {
-    const tree = parse(md)
-    remarkCodeMetaIntoLang()(tree)
-    return tree.children[0] as Code
-  }
+  // Reproduce el flujo de Milkdown: parse + runSync (transformadores) al cargar,
+  // y stringify SIN transformadores al guardar.
+  const editorLike = unified()
+    .use(remarkParse)
+    .use(remarkGfm)
+    .use(remarkFrontmatter, ['yaml'])
+    .use(remarkStringify, STRINGIFY_OPTIONS)
+    .use(remarkCodeMetaIntoLang)
+  const load = (md: string) => editorLike.runSync(editorLike.parse(md)) as Root
+  const firstCode = (tree: Root) => tree.children[0] as Code
 
-  it('une lang y meta en lang (para editores que pierden meta)', () => {
-    const node = langOf('```{r setup, include=FALSE}\nx\n```\n')
+  it('al cargar, une lang y meta en lang (Milkdown solo guarda lang)', () => {
+    const node = firstCode(load('```{r setup, include=FALSE}\nx\n```\n'))
     expect(node.lang).toBe('{r setup, include=FALSE}')
     expect(node.meta).toBeNull()
   })
 
   it('también conserva el meta de bloques normales', () => {
-    expect(langOf('```js title="a.js"\nx\n```\n').lang).toBe('js title="a.js"')
+    expect(firstCode(load('```js title="a.js"\nx\n```\n')).lang).toBe('js title="a.js"')
   })
 
   it('no toca bloques sin meta', () => {
-    const node = langOf('```ts\nx\n```\n')
-    expect(node.lang).toBe('ts')
+    expect(firstCode(load('```ts\nx\n```\n')).lang).toBe('ts')
   })
 
-  it('el resultado se serializa igual que el original', () => {
-    const md = '```{r a, echo=FALSE}\nplot(x)\n```\n'
-    const tree = parse(md)
-    remarkCodeMetaIntoLang()(tree)
-    expect(stringify(tree)).toBe(md)
+  it.each([
+    '```{r a, echo=FALSE}\nplot(x)\n```\n',
+    '```{r setup, include=FALSE}\nknitr::opts_chunk$set(echo = TRUE)\n```\n',
+    '```js title="a.js"\nx\n```\n',
+    '```{python}\nimport pandas\n```\n',
+  ])('al guardar, %j sale idéntico (sin escapar espacios)', (md) => {
+    expect(editorLike.stringify(load(md))).toBe(md)
   })
 
-  it('recorre nodos anidados (bloques dentro de listas y citas)', () => {
+  it('recorre nodos anidados (bloques dentro de listas)', () => {
     const md = '- ítem\n\n  ```{r x}\n  1\n  ```\n'
-    const tree = parse(md)
-    remarkCodeMetaIntoLang()(tree)
-    expect(stringify(tree)).toBe(md)
+    const tree = load(md)
     expect(JSON.stringify(tree)).toContain('"lang":"{r x}"')
+    expect(editorLike.stringify(tree)).toBe(md)
+  })
+
+  it.each(corpus)('el corpus %s sigue siendo equivalente con el plugin', (_name, original) => {
+    expect(equivalent(original, editorLike.stringify(load(original)))).toBe(true)
   })
 })
