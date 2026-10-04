@@ -4,14 +4,23 @@
 // front matter salgan exactamente igual que entraron.
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import type { Code } from 'mdast'
+import type { Code, Root } from 'mdast'
+import remarkFrontmatter from 'remark-frontmatter'
+import remarkGfm from 'remark-gfm'
+import remarkParse from 'remark-parse'
+import remarkStringify from 'remark-stringify'
+import { unified } from 'unified'
 import { describe, expect, it } from 'vitest'
 import {
   equivalent,
   isRmdChunk,
+  joinFrontMatter,
   normalize,
   parse,
+  remarkCodeMetaIntoLang,
   rmdChunkHeader,
+  splitFrontMatter,
+  STRINGIFY_OPTIONS,
   stringify,
 } from '../../src/model/markdown-codec'
 
@@ -157,5 +166,94 @@ describe('stringify', () => {
 
   it('un documento vacío sigue vacío', () => {
     expect(normalize('')).toBe('')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// M07 v0.2.0 — protección del front matter y de las cabeceras de bloque en el
+// editor WYSIWYG. Un spike con Milkdown demostró que el editor convertía el
+// front matter en un título y recortaba `{r setup, include=FALSE}` a `{r`.
+// ---------------------------------------------------------------------------
+
+describe('splitFrontMatter / joinFrontMatter', () => {
+  const fm = '---\ntitle: "Informe"\ntags: [a, b]\n---\n'
+
+  it('separa el front matter (con sus líneas en blanco) del cuerpo', () => {
+    expect(splitFrontMatter(fm + '\n# Hola\n')).toEqual({
+      frontMatter: fm + '\n',
+      body: '# Hola\n',
+    })
+  })
+
+  it('sin front matter, todo es cuerpo', () => {
+    expect(splitFrontMatter('# Hola\n')).toEqual({ frontMatter: '', body: '# Hola\n' })
+  })
+
+  it('un --- que no está en la primera línea no es front matter', () => {
+    const md = 'Texto\n\n---\ntitle: x\n---\n'
+    expect(splitFrontMatter(md)).toEqual({ frontMatter: '', body: md })
+  })
+
+  it('documento que solo tiene front matter', () => {
+    expect(splitFrontMatter(fm)).toEqual({ frontMatter: fm, body: '' })
+  })
+
+  it('front matter vacío', () => {
+    expect(splitFrontMatter('---\n---\nTexto\n')).toEqual({
+      frontMatter: '---\n---\n',
+      body: 'Texto\n',
+    })
+  })
+
+  it.each(corpus)('join(split(x)) reconstruye %s byte a byte', (_name, original) => {
+    const { frontMatter, body } = splitFrontMatter(original)
+    expect(joinFrontMatter(frontMatter, body)).toBe(original)
+  })
+})
+
+describe('remarkCodeMetaIntoLang', () => {
+  // Reproduce el flujo de Milkdown: parse + runSync (transformadores) al cargar,
+  // y stringify SIN transformadores al guardar.
+  const editorLike = unified()
+    .use(remarkParse)
+    .use(remarkGfm)
+    .use(remarkFrontmatter, ['yaml'])
+    .use(remarkStringify, STRINGIFY_OPTIONS)
+    .use(remarkCodeMetaIntoLang)
+  const load = (md: string) => editorLike.runSync(editorLike.parse(md)) as Root
+  const firstCode = (tree: Root) => tree.children[0] as Code
+
+  it('al cargar, une lang y meta en lang (Milkdown solo guarda lang)', () => {
+    const node = firstCode(load('```{r setup, include=FALSE}\nx\n```\n'))
+    expect(node.lang).toBe('{r setup, include=FALSE}')
+    expect(node.meta).toBeNull()
+  })
+
+  it('también conserva el meta de bloques normales', () => {
+    expect(firstCode(load('```js title="a.js"\nx\n```\n')).lang).toBe('js title="a.js"')
+  })
+
+  it('no toca bloques sin meta', () => {
+    expect(firstCode(load('```ts\nx\n```\n')).lang).toBe('ts')
+  })
+
+  it.each([
+    '```{r a, echo=FALSE}\nplot(x)\n```\n',
+    '```{r setup, include=FALSE}\nknitr::opts_chunk$set(echo = TRUE)\n```\n',
+    '```js title="a.js"\nx\n```\n',
+    '```{python}\nimport pandas\n```\n',
+  ])('al guardar, %j sale idéntico (sin escapar espacios)', (md) => {
+    expect(editorLike.stringify(load(md))).toBe(md)
+  })
+
+  it('recorre nodos anidados (bloques dentro de listas)', () => {
+    const md = '- ítem\n\n  ```{r x}\n  1\n  ```\n'
+    const tree = load(md)
+    expect(JSON.stringify(tree)).toContain('"lang":"{r x}"')
+    expect(editorLike.stringify(tree)).toBe(md)
+  })
+
+  it.each(corpus)('el corpus %s sigue siendo equivalente con el plugin', (_name, original) => {
+    expect(equivalent(original, editorLike.stringify(load(original)))).toBe(true)
   })
 })

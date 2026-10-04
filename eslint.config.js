@@ -54,4 +54,11 @@ export default ts.config(
       eqeqeq: ['error', 'always', { null: 'ignore' }],
     },
   },
+  {
+    // Va al final porque en la flat config gana el último bloque que coincide.
+    // Svelte 5 declara las props con `let { ... } = $props()`: la regla genérica
+    // prefer-const da falsos positivos; svelte/prefer-const entiende las runes.
+    files: ['**/*.svelte'],
+    rules: { 'prefer-const': 'off', 'svelte/prefer-const': 'error' },
+  },
 )

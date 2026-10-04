@@ -27,6 +27,10 @@
  * | Salto duro con dos espacios | `\` al final de la línea |
  * | Entidades HTML (`&copy;`) | El carácter (`©`) |
  *
+ * v0.2.0 añade {@link splitFrontMatter}, {@link joinFrontMatter} y
+ * {@link remarkCodeMetaIntoLang} para proteger el front matter y las cabeceras
+ * de bloque en editores WYSIWYG que no los soportan.
+ *
  * @packageDocumentation
  */
 import type { Code, Nodes, Root } from 'mdast'
@@ -34,7 +38,8 @@ import remarkFrontmatter from 'remark-frontmatter'
 import remarkGfm from 'remark-gfm'
 import remarkParse from 'remark-parse'
 import remarkStringify, { type Options as StringifyOptions } from 'remark-stringify'
-import { unified } from 'unified'
+import { defaultHandlers, type Handle } from 'mdast-util-to-markdown'
+import { unified, type Processor } from 'unified'
 
 /**
  * Opciones de serialización: definen el **estilo canónico** del proyecto.
@@ -150,4 +155,111 @@ export function isRmdChunk(node: Code): boolean {
 export function rmdChunkHeader(node: Code): string | null {
   if (!isRmdChunk(node)) return null
   return node.meta ? `${node.lang} ${node.meta}` : (node.lang as string)
+}
+
+// ---------------------------------------------------------------------------
+// v0.2.0 — Utilidades para editores WYSIWYG que no conocen el front matter
+// ni el `meta` de los bloques de código (p. ej. Milkdown).
+// ---------------------------------------------------------------------------
+
+/** Resultado de {@link splitFrontMatter}. */
+export interface FrontMatterSplit {
+  /**
+   * Bloque YAML inicial tal cual (delimitadores `---` y líneas en blanco
+   * posteriores incluidos), o `""` si el documento no tiene.
+   */
+  readonly frontMatter: string
+  /** Resto del documento, que es lo que se edita en el WYSIWYG. */
+  readonly body: string
+}
+
+/** Front matter YAML: `---` en la primera línea, hasta el siguiente `---`, más las líneas en blanco que lo siguen. */
+const FRONT_MATTER_RE = /^---\r?\n(?:[\s\S]*?\r?\n)?---[ \t]*(?:\r?\n|$)(?:[ \t]*\r?\n)*/
+
+/**
+ * Separa el *front matter* YAML del cuerpo del documento.
+ *
+ * @remarks
+ * El editor WYSIWYG solo recibe el cuerpo; el front matter se guarda aparte y
+ * se vuelve a unir con {@link joinFrontMatter}, así sale **byte a byte igual**.
+ *
+ * @param markdown - Documento completo.
+ * @returns El front matter (o `""`) y el cuerpo.
+ *
+ * @example
+ * ```ts
+ * splitFrontMatter('---\ntitle: x\n---\n\n# Hola\n')
+ * // { frontMatter: '---\ntitle: x\n---\n\n', body: '# Hola\n' }
+ * ```
+ */
+export function splitFrontMatter(markdown: string): FrontMatterSplit {
+  const match = FRONT_MATTER_RE.exec(markdown)
+  if (!match) return { frontMatter: '', body: markdown }
+  return { frontMatter: match[0], body: markdown.slice(match[0].length) }
+}
+
+/**
+ * Operación inversa de {@link splitFrontMatter}.
+ *
+ * @param frontMatter - Bloque devuelto por `splitFrontMatter` (o `""`).
+ * @param body - Cuerpo, posiblemente editado.
+ * @returns El documento completo.
+ */
+export function joinFrontMatter(frontMatter: string, body: string): string {
+  return frontMatter + body
+}
+
+/** Recorre el árbol y une `meta` dentro de `lang` en cada bloque de código. */
+function mergeCodeMeta(node: Nodes): void {
+  if (node.type === 'code' && node.meta) {
+    node.lang = node.lang ? `${node.lang} ${node.meta}` : node.meta
+    node.meta = null
+  }
+  if ('children' in node) {
+    for (const child of node.children) mergeCodeMeta(child)
+  }
+}
+
+/**
+ * Manejador de serialización para bloques de código: si `lang` contiene la
+ * cabecera completa (p. ej. `{r setup, include=FALSE}`), la vuelve a separar en
+ * `lang` + `meta` antes de delegar en el manejador estándar. Sin esto,
+ * remark-stringify escaparía los espacios (`{r&#x20;setup,...}`), porque en
+ * CommonMark el primer espacio separa el lenguaje del `meta`.
+ */
+const codeHandler: Handle = (node, parent, state, info) => {
+  const code = node as Code
+  const space = code.lang && !code.meta ? code.lang.search(/\s/) : -1
+  const fixed =
+    space > 0 && code.lang
+      ? { ...code, lang: code.lang.slice(0, space), meta: code.lang.slice(space + 1) }
+      : code
+  return defaultHandlers.code(fixed, parent, state, info)
+}
+
+/**
+ * Plugin de remark (unified) que protege la cabecera completa de los bloques
+ * de código (<code>```{r setup, include=FALSE}</code>, <code>```js title="a.js"</code>)
+ * en editores que solo guardan el lenguaje.
+ *
+ * @remarks
+ * Actúa en los dos sentidos, igual que funciona Milkdown:
+ *
+ * - **Al cargar** (transformador, `runSync`): une `meta` dentro de `lang`,
+ *   que es el único atributo que conserva el nodo de código de Milkdown.
+ * - **Al guardar** (extensión de `mdast-util-to-markdown`, usada por `stringify`):
+ *   vuelve a separar `lang` y `meta`, de modo que la salida es idéntica al original.
+ *
+ * Se registra en el editor con `$remark` (V02).
+ *
+ * @example
+ * ```ts
+ * unified().use(remarkParse).use(remarkStringify).use(remarkCodeMetaIntoLang)
+ * ```
+ */
+export function remarkCodeMetaIntoLang(this: Processor): (tree: Root) => void {
+  const data = this.data()
+  data.toMarkdownExtensions ??= []
+  data.toMarkdownExtensions.push({ handlers: { code: codeHandler } })
+  return (tree) => mergeCodeMeta(tree)
 }

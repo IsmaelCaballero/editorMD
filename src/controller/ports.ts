@@ -37,6 +37,10 @@ export interface IEditorView {
   onChange(listener: (markdown: string) => void): Unsubscribe
   /** Pone el foco del teclado en el editor. */
   focus(): void
+  /** Deshace la última edición del usuario (historial del editor). */
+  undo(): void
+  /** Rehace la última edición deshecha. */
+  redo(): void
 }
 
 /** Identidad de la aplicación devuelta por el backend (M00 `AppInfo`). */

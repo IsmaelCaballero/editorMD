@@ -283,13 +283,18 @@ const PROJECT = {
   repo: "https://github.com/IsmaelCaballero/editorMD",
   appVersion: "0.0.1",
   currentPhase: "F1",
-  tests: { passed: 156, total: 156, coverage: "99 %" },
+  tests: { passed: 293, total: 293, coverage: "99 %" },
+  metrics: { ram: "113 MB", bundle: "508 kB (158 kB gzip)" },
   ci: "4/4 SO en verde",
   tags: [
     { name: "v0.0.1", date: "2026-10-04", pre: true, commit: "86df753", url: "https://github.com/IsmaelCaballero/editorMD/releases/tag/v0.0.1",
       summary: "Esqueleto F0: Tauri 2 + Svelte 5, M17 SemVer, rustdoc/TypeDoc, CI en 4 SO, web del proyecto" },
   ],
   summary: `
+    <p><strong>F1 · paso 3/5.</strong> ¡Ya hay <b>editor WYSIWYG</b>! Un <a href="#c-spike">spike</a> con Milkdown descubrió
+    dos pérdidas de datos (front matter y cabeceras de bloques R) <i>antes</i> de escribir la vista; se resolvieron en
+    <a href="#comp-M07">M07 v0.2.0</a> con TDD. Después: menús declarativos (<a href="#comp-V01">V01</a>) y el editor
+    (<a href="#comp-V02">V02</a>), probado con todo el corpus en un DOM simulado. RAM: <b>113 MB</b> (<a href="#c-memory">privada</a>).</p>
     <p><strong>F1 · paso 2/5.</strong> <a href="#comp-M07">M07 MarkdownCodec</a>, la pieza crítica del WYSIWYG:
     convierte Markdown en un <a href="#c-ast">árbol sintáctico</a> y lo devuelve a texto sin cambiar su significado.
     Se comprueba con un <a href="#c-corpus">corpus de fidelidad</a> de 24 documentos (101 tests, TDD).</p>
@@ -307,8 +312,8 @@ const PROJECT = {
     <a href="#c-rename">renombrar las ramas</a> a <code>hecha/F0.&lt;n&gt;de4/…</code> en lugar de borrarlas (PR #4).</p>
     <p><strong>Sesión 1 (2026-10-03).</strong> Plan completo, 16 decisiones, esqueleto Tauri 2 + Svelte 5,
     primer componente <a href="#comp-M17">M17 SemVer</a> (29 tests) y documentación con rustdoc y TypeDoc.</p>`,
-  next: `<strong>Siguiente paso:</strong> revisar y fusionar el <a href="https://github.com/IsmaelCaballero/editorMD/pull/6">PR #6</a>
-    (F1 · paso 2/5). Después: paso 3/5, <code>feature/F1-milkdown-editor</code> (editor Milkdown <i>kit</i> y menús).`,
+  next: `<strong>Siguiente paso:</strong> revisar y fusionar el <a href="https://github.com/IsmaelCaballero/editorMD/pull/7">PR #7</a>
+    (F1 · paso 3/5). Después: paso 4/5, <code>feature/F1-app-controller</code> (C01 y composition root).`,
 
   phases: [
     { id: "F0", name: "Decisiones y entorno", target: "0.0.x", tasks: [
@@ -326,7 +331,7 @@ const PROJECT = {
       ["ok", "F1.1 Interfaces IEditorView, IBackend, IDialogService (ports.ts)"],
       ["ok", "F1.2 M01 DocumentState + 22 tests (TDD)"],
       ["ok", "F1.3 M07 MarkdownCodec (GFM, front matter, Rmd) + corpus de 24 documentos (101 tests)"],
-      ["todo", "F1.4 V01 MainWindow con menús + V02 Milkdown kit"],
+      ["ok", "F1.4 V01 menús declarativos + V02 editor Milkdown kit (corpus en el editor real)"],
       ["todo", "F1.5 C01 AppController + composition root + tests"],
     ]},
     { id: "F2", name: "Ficheros y codificaciones", target: "0.1.0", tasks: [
@@ -565,6 +570,43 @@ const PROJECT = {
       cmds: "npx vitest run --coverage   # 152 passed · markdown-codec.ts 100 %",
       why: "Separar la conversión en un módulo puro permite probarla a fondo sin editor ni navegador.",
       concepts: ["ast", "corpus", "coverage"] },
+    { date: "2026-10-04", title: "F1 · 3/5 — Spike: ¿qué conserva Milkdown?", branch: "feature/F1-milkdown-editor",
+      did: ["Fusionaste el PR #6; revisión correcta (<code>47db0a9</code>).",
+            "Prueba exploratoria (no versionada): Milkdown montado en jsdom con los 24 documentos del corpus.",
+            "Resultado: 20 bien; <b>2 pérdidas de datos</b> (el front matter se convertía en un título y <code>{r setup, include=FALSE}</code> se recortaba a <code>{r</code>) y 2 cambios solo visuales (enlaces de referencia → en línea; URL sueltas → <code>&lt;url&gt;</code>)."],
+      why: "Descubrir los problemas del editor antes de diseñar la vista sale mucho más barato que descubrirlos con los ficheros de los usuarios.",
+      concepts: ["spike", "corpus"] },
+    { date: "2026-10-04", title: "F1 · 3/5 — M07 v0.2.0 con TDD (y una sorpresa en la fase verde)", branch: "feature/F1-milkdown-editor", commit: "be77c4d",
+      did: ["Rojo (<code>f4fce85</code>): 34 pruebas para <code>splitFrontMatter</code>/<code>joinFrontMatter</code> y el plugin <code>remarkCodeMetaIntoLang</code>.",
+            "Sorpresa: al serializar, remark <b>escapaba los espacios</b> de <code>lang</code> (<code>{r&amp;#x20;setup…}</code>), y Milkdown <b>no ejecuta transformadores al guardar</b>.",
+            "Solución: plugin <b>bidireccional</b>. Al cargar une <code>meta</code> en <code>lang</code>; al guardar, una extensión de <code>mdast-util-to-markdown</code> los separa.",
+            "Las pruebas se rehicieron para reproducir el flujo <i>real</i> de Milkdown (parse + runSync al cargar, solo stringify al guardar).",
+            "SemVer: <b>0.1.0 → 0.2.0</b> (MINOR: funciones nuevas compatibles)."],
+      cmds: "npx vitest run tests/model   # 213 passed",
+      why: "Una prueba que no reproduce el uso real puede pasar y aun así dejar el fallo vivo.",
+      concepts: ["tdd", "ast", "semver"] },
+    { date: "2026-10-04", title: "F1 · 3/5 — V01: menús declarativos", branch: "feature/F1-milkdown-editor", commit: "59ff8a8",
+      did: ["<code>menus.ts</code>: 6 menús y 35 órdenes (<code>CommandId</code>) con atajo y <b>fase</b> de implementación. Las de fases futuras se ven deshabilitadas con «Disponible en Fx».",
+            "Atajos por SO: <code>Ctrl+Shift+S</code> en Windows/Linux y <code>⇧⌘S</code> en macOS.",
+            "<code>MenuBar.svelte</code> solo dibuja los datos y emite la orden (<a href='#c-passive-view'>Passive View</a>).",
+            "43 pruebas, entre ellas una que comprueba que existen todas las órdenes que pediste al principio del proyecto."],
+      why: "Con los menús como datos, se prueban sin interfaz y la propia aplicación muestra el avance del plan.",
+      concepts: ["passive-view", "mvc"] },
+    { date: "2026-10-04", title: "F1 · 3/5 — V02: el editor WYSIWYG real", branch: "feature/F1-milkdown-editor", commit: "af391b6",
+      did: ["<code>MilkdownEditorView</code> implementa <code>IEditorView</code> (ahora también con <code>undo</code>/<code>redo</code>): commonmark, GFM, historial, portapapeles y el plugin de M07.",
+            "El front matter no entra en el editor: se guarda aparte y se reinserta intacto.",
+            "33 pruebas con el <b>editor real</b> en jsdom, incluido todo el corpus (con la limitación de los enlaces documentada como prueba).",
+            "ESLint: con las props de Svelte 5 (<code>let {…} = $props()</code>), <code>prefer-const</code> daba falsos positivos → <code>svelte/prefer-const</code>. En la flat config <i>gana el último bloque que coincide</i>.",
+            "Tamaño del JS: 32 kB → <b>508 kB</b> (158 kB gzip) por Milkdown/ProseMirror/remark."],
+      cmds: "npx vitest run   # 289 passed\nnpm run build    # dist/assets/index-*.js 508 kB",
+      why: "Probar con el editor real (y no solo con el codec) asegura que lo que el usuario edita se guarda bien.",
+      concepts: ["ports", "corpus", "linter"] },
+    { date: "2026-10-04", title: "F1 · 3/5 — La app con editor, y cuánta memoria usa", branch: "feature/F1-milkdown-editor",
+      did: ["<code>npm run tauri dev</code>: ventana con menús, editor WYSIWYG y contador de palabras.",
+            "Memoria medida en Windows 11 (debug): <i>working set</i> 27 + 388 MB = 415 MB, pero <b>privada: 113 MB</b>, dentro del objetivo de ≤ 120 MB."],
+      cmds: "Get-CimInstance Win32_PerfFormattedData_PerfProc_Process   # WorkingSetPrivate",
+      why: "Medir pronto y con la métrica correcta evita decisiones basadas en números engañosos.",
+      concepts: ["memory", "tauri"] },
   ],
 
   git: {
@@ -597,16 +639,24 @@ const PROJECT = {
       { t: "branch", name: "feature/F1-markdown-codec" },
       { t: "commit", branch: "feature/F1-markdown-codec", id: "f22d59f", msg: "test(M07): fase roja" },
       { t: "commit", branch: "feature/F1-markdown-codec", id: "6600229", msg: "feat(M07): fase verde" },
-      { t: "commit", branch: "feature/F1-markdown-codec", id: "PR #6", msg: "docs: F1 paso 2" },
+      { t: "commit", branch: "feature/F1-markdown-codec", id: "5c80be8", msg: "docs: F1 paso 2" },
+      { t: "merge", into: "main", from: "feature/F1-markdown-codec", id: "47db0a9 Merge PR #6" },
+      { t: "branch", name: "feature/F1-milkdown-editor" },
+      { t: "commit", branch: "feature/F1-milkdown-editor", id: "f4fce85", msg: "test(M07): fase roja" },
+      { t: "commit", branch: "feature/F1-milkdown-editor", id: "be77c4d", msg: "feat(M07): v0.2.0" },
+      { t: "commit", branch: "feature/F1-milkdown-editor", id: "59ff8a8", msg: "feat(V01): menús" },
+      { t: "commit", branch: "feature/F1-milkdown-editor", id: "af391b6", msg: "feat(V02): editor Milkdown" },
+      { t: "commit", branch: "feature/F1-milkdown-editor", id: "PR #7", msg: "docs: F1 paso 3" },
     ],
     branches: [
-      { name: "main", goal: "Rama estable", status: ["ok", "estable · CI verde · v0.0.1"], commits: 6, pr: "" },
+      { name: "main", goal: "Rama estable", status: ["ok", "estable · CI verde · v0.0.1"], commits: 7, pr: "" },
       { name: "feature/F0-scaffold", step: "F0 · 1/4", final: "hecha/F0.1de4/feature/F0-scaffold", renamed: true, goal: "F0: esqueleto, tests, documentación, CI y web", status: ["ok", "fusionada (PR #1)"], commits: 6, pr: 1 },
       { name: "chore/release-0.0.1", step: "F0 · 2/4", final: "hecha/F0.2de4/chore/release-0.0.1", renamed: true, goal: "CHANGELOG 0.0.1 y actualización de la documentación", status: ["ok", "fusionada (PR #2)"], commits: 1, pr: 2 },
       { name: "feature/F0-linters", step: "F0 · 3/4", final: "hecha/F0.3de4/feature/F0-linters", renamed: true, goal: "F0.7: linters, formateadores y job lint en CI", status: ["ok", "fusionada (PR #3)"], commits: 3, pr: 3 },
       { name: "chore/F0-close", step: "F0 · 4/4", final: "hecha/F0.4de4/chore/F0-close", renamed: true, goal: "Cierre de F0: convención de renombrado de ramas", status: ["ok", "fusionada (PR #4)"], commits: 1, pr: 4 },
       { name: "feature/F1-document-model", step: "F1 · 1/5", final: "hecha/F1.1de5/feature/F1-document-model", goal: "Interfaces MVC + M01 DocumentState (TDD)", status: ["ok", "fusionada (PR #5)"], commits: 3, pr: 5 },
-      { name: "feature/F1-markdown-codec", step: "F1 · 2/5", final: "hecha/F1.2de5/feature/F1-markdown-codec", goal: "M07 MarkdownCodec + corpus de fidelidad (TDD)", status: ["wip", "PR #6 · pendiente de CI y de tu revisión"], commits: 3, pr: 6 },
+      { name: "feature/F1-markdown-codec", step: "F1 · 2/5", final: "hecha/F1.2de5/feature/F1-markdown-codec", goal: "M07 MarkdownCodec + corpus de fidelidad (TDD)", status: ["ok", "fusionada (PR #6)"], commits: 3, pr: 6 },
+      { name: "feature/F1-milkdown-editor", step: "F1 · 3/5", final: "hecha/F1.3de5/feature/F1-milkdown-editor", goal: "Spike + M07 v0.2.0 + V01 menús + V02 editor Milkdown kit", status: ["wip", "PR #7 · pendiente de CI y de tu revisión"], commits: 5, pr: 7 },
     ],
   },
 
@@ -618,7 +668,7 @@ const PROJECT = {
     ["M04","M","TS","ListCommands","Viñetas, numeradas, tareas, sangrado","0.0.0","F5"],
     ["M05","M","TS","TableModel","Tablas GFM","0.0.0","F5"],
     ["M06","M","TS","SearchEngine","Buscar/reemplazar","0.0.0","F3"],
-    ["M07","M","TS","MarkdownCodec","MD ⇄ árbol mdast fiel (GFM, front matter, Rmd), estilo canónico","0.1.0","F1"],
+    ["M07","M","TS","MarkdownCodec","MD ⇄ árbol mdast fiel (GFM, front matter, Rmd), estilo canónico, protección para el editor","0.2.0","F1"],
     ["M08","M","Rust","FileService","Lectura/escritura atómica","0.0.0","F2"],
     ["M09","M","Rust","TextCodec","Codificaciones, BOM, fin de línea, transliteración","0.0.0","F2"],
     ["M10","M","Rust","Importers","TXT, HTML → MD","0.0.0","F6"],
@@ -629,8 +679,8 @@ const PROJECT = {
     ["M15","M","TS","Workspace","Documentos abiertos (pestañas)","0.0.0","F7"],
     ["M16","M","TS","I18n","Interfaz es/en","0.0.0","F7"],
     ["M17","M","TS","SemVer","Análisis, comparación e incremento SemVer 2.0.0","0.1.0","F0"],
-    ["V01","V","TS","MainWindow","Menús, barra de herramientas, layout (esqueleto)","0.1.0","F0/F1"],
-    ["V02","V","TS","WysiwygEditorView","Editor Milkdown","0.0.0","F1"],
+    ["V01","V","TS","MainWindow","Menús declarativos (6 menús, 35 órdenes) + MenuBar.svelte","0.2.0","F0/F1"],
+    ["V02","V","TS","WysiwygEditorView","Editor Milkdown kit (implementa IEditorView)","0.1.0","F1"],
     ["V03","V","TS","SourceEditorView","Modo fuente (CodeMirror 6)","0.0.0","F4"],
     ["V04","V","TS","StatusBarView","Posición, palabras, codificación, fin de línea","0.0.0","F2"],
     ["V05","V","TS","FindReplaceDialog","Buscar y reemplazar","0.0.0","F3"],
@@ -676,6 +726,8 @@ const PROJECT = {
     "svelte": ["Svelte 5", "Framework de interfaz que <i>compila</i> los componentes a JavaScript directo, sin DOM virtual. El resultado son bundles pequeños y rápidos."],
     "ci": ["Integración continua (CI)", "Un servicio (aquí, GitHub Actions) compila y ejecuta los tests automáticamente en cada push o PR, en máquinas limpias de cada SO. Un PR con la CI en rojo no se fusiona."],
     "tag": ["Etiqueta git (tag)", "Nombre fijo que apunta a un commit concreto, p. ej. <code>v0.0.1</code>. Las <i>anotadas</i> (<code>git tag -a</code>) guardan autor, fecha y mensaje. GitHub las usa para crear <i>Releases</i> descargables."],
+    "spike": ["Spike (prueba exploratoria)", "Experimento corto y desechable para responder una pregunta técnica antes de diseñar. Aquí: «¿qué conserva Milkdown del corpus?». No se versiona; su valor está en lo que descubre (dos pérdidas de datos), que luego se convierte en pruebas y código de verdad."],
+    "memory": ["Memoria: working set frente a privada", "El <i>working set</i> incluye páginas compartidas entre procesos (DLL, memoria del GPU…), así que sumarlo en varios procesos cuenta lo mismo varias veces (415 MB). La <b>memoria privada</b> es la exclusiva de cada proceso: es la que muestra el Administrador de tareas y la que se compara con el objetivo (113 MB)."],
     "ast": ["Árbol sintáctico (AST / mdast)", "Representación del documento como árbol de nodos (<code>heading</code>, <code>paragraph</code>, <code>list</code>, <code>table</code>…). El editor WYSIWYG trabaja sobre un árbol; el fichero es texto. <b>Parsear</b> = texto → árbol; <b>serializar</b> = árbol → texto. mdast es el formato de árbol de remark."],
     "corpus": ["Corpus de fidelidad e idempotencia", "Colección de documentos reales que se pasan por el ciclo texto → árbol → texto. Se exige que el resultado sea <b>equivalente</b> (el mismo árbol) e <b>idempotente</b> (una segunda pasada no cambia nada). Si alguien rompe la conversión, algún documento del corpus lo detecta."],
     "observer": ["Patrón Observer", "El modelo mantiene una lista de suscriptores y les avisa cuando cambia (<code>doc.subscribe(fn)</code>). Así el modelo no conoce las vistas: el controlador se suscribe y actualiza lo que haga falta (título, barra de estado…)."],
@@ -719,6 +771,7 @@ const bar = (ok, wip, n) => `<div class="bar" role="img" aria-label="${ok} de ${
     ["CI", "✔", PROJECT.ci],
     ["Componentes", `${impl}/${PROJECT.components.length}`, "implementados"],
     ["Ramas abiertas", open, "pendientes de PR"],
+    ["RAM", PROJECT.metrics.ram, "privada · objetivo ≤ 120 MB"],
     ["Repositorio", `<a href="${PROJECT.repo}">GitHub</a>`, "público"],
     ["Última versión", `<a href="${PROJECT.tags.at(-1).url}">${PROJECT.tags.at(-1).name}</a>`, PROJECT.tags.at(-1).pre ? "pre-release" : "estable"],
   ];
