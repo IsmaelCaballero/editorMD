@@ -40,7 +40,11 @@ Un editor Markdown de escritorio con GUI, **ligero** (poca memoria) y **portable
 - Al cerrar cada sesión: actualizar STATUS.md (registro de sesiones), marcar las tareas en PLAN.md y subir las versiones de los componentes tocados.
 
 ## Entorno de desarrollo
-- Máquina principal: Windows 11, carpeta `C:\ProgsConIA\editorMD`.
+- **Dos ordenadores**, ambos con Windows 11. La carpeta del proyecto indica en cuál se trabaja:
+  - `C:\ProgsConIA\editorMD`: el **original** (sesiones #1-#3, F0 a F2 sesión A; proyecto de Claude Code `C--ProgsConIA-editorMD`).
+  - `C:\ProgIA\editorMD`: el **nuevo** (desde la sesión #4, F2 sesión B; proyecto `C--ProgIA-editorMD`). Identidad git configurada **solo en el repositorio** (`git config user.email Ismael.Caballero@uclm.es`).
+
+  Las transcripciones de cada sesión, que se usan para medir el uso de IA, solo existen en el ordenador donde se hizo esa sesión.
 - Git 2.51, Node 24.16, npm 11.13, WebView2, Rust 1.99 (MSVC), VS Build Tools 2026 y gh 2.102 instalados. `gh` autenticado como `IsmaelCaballero`.
 - Repositorio **público**: https://github.com/IsmaelCaballero/editorMD (remoto `origin`). La CI se ejecuta en cada push a `main` y en cada PR.
 - Nota: en PowerShell puede hacer falta recargar el PATH para ver `cargo`/`gh`.
