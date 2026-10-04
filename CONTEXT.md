@@ -23,6 +23,9 @@ Un editor Markdown de escritorio con GUI, **ligero** (poca memoria) y **portable
 13. Código documentado con el estándar de cada lenguaje: **rustdoc** (Rust) y **TSDoc + TypeDoc** (TS) (PLAN.md §10.2).
 14. **Una rama git por feature**; **preguntar siempre al usuario antes de cada pull request/merge** (PLAN.md §10.3).
 15. El usuario quiere **aprender**: mantener la página web `docs/index.html` con el plan, los pasos dados, un resumen, hipervínculos internos y el progreso gráfico (incluidos ramas y PR). Actualizarla en cada paso (PLAN.md §10.4).
+16. **El usuario fusiona los PR él mismo desde GitHub.** Abrir el PR, esperar la CI en verde y avisar con una guía de revisión; después, revisar la fusión.
+17. **No borrar ramas** tras fusionarlas. En un desarrollo normal se recomienda **borrar las ramas una vez fusionadas**. En este proyecto **se conservan deliberadamente**: por razones académicas (para mostrar a los alumnos el proceso completo) y por **trazabilidad del esfuerzo de desarrollo**, ya que en el futuro el trabajo se repartirá entre varios miembros del equipo, cada uno trabajando sobre una parte del sistema con su propio arnés.
+18. **Cada etiqueta (tag/release) se enlaza en `docs/index.html`** (sección «Versiones publicadas», `PROJECT.tags`).
 
 ## Convenciones del proyecto
 - Idioma de la documentación: **español**. Código e identificadores: inglés.
@@ -61,6 +64,7 @@ Ninguna bloqueante. Confirmadas por el usuario el 2026-10-03: D-06 GitHub, D-08 
 
 ## Cómo trabajar en el repo
 - `npm test` (Vitest) · `npm run coverage` · `npm run check` (tipos) · `npm run build`
+- `npm run lint` / `npm run format` (ESLint + Prettier) · `npm run lint:rust` / `npm run format:rust` (clippy + rustfmt)
 - `npm run tauri dev` (app de escritorio; requiere Rust) · `cargo test --manifest-path src-tauri/Cargo.toml`
 - `npm run docs` → `docs/api/ts` + `docs/api/rust` (no se versionan)
 - Web de aprendizaje: `docs/index.html`; datos en el objeto `PROJECT` del `<script>`. **Actualizarla en cada paso** (diario, fases, ramas, componentes, KPIs).

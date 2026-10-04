@@ -147,6 +147,7 @@
       <li><a href="#planificacion">Planificación</a></li>
       <li><a href="#diario">Diario de pasos</a></li>
       <li><a href="#git">Ramas y pull requests</a></li>
+      <li><a href="#versiones">Versiones publicadas</a></li>
       <li><a href="#arquitectura">Arquitectura MVC</a></li>
       <li><a href="#componentes">Componentes y versiones</a></li>
       <li><a href="#decisiones">Decisiones</a></li>
@@ -186,11 +187,22 @@
     <section id="git">
       <h2>Ramas y pull requests</h2>
       <p class="lead">Se usa <a href="#c-branch">una rama por feature</a>. Ninguna rama se fusiona en <code>main</code> sin tu aprobación (<a href="#c-pr">pull request</a>).</p>
+      <div class="callout info"><strong>¿Por qué no se borran las ramas?</strong> En un desarrollo normal se recomienda <b>borrar las ramas una vez fusionadas</b>. En este proyecto <b>se conservan deliberadamente</b>: por razones académicas (para mostrar a los alumnos el proceso completo) y por <b>trazabilidad del esfuerzo de desarrollo</b>, ya que en el futuro el trabajo se repartirá entre varios miembros del equipo, cada uno trabajando sobre una parte del sistema con su propio arnés.</div>
       <div class="mermaid-box"><pre class="mermaid" id="gitgraph"></pre></div>
       <h3>Estado de las ramas</h3>
       <div class="table-wrap"><table>
         <thead><tr><th>Rama</th><th>Objetivo</th><th>Estado</th><th>Commits</th><th>PR</th></tr></thead>
         <tbody id="branches"></tbody>
+      </table></div>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="versiones">
+      <h2>Versiones publicadas</h2>
+      <p class="lead">Cada <a href="#c-tag">etiqueta</a> marca el commit exacto de una versión <a href="#c-semver">SemVer</a> y tiene su <i>Release</i> en GitHub.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Etiqueta</th><th>Fecha</th><th>Tipo</th><th>Commit</th><th>Contenido</th></tr></thead>
+        <tbody id="tags"></tbody>
       </table></div>
     </section>
 
@@ -272,16 +284,22 @@ const PROJECT = {
   currentPhase: "F0",
   tests: { passed: 33, total: 33, coverage: "98 %" },
   ci: "4/4 SO en verde",
+  tags: [
+    { name: "v0.0.1", date: "2026-10-04", pre: true, commit: "86df753", url: "https://github.com/IsmaelCaballero/editorMD/releases/tag/v0.0.1",
+      summary: "Esqueleto F0: Tauri 2 + Svelte 5, M17 SemVer, rustdoc/TypeDoc, CI en 4 SO, web del proyecto" },
+  ],
   summary: `
     <p><strong>Sesión 2 (2026-10-04).</strong> La app <b>arranca</b> en Windows 11 (<code>npm run tauri dev</code>).
     Se creó el <a href="https://github.com/IsmaelCaballero/editorMD">repositorio público en GitHub</a> y se abrió el
     <a href="https://github.com/IsmaelCaballero/editorMD/pull/1">PR #1</a>. La <a href="#c-ci">CI</a> pasó a la primera en
-    <b>Windows, Ubuntu, macOS y Fedora</b>, y lo fusionaste desde GitHub. Se revisó la fusión y se preparó la versión
-    <a href="#c-semver">0.0.1</a> en la rama <code>chore/release-0.0.1</code>.</p>
+    <b>Windows, Ubuntu, macOS y Fedora</b>, y lo fusionaste desde GitHub. Se revisó la fusión y tras el PR #2 se publicó la etiqueta
+    <a href="https://github.com/IsmaelCaballero/editorMD/releases/tag/v0.0.1"><b>v0.0.1</b></a> (ver <a href="#versiones">versiones</a>).
+    Por último se completó <b>F0.7</b> (<a href="#c-linter">linters</a> y <a href="#c-formatter">formateadores</a>) en la rama
+    <code>feature/F0-linters</code> → PR #3. <b>F0 queda completa.</b></p>
     <p><strong>Sesión 1 (2026-10-03).</strong> Plan completo, 16 decisiones, esqueleto Tauri 2 + Svelte 5,
     primer componente <a href="#comp-M17">M17 SemVer</a> (29 tests) y documentación con rustdoc y TypeDoc.</p>`,
-  next: `<strong>Siguiente paso:</strong> aprobar el <a href="https://github.com/IsmaelCaballero/editorMD/pulls">PR #2</a>
-    (versión 0.0.1) y crear la etiqueta <code>v0.0.1</code>. Después: <b>F0.7 linters</b> y empezar <a href="#phase-F1">F1 · Esqueleto MVC</a>.`,
+  next: `<strong>Siguiente paso:</strong> revisar y fusionar el <a href="https://github.com/IsmaelCaballero/editorMD/pull/3">PR #3</a> (linters)
+    cuando la CI esté en verde. Después, presentaré el plan detallado de <a href="#phase-F1">F1 · Esqueleto MVC</a> para tu ok.`,
 
   phases: [
     { id: "F0", name: "Decisiones y entorno", target: "0.0.x", tasks: [
@@ -291,7 +309,7 @@ const PROJECT = {
       ["ok", "F0.4 Repositorio git, .gitignore, .gitattributes, licencia MIT, README, CHANGELOG"],
       ["ok", "F0.5 Proyecto Tauri + Vite + Svelte: compila y arranca (tauri dev)"],
       ["ok", "F0.6 Vitest + cobertura + CI en GitHub Actions: verde en los 4 SO"],
-      ["todo", "F0.7 Linters/formateadores (rustfmt, clippy, ESLint, Prettier)"],
+      ["ok", "F0.7 Linters: ESLint, Prettier, rustfmt, clippy pedantic, EditorConfig + job lint en CI"],
       ["ok", "F0.8 Documentación: TypeDoc ✔ · rustdoc ✔ (sin avisos de missing_docs)"],
       ["ok", "F0.9 Página web del proyecto (esta página)"],
     ]},
@@ -450,6 +468,33 @@ const PROJECT = {
       cmds: "git switch -c chore/release-0.0.1\ngit tag -a v0.0.1 -m \"editorMD 0.0.1\"   # después del merge\ngit push origin v0.0.1",
       why: "Una etiqueta SemVer marca exactamente qué commit corresponde a cada versión publicada.",
       concepts: ["semver", "keep-a-changelog", "tag"] },
+    { date: "2026-10-04", title: "Fusión del PR #2 y etiqueta v0.0.1", branch: "main", commit: "86df753",
+      did: ["Fusionaste el PR #2 desde GitHub; revisé que <code>main</code> coincide con la rama probada y que la CI sobre <code>main</code> está en verde.",
+            "Etiqueta <b>anotada</b> <code>v0.0.1</code> sobre el merge, con <a href='https://github.com/IsmaelCaballero/editorMD/releases/tag/v0.0.1'>Release en GitHub</a> marcada como <i>pre-release</i> (0.x).",
+            "Las notas de la Release se extraen automáticamente de la sección <code>[0.0.1]</code> del CHANGELOG.",
+            "Nueva norma: cada etiqueta se enlaza en esta web (sección <a href='#versiones'>Versiones publicadas</a>)."],
+      cmds: "git tag -a v0.0.1 86df753 -m \"editorMD 0.0.1\"\ngit push origin v0.0.1\ngh release create v0.0.1 --prerelease --notes-file notes.md",
+      why: "Una versión publicada debe poder reconstruirse siempre a partir del mismo commit; la etiqueta lo garantiza.",
+      concepts: ["tag", "semver", "keep-a-changelog"] },
+    { date: "2026-10-04", title: "Decisión: conservar las ramas fusionadas", branch: "—",
+      did: ["No se borra ninguna rama tras fusionarla, ni en local ni en GitHub.",
+            "Anotado en PLAN.md §10.3, CONTEXT.md, STATUS.md, README.md y en esta web (sección <a href='#git'>Ramas</a>)."],
+      why: "En un desarrollo normal se recomienda <b>borrar las ramas una vez fusionadas</b>. En este proyecto <b>se conservan deliberadamente</b>: por razones académicas (para mostrar a los alumnos el proceso completo) y por <b>trazabilidad del esfuerzo de desarrollo</b>, ya que en el futuro el trabajo se repartirá entre varios miembros del equipo, cada uno trabajando sobre una parte del sistema con su propio arnés.",
+      concepts: ["branch"] },
+    { date: "2026-10-04", title: "F0.7 · Linters y formateadores", branch: "feature/F0-linters", commit: "97b8908",
+      did: ["<b>ESLint 10</b> (flat config) con reglas recomendadas de JS, typescript-eslint y Svelte; <b>Prettier</b> con plugin de Svelte; <b>EditorConfig</b>.",
+            "<b>rustfmt</b> y <b>clippy</b> en modo <code>pedantic</code> con <code>-D warnings</code> (todo aviso es un error), más <code>unsafe_code = forbid</code>.",
+            "Hallazgos reales: <code>build.rs</code> (generado por Tauri) mal indentado, sin <code>;</code> y sin documentar; clippy pedía <i>backticks</i> en «SemVer» y «WebView» → se declararon palabras válidas en <code>clippy.toml</code>.",
+            "Falso positivo de ESLint con <code>__APP_VERSION__</code> → <code>no-undef</code> desactivado en TS (recomendación oficial: el compilador ya lo comprueba).",
+            "Nuevo job <code>lint</code> en la CI (solo Ubuntu: el estilo no depende del SO)."],
+      cmds: "npm run lint        # ESLint + Prettier --check\nnpm run format      # Prettier --write\nnpm run lint:rust   # rustfmt --check + clippy -D warnings",
+      why: "El estilo se comprueba automáticamente y no en la revisión humana; el PR se centra en la lógica.",
+      concepts: ["linter", "formatter", "editorconfig", "ci"] },
+    { date: "2026-10-04", title: "Commit de solo formato", branch: "feature/F0-linters", commit: "8e7b747",
+      did: ["<code>prettier --write .</code> reformateó 6 ficheros (configuración, CSS y scripts) sin cambios de lógica.",
+            "Va en un commit <code>style:</code> separado para que en el PR se distinga de los cambios de configuración."],
+      why: "Mezclar formato y lógica en un commit hace casi imposible revisar qué cambió de verdad.",
+      concepts: ["formatter", "conventional-commits"] },
   ],
 
   git: {
@@ -464,12 +509,18 @@ const PROJECT = {
       { t: "commit", branch: "feature/F0-scaffold", id: "155ce1b", msg: "build: Cargo.lock" },
       { t: "merge", into: "main", from: "feature/F0-scaffold", id: "1b4d036 Merge PR #1" },
       { t: "branch", name: "chore/release-0.0.1" },
-      { t: "commit", branch: "chore/release-0.0.1", id: "PR #2", msg: "chore(release): 0.0.1" },
+      { t: "commit", branch: "chore/release-0.0.1", id: "19ba324", msg: "chore(release): 0.0.1" },
+      { t: "merge", into: "main", from: "chore/release-0.0.1", id: "86df753 Merge PR #2", tag: "v0.0.1" },
+      { t: "branch", name: "feature/F0-linters" },
+      { t: "commit", branch: "feature/F0-linters", id: "97b8908", msg: "build: linters y formateadores" },
+      { t: "commit", branch: "feature/F0-linters", id: "8e7b747", msg: "style: Prettier" },
+      { t: "commit", branch: "feature/F0-linters", id: "PR #3", msg: "docs: F0 cerrada" },
     ],
     branches: [
-      { name: "main", goal: "Rama estable", status: ["ok", "estable · CI verde"], commits: 2, pr: "" },
-      { name: "feature/F0-scaffold", goal: "F0: esqueleto, tests, documentación, CI y web", status: ["ok", "fusionada (PR #1)"], commits: 6, pr: 1 },
-      { name: "chore/release-0.0.1", goal: "CHANGELOG 0.0.1 y actualización de la documentación", status: ["wip", "PR #2 pendiente de tu aprobación"], commits: 1, pr: 2 },
+      { name: "main", goal: "Rama estable", status: ["ok", "estable · CI verde · v0.0.1"], commits: 3, pr: "" },
+      { name: "feature/F0-scaffold", goal: "F0: esqueleto, tests, documentación, CI y web", status: ["ok", "fusionada (PR #1) · se conserva"], commits: 6, pr: 1 },
+      { name: "chore/release-0.0.1", goal: "CHANGELOG 0.0.1 y actualización de la documentación", status: ["ok", "fusionada (PR #2) · se conserva"], commits: 1, pr: 2 },
+      { name: "feature/F0-linters", goal: "F0.7: linters, formateadores y job lint en CI", status: ["wip", "PR #3 · pendiente de CI y de tu revisión"], commits: 3, pr: 3 },
     ],
   },
 
@@ -539,6 +590,9 @@ const PROJECT = {
     "svelte": ["Svelte 5", "Framework de interfaz que <i>compila</i> los componentes a JavaScript directo, sin DOM virtual. El resultado son bundles pequeños y rápidos."],
     "ci": ["Integración continua (CI)", "Un servicio (aquí, GitHub Actions) compila y ejecuta los tests automáticamente en cada push o PR, en máquinas limpias de cada SO. Un PR con la CI en rojo no se fusiona."],
     "tag": ["Etiqueta git (tag)", "Nombre fijo que apunta a un commit concreto, p. ej. <code>v0.0.1</code>. Las <i>anotadas</i> (<code>git tag -a</code>) guardan autor, fecha y mensaje. GitHub las usa para crear <i>Releases</i> descargables."],
+    "linter": ["Linter", "Herramienta que analiza el código sin ejecutarlo y avisa de errores probables y malas prácticas: variables sin usar, comparaciones peligrosas, código poco idiomático… Aquí: <b>ESLint</b> (TS/Svelte) y <b>clippy</b> (Rust)."],
+    "formatter": ["Formateador", "Reescribe el código con un estilo único (espacios, comillas, saltos de línea), para que nadie discuta de estilo y los diffs muestren solo los cambios reales. Aquí: <b>Prettier</b> y <b>rustfmt</b>."],
+    "editorconfig": ["EditorConfig", "Fichero <code>.editorconfig</code> que la mayoría de editores leen para aplicar la misma codificación (UTF-8), el mismo fin de línea (LF) y la misma indentación, independientemente de la configuración personal."],
     "tdd": ["TDD", "Desarrollo guiado por pruebas: se escribe un test que falla, luego el código mínimo que lo hace pasar y después se refactoriza. Encaja con el Modelo, que está formado por funciones puras."],
     "coverage": ["Cobertura", "Porcentaje de líneas o ramas que ejecutan los tests. Es un indicador, no una garantía: el 100 % no implica ausencia de errores. Objetivo del proyecto: ≥ 85 % en Modelo y Controlador."],
     "encoding": ["Codificación de caracteres", "Cómo se convierten los caracteres en bytes. UTF-8 representa cualquier carácter; ASCII solo 128; Windows-1252 e ISO-8859-1 representan el alfabeto occidental con 1 byte. El BOM es una marca inicial opcional que identifica UTF-8 o UTF-16."],
@@ -575,6 +629,7 @@ const bar = (ok, wip, n) => `<div class="bar" role="img" aria-label="${ok} de ${
     ["Componentes", `${impl}/${PROJECT.components.length}`, "implementados"],
     ["Ramas abiertas", open, "pendientes de PR"],
     ["Repositorio", `<a href="${PROJECT.repo}">GitHub</a>`, "público"],
+    ["Última versión", `<a href="${PROJECT.tags.at(-1).url}">${PROJECT.tags.at(-1).name}</a>`, PROJECT.tags.at(-1).pre ? "pre-release" : "estable"],
   ];
   $("kpis").innerHTML = k.map(([l, v, s]) => `<div class="kpi"><div class="label">${l}</div><div class="value">${v}</div><div class="sub">${esc(s)}</div></div>`).join("");
   $("summary").innerHTML = PROJECT.summary;
@@ -617,6 +672,12 @@ $("gitgraph").textContent = "gitGraph\n" + PROJECT.git.events.map((e) => {
   if (e.t === "merge") return `  checkout ${e.into}\n  merge ${e.from} id: "${e.id}"` + (e.tag ? ` tag: "${e.tag}"` : "");
   return "";
 }).join("\n");
+
+// Versiones publicadas (una fila por etiqueta, la más reciente primero)
+$("tags").innerHTML = [...PROJECT.tags].reverse().map((t) =>
+  `<tr><td><a href="${t.url}"><strong>${t.name}</strong></a></td><td>${t.date}</td>
+   <td><span class="pill ${t.pre ? "wip" : "ok"}">${t.pre ? "pre-release" : "estable"}</span></td>
+   <td><code>${t.commit}</code></td><td>${esc(t.summary)}</td></tr>`).join("");
 
 // Componentes con filtro por capa
 function renderComponents(layer) {

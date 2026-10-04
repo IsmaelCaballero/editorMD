@@ -7,6 +7,13 @@ y el proyecto usa [Semantic Versioning 2.0.0](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+### Added
+- Linters y formateadores: ESLint + Prettier (TS/Svelte), rustfmt + clippy pedantic (Rust), EditorConfig.
+- Job `lint` en la CI.
+
+### Changed
+- Código existente formateado con Prettier; `build.rs` documentado.
+
 ## [0.0.1] - 2026-10-04
 
 Esqueleto de la fase F0 ([PR #1](https://github.com/IsmaelCaballero/editorMD/pull/1)).

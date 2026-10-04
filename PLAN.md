@@ -270,7 +270,7 @@ Asociación de `.md`, `.markdown`, `.Rmd` (y opcionalmente `.txt`), iconos y ent
 - [x] F0.4 Repositorio git, `.gitignore`, licencia, README
 - [x] F0.5 Proyecto Tauri + Vite + Svelte; estructura `src/` (frontend: `model/`, `view/`, `controller/`), `src-tauri/src/` (`model/`, `commands/`), `tests/`, `fixtures/`
 - [x] F0.6 Tests + cobertura + CI multiplataforma (verde en los 4 SO, PR #1)
-- [ ] F0.7 Linters/formateadores: rustfmt, clippy, ESLint, Prettier
+- [x] F0.7 Linters/formateadores: rustfmt, clippy (pedantic, `-D warnings`), ESLint, Prettier, EditorConfig + job `lint` en CI
 - [x] F0.8 Documentación del código: rustdoc (`cargo doc`) + TSDoc/TypeDoc, publicada en `docs/api/`
 - [x] F0.9 Página web del proyecto `docs/index.html` (plan, progreso, diario de aprendizaje, ramas y PR)
 
@@ -411,9 +411,24 @@ Reglas:
 - **Una rama por feature/tarea**: `feature/F<fase>-<slug>` (p. ej. `feature/F0-scaffold`, `feature/F2-text-codec`). Correcciones: `fix/<slug>`. Documentación: `docs/<slug>`.
 - Al terminar una rama: tests en verde y documentación generada. Después **se pregunta al usuario** si se abre o fusiona el *pull request*. No se fusiona nada sin su aprobación.
 - La fusión se hace con `--no-ff`, para que cada feature quede visible en el historial. Se etiqueta `vX.Y.Z` al cerrar un hito.
-- Remoto: GitHub (D-06). Mientras no exista, el «PR» es una revisión local seguida de un merge, con la aprobación del usuario.
+- **El usuario fusiona los PR personalmente desde GitHub** (para aprender el proceso). El asistente abre el PR, espera la CI en verde en los 4 SO y avisa con una guía de revisión.
+- **Las ramas NO se borran tras fusionarse.** En un desarrollo normal se recomienda **borrar las ramas una vez fusionadas**. En este proyecto **se conservan deliberadamente**: por razones académicas (para mostrar a los alumnos el proceso completo) y por **trazabilidad del esfuerzo de desarrollo**, ya que en el futuro el trabajo se repartirá entre varios miembros del equipo, cada uno trabajando sobre una parte del sistema con su propio arnés.
+- **Etiquetas:** anotadas (`git tag -a vX.Y.Z`) sobre el merge commit de `main`, con su *GitHub Release* (pre-release mientras sea `0.x`). **Cada etiqueta se enlaza en `docs/index.html`** (sección «Versiones publicadas»).
+- Remoto: https://github.com/IsmaelCaballero/editorMD (D-06).
 
 ### 10.4 Página web del proyecto (aprendizaje)
 - Fichero `docs/index.html`, autocontenido (preparado para GitHub Pages).
 - Contenido: índice con hipervínculos internos, plan y progreso por fase, arquitectura, registro de componentes y versiones, decisiones, **diario de pasos** (qué se hizo, por qué, conceptos aprendidos y comandos), ramas y PR, y enlaces a la documentación de la API.
 - **Se actualiza en cada paso.** Los datos están en el objeto `PROJECT` al principio del `<script>`.
+- Incluye la sección **Versiones publicadas** con el enlace a cada etiqueta/release (`PROJECT.tags`).
+
+### 10.5 Calidad de código (linters y formateadores)
+| Lenguaje | Herramienta | Comando | Configuración |
+|---|---|---|---|
+| TS/Svelte | ESLint (recomendadas JS + typescript-eslint + svelte) | `npm run lint` | `eslint.config.js` |
+| TS/Svelte/JSON/CSS | Prettier | `npm run format` | `.prettierrc.json`, `.prettierignore` |
+| Rust | rustfmt | `npm run format:rust` | `src-tauri/rustfmt.toml` |
+| Rust | clippy (`all` + `pedantic`, `-D warnings`) | `npm run lint:rust` | `[lints]` en `Cargo.toml`, `src-tauri/clippy.toml` |
+| Todos | EditorConfig | (editor) | `.editorconfig` |
+
+Regla: un PR no se fusiona con el job `lint` de la CI en rojo. Los cambios de solo formato van en commits `style:` separados.

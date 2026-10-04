@@ -5,34 +5,35 @@
 
 ## ⏸ Punto de reanudación (2026-10-04, sesión #2)
 
-**Dónde estamos:** F0 cerrada salvo **F0.7 (linters)**. PR #1 fusionado por el usuario en GitHub (merge `1b4d036`). Rama `chore/release-0.0.1` con CHANGELOG `[0.0.1]` y la actualización de la documentación → PR #2. **Tras fusionarlo: etiquetar `v0.0.1`** sobre el merge.
+**Dónde estamos:** **F0 completa (9/9).** Publicada la etiqueta **`v0.0.1`** (pre-release): https://github.com/IsmaelCaballero/editorMD/releases/tag/v0.0.1. Rama `feature/F0-linters` (F0.7) → **PR #3** en espera de la CI y de la revisión del usuario.
 
-**Repositorio:** https://github.com/IsmaelCaballero/editorMD · CI: Actions (Windows, Ubuntu 22.04, macOS, Fedora).
+**Reglas de trabajo** (ver CONTEXT.md 16-18): el usuario fusiona los PR desde GitHub; **las ramas no se borran**; cada etiqueta se enlaza en `docs/index.html`.
+
+> En un desarrollo normal se recomienda **borrar las ramas una vez fusionadas**. En este proyecto **se conservan deliberadamente**: por razones académicas (para mostrar a los alumnos el proceso completo) y por **trazabilidad del esfuerzo de desarrollo**, ya que en el futuro el trabajo se repartirá entre varios miembros del equipo, cada uno trabajando sobre una parte del sistema con su propio arnés.
 
 **Siguientes pasos:**
-1. PR #2 (`chore/release-0.0.1`) → aprobación del usuario → `git tag -a v0.0.1` + `git push origin v0.0.1` (+ GitHub Release).
-2. Rama `feature/F0-linters`: rustfmt, clippy (`-D warnings`), ESLint + Prettier, integrados en la CI.
-3. Rama `feature/F1-mvc-skeleton`: interfaces, M01 DocumentState, M07 MarkdownCodec + corpus de fidelidad, Milkdown, C01 AppController.
+1. CI del PR #3 en verde → avisar al usuario → él fusiona → revisar la fusión.
+2. Explicar el plan de F1 y esperar su ok → rama `feature/F1-mvc-skeleton`.
 
 ## Resumen
 
 | Campo | Valor |
 |---|---|
 | Fase actual | **F0 — Decisiones y entorno** |
-| Versión de la app | 0.0.1 (en `main`; etiqueta `v0.0.1` pendiente del PR #2) |
+| Versión de la app | **0.0.1** · etiqueta [v0.0.1](https://github.com/IsmaelCaballero/editorMD/releases/tag/v0.0.1) |
 | Stack | Rust + Tauri 2 · WYSIWYG |
 | Salud | 🟢 CI en verde en los 4 SO; app arranca en Windows 11 |
 | Tests | TS: 29/29 ✅ · Rust: 3/3 + 1 doctest ✅ |
 | Cobertura | TS Modelo: 97,95 % líneas |
 | CI | ✅ GitHub Actions: Windows, Ubuntu 22.04, macOS y Fedora |
-| Git | https://github.com/IsmaelCaballero/editorMD · `main` con PR #1 fusionado · `chore/release-0.0.1` (PR #2) |
+| Git | https://github.com/IsmaelCaballero/editorMD · PR #1 y #2 fusionados · `feature/F0-linters` (PR #3) · ramas conservadas (motivo académico) |
 | Web del proyecto | `docs/index.html` |
 
 ## Progreso por fase
 
 | Fase | Estado | Avance |
 |---|---|---|
-| F0 Decisiones y entorno | 🔄 Casi cerrada | 8/9 (falta F0.7) |
+| F0 Decisiones y entorno | ✅ Completa (pendiente del PR #3) | 9/9 |
 | F1 Esqueleto MVC | ⏳ Pendiente | 0/5 |
 | F2 Ficheros y codificaciones | ⏳ Pendiente | 0/8 |
 | F3 Edición | ⏳ Pendiente | 0/3 |
@@ -54,12 +55,11 @@ Implementados: **M00 AppInfo 0.1.0**, **M17 SemVer 0.1.0**, **V01 MainWindow 0.1
 | M00 AppInfo (Rust) | 3 + 1 doctest | 4 | — |
 
 ## Bloqueos / pendiente del usuario
-- Aprobar el PR #2 (`chore/release-0.0.1`).
+- Revisar y fusionar el PR #3 (`feature/F0-linters`).
 
 ## Próximos pasos
-1. PR #2 y etiqueta `v0.0.1`.
-2. F0.7 linters.
-3. F1 (esqueleto MVC con Milkdown).
+1. PR #3 (linters).
+2. F1 (esqueleto MVC con Milkdown), tras el ok del usuario al plan.
 
 ## Registro de sesiones
 | Fecha | Sesión | Hecho |
@@ -67,6 +67,7 @@ Implementados: **M00 AppInfo 0.1.0**, **M17 SemVer 0.1.0**, **V01 MainWindow 0.1
 | 2026-10-03 | #1 | Plan inicial; creados PLAN.md, STATUS.md y CONTEXT.md; propuesta de stacks y arquitectura MVC |
 | 2026-10-03 | #1 | Decididos D-01 (Tauri), D-02 (WYSIWYG), D-03 (formatos), D-15 (codificaciones y fin de línea). Añadido el soporte .Rmd. Plan reescrito para Tauri |
 | 2026-10-03 | #1 | Decididos D-05 (extras + barra de accesos directos), D-07 (MIT), D-11 (Typst), D-12 (modo fuente). Nuevos componentes M14–M16, V09–V11 |
+| 2026-10-04 | #2 | PR #2 fusionado por el usuario. Etiqueta + release `v0.0.1`. Decidido: ramas conservadas y enlace a cada etiqueta en la web. F0.7: ESLint, Prettier, rustfmt, clippy pedantic, EditorConfig y job lint en CI (rama `feature/F0-linters`, PR #3). |
 | 2026-10-04 | #2 | `tauri dev` ✅ (la app arranca). Repositorio público creado; PR #1 con CI verde en los 4 SO; fusionado por el usuario. Rama `chore/release-0.0.1`: CHANGELOG 0.0.1 y actualización de la documentación y de la web. |
 | 2026-10-03 | #1 | Toolchain instalada (Rust 1.99, MSVC, gh 2.102). cargo test ✅, rustdoc ✅. Fin de la sesión. |
 | 2026-10-03 | #1 | CI GitHub Actions (4 SO) preparada. Decidido: GitHub público y PR F0 tras compilar Rust. Sesión cerrada por el usuario (problemas instalando `gh`). |
