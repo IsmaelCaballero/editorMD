@@ -1,0 +1,11 @@
+```{r grafico, echo=FALSE, fig.width=7, fig.height=4, fig.cap="Velocidad"}
+plot(cars)
+```
+
+```{python}
+import pandas as pd
+```
+
+```{r}
+x <- c(1, 2, 3)
+```

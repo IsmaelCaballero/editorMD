@@ -1,0 +1,4 @@
+- [ ] Tarea pendiente
+- [x] Tarea hecha
+- [ ] Otra pendiente
+  - [x] Subtarea hecha

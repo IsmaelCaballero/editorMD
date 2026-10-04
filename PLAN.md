@@ -178,7 +178,7 @@ Cada componente lleva su propia versión **[Semantic Versioning 2.0.0](https://s
 | M04 | Modelo | TS | `ListCommands` | Viñetas, numeradas, tareas, sangrado | 0.0.0 | F5 |
 | M05 | Modelo | TS | `TableModel` | Crear, filas/columnas, alineación | 0.0.0 | F5 |
 | M06 | Modelo | TS | `SearchEngine` | Buscar/reemplazar | 0.0.0 | F3 |
-| M07 | Modelo | TS | `MarkdownCodec` | MD ⇄ documento WYSIWYG (GFM, front matter, bloques Rmd) | 0.0.0 | F1 |
+| M07 | Modelo | TS | `MarkdownCodec` | MD ⇄ documento WYSIWYG (GFM, front matter, bloques Rmd) | **0.1.0** | F1 |
 | M08 | Modelo | Rust | `FileService` | Leer/escribir bytes, escritura atómica, permisos | 0.0.0 | F2 |
 | M09 | Modelo | Rust | `TextCodec` | Detección y conversión de codificación + fin de línea, BOM, transliteración, informe de pérdidas | 0.0.0 | F2 |
 | M10 | Modelo | Rust | `Importers` | TXT, HTML → MD | 0.0.0 | F6 |
@@ -213,6 +213,7 @@ Cada componente lleva su propia versión **[Semantic Versioning 2.0.0](https://s
 - M00 `AppInfo` v0.1.0 (2026-10-03) — primera versión: `AppInfo::current()` + comando Tauri `app_info`. Rama `feature/F0-scaffold`.
 - M17 `SemVer` v0.1.0 (2026-10-03) — primera versión: `parse`, `isValid`, `format`, `compare`, `bump`; 29 tests, 98 % de cobertura. Rama `feature/F0-scaffold`.
 - M01 `DocumentState` v0.1.0 (2026-10-04) — primera versión: estado observable (Observer), `isModified` por comparación con la última instantánea guardada, 9 codificaciones y 3 finales de línea; 22 tests, 100 % de líneas. Rama `feature/F1-document-model` (TDD: commit rojo + commit verde).
+- M07 `MarkdownCodec` v0.1.0 (2026-10-04) — primera versión: unified/remark + GFM + front matter; estilo canónico `STRINGIFY_OPTIONS`; `equivalent` (comparación semántica); chunks de R Markdown intactos; corpus de 24 documentos; 101 tests, 100 % de líneas. Rama `feature/F1-markdown-codec` (TDD rojo/verde).
 - V01 `MainWindow` v0.1.0 (2026-10-03) — esqueleto: menús decorativos, área central y barra de estado con versión. Rama `feature/F0-scaffold`.
 
 ### 4.5 Versionado de la aplicación (hitos)
@@ -287,7 +288,7 @@ Asociación de `.md`, `.markdown`, `.Rmd` (y opcionalmente `.txt`), iconos y ent
 
 - [x] F1.1 Interfaces `IEditorView`, `IBackend`, `IDialogService` (`src/controller/ports.ts`)
 - [x] F1.2 M01 `DocumentState` + tests (22)
-- [ ] F1.3 M07 `MarkdownCodec` (GFM + front matter + bloques Rmd) + corpus de fidelidad
+- [x] F1.3 M07 `MarkdownCodec` (GFM + front matter + bloques Rmd) + corpus de fidelidad (24 documentos, 101 tests)
 - [ ] F1.4 V01 `MainWindow` (menús Archivo/Editar/Formato/Insertar/Ver/Ayuda) + V02 Milkdown
 - [ ] F1.5 C01 `AppController` + *composition root* + tests
 
