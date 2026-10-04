@@ -3,18 +3,20 @@
 > Fotografía del estado actual. Se actualiza **al final de cada sesión de trabajo**.
 > Última actualización: 2026-10-04
 
-## ⏸ Punto de reanudación (2026-10-04, sesión #2)
+## ⏸ Punto de reanudación (2026-10-04, fin de la sesión #2)
 
-**Dónde estamos:** **F1 completada.** PR #8 fusionado (`5034771`). Rama `chore/F1-close` (paso 5/5) → **PR #9**: versión **0.0.2** (package.json, Cargo.toml, tauri.conf.json, CHANGELOG) + prueba de sincronización de versiones + documentación.
+**Dónde estamos:** **F1 cerrada** (PR #9 fusionado, `d26dea0`). Rama `docs/ai-usage` → **PR #10**: métricas de uso de IA (F0 y F1 medidas), script `scripts/ai-usage.mjs` y análisis y diseño de la RQ.1.
 
-**Al fusionar el PR #9 (con el ok del usuario):**
-1. Etiqueta anotada `v0.0.2` sobre el merge + GitHub Release (pre-release) con las notas del CHANGELOG.
-2. Renombrar las 5 ramas de F1 a `hecha/F1.<n>de5/…` (local + GitHub).
-3. En la primera rama de F2: completar en la web el hash de la etiqueta y marcar las ramas de F1 como renombradas.
+**Pendiente del ok del usuario:**
+1. Etiqueta `v0.0.2` sobre `d26dea0` (o sobre el merge del PR #10, que solo cambia documentación) + GitHub Release.
+2. Renombrar las 5 ramas de F1 a `hecha/F1.<n>de5/…`.
+3. ¿Se hace el experimento de la RQ.1 (Opus 5.5 frente a Sonnet 5.5) en F2?
 
-**Siguiente fase:** F2 · ficheros y codificaciones (→ 0.1.0). Presentar el plan detallado (pasos/ramas) y esperar el ok.
+**Siguiente sesión (NUEVA, para abaratar el contexto):** leer CONTEXT → STATUS → PLAN y `docs/ai-usage/README.md`; presentar el plan de F2 con una **estimación de tokens por paso**.
 
-**Reglas de trabajo** (CONTEXT.md 16-18): el usuario fusiona los PR; las ramas se renombran al cerrar la fase; cada etiqueta se enlaza en la web; avisar antes de medir en la app real.
+**Uso de IA hasta ahora:** F0 10,38 USD eq. (107 llamadas) · F1 15,54 USD eq. (131 llamadas) · modelo `claude-opus-5-5`.
+
+**Reglas de trabajo** (CONTEXT.md 16-20): el usuario fusiona los PR; las ramas se renombran al cerrar la fase; cada etiqueta se enlaza en la web; avisar antes de medir en la app real; documentar el uso de IA en cada paso.
 
 **Entorno:** Norton inspecciona cada `editormd.exe` nuevo al ejecutarlo (ver CONTEXT.md): tenerlo en cuenta al medir el arranque o la memoria.
 
@@ -78,6 +80,7 @@ Implementados: **M00 AppInfo 0.1.0**, **M01 DocumentState 0.2.0**, **M07 Markdow
 | 2026-10-03 | #1 | Plan inicial; creados PLAN.md, STATUS.md y CONTEXT.md; propuesta de stacks y arquitectura MVC |
 | 2026-10-03 | #1 | Decididos D-01 (Tauri), D-02 (WYSIWYG), D-03 (formatos), D-15 (codificaciones y fin de línea). Añadido el soporte .Rmd. Plan reescrito para Tauri |
 | 2026-10-03 | #1 | Decididos D-05 (extras + barra de accesos directos), D-07 (MIT), D-11 (Typst), D-12 (modo fuente). Nuevos componentes M14–M16, V09–V11 |
+| 2026-10-04 | #2 | PR #9 fusionado (F1 cerrada). Uso de IA medido con la transcripción: F0 10,38 y F1 15,54 USD eq.; análisis de la RQ.1 y diseño del experimento → PR #10. Fin de la sesión #2. |
 | 2026-10-04 | #2 | PR #8 fusionado. El `*` «fantasma» era una edición del usuario (resuelto). F1 paso 5: versión 0.0.2, CHANGELOG, prueba de sincronización de versiones → PR #9. **F1 completada.** |
 | 2026-10-04 | #2 | PR #7 fusionado. F1 paso 4: C01 con TDD (mocks), adaptadores Tauri, diálogos propios, atajos y composition root; investigación de un `*` en el título que no se pudo reproducir (jsdom, Edge con y sin ventana, 3 arranques de la app) → PR #8. |
 | 2026-10-04 | #2 | PR #6 fusionado. F1 paso 3: spike Milkdown (2 pérdidas de datos descubiertas) → M07 v0.2.0 con TDD → V01 menús → V02 editor real; RAM 113 MB privados; bundle 508 kB → PR #7. |

@@ -490,3 +490,18 @@ Regla: un PR no se fusiona con el job `lint` de la CI en rojo. Los cambios de so
 | 3/5 | `feature/F1-milkdown-editor` | `hecha/F1.3de5/feature/F1-milkdown-editor` | #7 |
 | 4/5 | `feature/F1-app-controller` | `hecha/F1.4de5/feature/F1-app-controller` | #8 |
 | 5/5 | `chore/F1-close` | `hecha/F1.5de5/chore/F1-close` | #9 |
+
+---
+
+## 11. Uso de IA: modelo, tokens y coste
+
+Detalle completo, análisis y diseño del experimento de la RQ.1 en [`docs/ai-usage/README.md`](docs/ai-usage/README.md).
+
+| Fase | Modelo | Llamadas | Tokens procesados | Coste eq. API (USD) | Estimación previa |
+|---|---|--:|--:|--:|---|
+| F0 | Claude Opus 5.5 (`claude-opus-5-5`) | 107 | 19,6 M | 10,38 | no se hizo |
+| F1 | Claude Opus 5.5 (`claude-opus-5-5`) | 131 | 50,2 M | 15,54 | no se hizo |
+
+- **Medición:** `node scripts/ai-usage.mjs <transcripción.jsonl> docs/ai-usage/phases.json`, con el uso real que registra Claude Code.
+- **Norma desde F2:** estimar antes de cada paso (llamadas y USD eq.), medir al fusionar y registrar aquí y en la web. **Cada fase empieza en una sesión nueva**, porque el contexto acumulado multiplica el coste de cada llamada.
+- **Pregunta de investigación RQ.1:** ¿qué es más rentable, un modelo caro con poco *rework* o uno barato con más *rework*? Hay un experimento propuesto (Opus 5.5 frente a Sonnet 5.5 en 2 pasos de F2), pendiente de aprobación.

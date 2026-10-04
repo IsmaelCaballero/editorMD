@@ -1,0 +1,169 @@
+{
+  "models": {
+    "claude-opus-5-5": 243
+  },
+  "prices": {
+    "claude-fable-5-1": {
+      "input": 10,
+      "output": 50,
+      "cacheRead": 0.25
+    },
+    "claude-opus-5-5": {
+      "input": 4,
+      "output": 20,
+      "cacheRead": 0.2
+    },
+    "claude-sonnet-5-5": {
+      "input": 2,
+      "output": 10,
+      "cacheRead": 0.2
+    },
+    "claude-haiku-4-5": {
+      "input": 1,
+      "output": 5,
+      "cacheRead": 0.1
+    }
+  },
+  "rows": [
+    {
+      "phase": "F0",
+      "step": "Plan + esqueleto (PR #1)",
+      "end": "2026-10-04T07:11:38Z",
+      "calls": 63,
+      "input": 132,
+      "cacheWrite5m": 0,
+      "cacheWrite1h": 295441,
+      "cacheRead": 9141646,
+      "output": 123359,
+      "thinking": 19124,
+      "usd": 6.659565200000001
+    },
+    {
+      "phase": "F0",
+      "step": "Versión 0.0.1 (PR #2)",
+      "end": "2026-10-04T07:23:47Z",
+      "calls": 13,
+      "input": 28,
+      "cacheWrite5m": 0,
+      "cacheWrite1h": 18140,
+      "cacheRead": 2692458,
+      "output": 15050,
+      "thinking": 1970,
+      "usd": 0.9847236000000001
+    },
+    {
+      "phase": "F0",
+      "step": "Linters (PR #3)",
+      "end": "2026-10-04T07:42:48Z",
+      "calls": 22,
+      "input": 46,
+      "cacheWrite5m": 0,
+      "cacheWrite1h": 28110,
+      "cacheRead": 5067297,
+      "output": 25771,
+      "thinking": 2425,
+      "usd": 1.7539433999999998
+    },
+    {
+      "phase": "F0",
+      "step": "Cierre F0 (PR #4)",
+      "end": "2026-10-04T07:55:10Z",
+      "calls": 9,
+      "input": 20,
+      "cacheWrite5m": 0,
+      "cacheWrite1h": 20417,
+      "cacheRead": 2307792,
+      "output": 18045,
+      "thinking": 4494,
+      "usd": 0.9858743999999999
+    },
+    {
+      "phase": "F1",
+      "step": "1/5 Modelo M01 (PR #5)",
+      "end": "2026-10-04T08:06:31Z",
+      "calls": 17,
+      "input": 36,
+      "cacheWrite5m": 0,
+      "cacheWrite1h": 28043,
+      "cacheRead": 4786518,
+      "output": 24808,
+      "thinking": 2359,
+      "usd": 1.6779516
+    },
+    {
+      "phase": "F1",
+      "step": "2/5 Codec M07 (PR #6)",
+      "end": "2026-10-04T08:29:37Z",
+      "calls": 14,
+      "input": 30,
+      "cacheWrite5m": 0,
+      "cacheWrite1h": 25315,
+      "cacheRead": 4343048,
+      "output": 23063,
+      "thinking": 3830,
+      "usd": 1.5325096
+    },
+    {
+      "phase": "F1",
+      "step": "3/5 Editor Milkdown (PR #7)",
+      "end": "2026-10-04T09:40:17Z",
+      "calls": 45,
+      "input": 94,
+      "cacheWrite5m": 0,
+      "cacheWrite1h": 74678,
+      "cacheRead": 16115238,
+      "output": 61756,
+      "thinking": 13531,
+      "usd": 5.055967600000001
+    },
+    {
+      "phase": "F1",
+      "step": "4/5 Controlador C01 (PR #8)",
+      "end": "2026-10-04T10:15:51Z",
+      "calls": 42,
+      "input": 86,
+      "cacheWrite5m": 0,
+      "cacheWrite1h": 75984,
+      "cacheRead": 18350685,
+      "output": 63096,
+      "thinking": 14836,
+      "usd": 5.540272999999999
+    },
+    {
+      "phase": "F1",
+      "step": "5/5 Cierre F1 (PR #9)",
+      "end": "2026-10-04T10:26:05Z",
+      "calls": 13,
+      "input": 28,
+      "cacheWrite5m": 0,
+      "cacheWrite1h": 18783,
+      "cacheRead": 6307082,
+      "output": 15999,
+      "thinking": 1696,
+      "usd": 1.7317724
+    },
+    {
+      "phase": "Post-F1",
+      "step": "Métricas de IA y RQ.1",
+      "end": "2099-01-01T00:00:00Z",
+      "calls": 5,
+      "input": 10,
+      "cacheWrite5m": 0,
+      "cacheWrite1h": 53778,
+      "cacheRead": 2545335,
+      "output": 8780,
+      "thinking": 4636,
+      "usd": 1.1149310000000001
+    }
+  ],
+  "total": {
+    "calls": 243,
+    "input": 510,
+    "cacheWrite5m": 0,
+    "cacheWrite1h": 638689,
+    "cacheRead": 71657099,
+    "output": 379727,
+    "thinking": 68901,
+    "usd": 27.0375118
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "$comment": "Ventanas temporales (UTC) de cada fase/paso para atribuir el uso de tokens. Cada paso termina cuando el usuario fusiona su PR; lo que ocurre entre la fusión y el PR siguiente (etiquetas, renombrados, planificación) cuenta para el paso siguiente.",
+  "steps": [
+    { "phase": "F0", "step": "Plan + esqueleto (PR #1)", "end": "2026-10-04T07:11:38Z" },
+    { "phase": "F0", "step": "Versión 0.0.1 (PR #2)", "end": "2026-10-04T07:23:47Z" },
+    { "phase": "F0", "step": "Linters (PR #3)", "end": "2026-10-04T07:42:48Z" },
+    { "phase": "F0", "step": "Cierre F0 (PR #4)", "end": "2026-10-04T07:55:10Z" },
+    { "phase": "F1", "step": "1/5 Modelo M01 (PR #5)", "end": "2026-10-04T08:06:31Z" },
+    { "phase": "F1", "step": "2/5 Codec M07 (PR #6)", "end": "2026-10-04T08:29:37Z" },
+    { "phase": "F1", "step": "3/5 Editor Milkdown (PR #7)", "end": "2026-10-04T09:40:17Z" },
+    { "phase": "F1", "step": "4/5 Controlador C01 (PR #8)", "end": "2026-10-04T10:15:51Z" },
+    { "phase": "F1", "step": "5/5 Cierre F1 (PR #9)", "end": "2026-10-04T10:26:05Z" },
+    { "phase": "Post-F1", "step": "Métricas de IA y RQ.1", "end": "2099-01-01T00:00:00Z" }
+  ]
+}
