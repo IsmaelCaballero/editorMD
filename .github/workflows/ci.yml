@@ -7,6 +7,34 @@ on:
   pull_request:
 
 jobs:
+  # Estilo y calidad (F0.7): no depende del SO, basta con ejecutarlo una vez.
+  lint:
+    name: Lint (ESLint, Prettier, rustfmt, clippy)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dependencias del sistema (WebKitGTK, necesarias para que clippy compile Tauri)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libxdo-dev libssl-dev
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - run: npm ci
+      - name: Lint TS/Svelte (ESLint + Prettier)
+        run: npm run lint
+      # generate_context!() necesita que exista dist/.
+      - run: npm run build
+      - name: Lint Rust (rustfmt + clippy -D warnings)
+        run: npm run lint:rust
+
   test:
     name: Tests (${{ matrix.os }})
     strategy:

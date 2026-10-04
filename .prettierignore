@@ -1,0 +1,15 @@
+# Generados o de terceros
+dist/
+coverage/
+docs/api/
+node_modules/
+src-tauri/target/
+src-tauri/gen/
+package-lock.json
+src-tauri/Cargo.lock
+# Fixtures binarios: no se tocan nunca (ver .gitattributes)
+fixtures/
+# Documentación de gestión: tablas Markdown escritas a mano
+*.md
+# Web del proyecto: un solo fichero con datos editados a mano
+docs/index.html

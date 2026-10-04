@@ -10,5 +10,8 @@ if (!existsSync(src)) {
 rmSync(dst, { recursive: true, force: true })
 cpSync(src, dst, { recursive: true })
 // Página de entrada que redirige a la documentación del crate.
-writeFileSync(`${dst}/index.html`, '<meta http-equiv="refresh" content="0; url=editormd_lib/index.html">')
+writeFileSync(
+  `${dst}/index.html`,
+  '<meta http-equiv="refresh" content="0; url=editormd_lib/index.html">',
+)
 console.log(`Documentación Rust copiada a ${dst}`)
