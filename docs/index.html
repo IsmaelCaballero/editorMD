@@ -298,7 +298,7 @@ const PROJECT = {
   repo: "https://github.com/IsmaelCaballero/editorMD",
   appVersion: "0.0.2",
   currentPhase: "F2",
-  tests: { passed: 373, total: 373, coverage: "100 %" },
+  tests: { passed: 404, total: 404, coverage: "100 %" },
   metrics: { ram: "113 MB", bundle: "508 kB (158 kB gzip)" },
   ci: "4/4 SO en verde",
   ai: {
@@ -313,7 +313,8 @@ const PROJECT = {
       ["F1", "3/5 Editor Milkdown (PR #7)", "—", 45, 16.25, 5.06, 358],
       ["F1", "4/5 Controlador C01 (PR #8)", "—", 42, 18.49, 5.54, 437],
       ["F1", "5/5 Cierre F1 (PR #9)", "—", 13, 6.34, 1.73, 485],
-      ["F2", "1/8 Decodificar M09 + RQ.1 T1 (PR #11, #13)", "≈ 7", 204, 17.6, 10.8, 158],
+      ["F2", "1/8 Decodificar M09 + RQ.1 T1 (PR #11, #13)", "≈ 7", 228, 23.4, 12.5, 163],
+      ["F2", "2/8 Codificar + fin de línea (provisional)", "1,9", 28, 7.8, 2.8, 271],
     ],
   },
   tags: [
@@ -323,6 +324,9 @@ const PROJECT = {
       summary: "F1: editor WYSIWYG Milkdown, menús, C01 AppController, puertos y adaptadores, diálogos; linters (F0.7)" },
   ],
   summary: `
+    <p><strong>F2 · paso 2/8.</strong> <a href="#comp-M09">M09 v0.2.0</a> ya <b>escribe</b>: las 9 codificaciones con su BOM y los 3 finales de línea.
+    El editor recibe siempre LF (<code>\\n</code>); al guardar se restauran la codificación y el fin de línea originales. Se comprueba la
+    <a href="#c-roundtrip">ida y vuelta byte a byte</a> con 27 ficheros de prueba (9 × 3) y uno con finales mezclados, que se avisa.</p>
     <p><strong>F2 · paso 1/8 y primer experimento <a href="#c-rq1">RQ.1</a>.</strong> El mismo encargo
     (<a href="#comp-M09">M09 TextCodec</a>: detectar la codificación y decodificar) lo hicieron <b>3 veces Opus 5.5 y 3 veces Sonnet 5.5</b>,
     cada uno en su <a href="#c-worktree">worktree</a>. Las 6 superaron las 31 <a href="#c-hidden-tests">pruebas ocultas</a>, clippy y rustfmt.
@@ -382,7 +386,7 @@ const PROJECT = {
     ]},
     { id: "F2", name: "Ficheros y codificaciones", target: "0.1.0", tasks: [
       ["ok", "F2.1 TextCodec: detección y decodificación de las 8 codificaciones (RQ.1 T1)"],
-      ["todo", "F2.2 TextCodec: codificación, BOM, LF/CRLF/CR, ida y vuelta byte a byte"],
+      ["ok", "F2.2 TextCodec: codificación, BOM, LF/CRLF/CR, ida y vuelta byte a byte"],
       ["todo", "F2.3 Informe de pérdidas, transliteración y sustitución"],
       ["todo", "F2.4 FileService (escritura atómica) + comandos Tauri"],
       ["todo", "F2.5 FileController: nuevo, abrir, guardar, guardar como, cerrar"],
@@ -717,6 +721,14 @@ const PROJECT = {
       cmds: "node scripts/rq1-metrics.mjs docs/ai-usage/rq1/T1-runs.json\ncargo test --test hidden   # 31 passed en las 6 ejecuciones",
       why: "Un experimento controlado (misma tarea, pruebas ocultas, revisión ciega, repeticiones) separa el efecto del modelo del azar y de los prejuicios del revisor.",
       concepts: ["rq1", "worktree", "hidden-tests", "encoding"] },
+    { date: "2026-10-04", title: "F2 paso 2/8: escribir sin perder ni un byte", branch: "feature/F2-text-codec-encode",
+      did: ["<code>encode</code>: texto → bytes en las 9 codificaciones, con BOM; si un carácter no cabe, error con el carácter y su posición (nunca se sustituye en silencio).",
+            "<code>LineEnding</code> y <code>LineEndingStats</code>: cuenta LF, CRLF y CR, detecta el predominante y avisa si están mezclados.",
+            "<code>read_text</code> / <code>write_text</code>: el editor trabaja con LF; al guardar se restaura el formato original.",
+            "27 ficheros de prueba generados con <code>scripts/generate-encoding-fixtures.py</code>; leer y volver a escribir cada uno da los mismos bytes, incluso cuando la detección confunde Latin-1 o Mac Roman con Windows-1252 (las codificaciones de 8 bits son biyectivas)."],
+      cmds: "python scripts/generate-encoding-fixtures.py\ncargo test   # 53 + 10 doctests",
+      why: "La «ida y vuelta byte a byte» es un objetivo medible de la v1.0: abrir y guardar un fichero sin editarlo no debe cambiar nada, para no ensuciar el historial de Git ni romper otras herramientas.",
+      concepts: ["roundtrip", "eol", "encoding"] },
   ],
 
   git: {
@@ -805,7 +817,7 @@ const PROJECT = {
     ["M06","M","TS","SearchEngine","Buscar/reemplazar","0.0.0","F3"],
     ["M07","M","TS","MarkdownCodec","MD ⇄ árbol mdast fiel (GFM, front matter, Rmd), estilo canónico, protección para el editor","0.2.0","F1"],
     ["M08","M","Rust","FileService","Lectura/escritura atómica","0.0.0","F2"],
-    ["M09","M","Rust","TextCodec","Detección y decodificación de 9 codificaciones (BOM, UTF-8, chardetng); pendiente: escritura, fin de línea, pérdidas","0.1.0","F2"],
+    ["M09","M","Rust","TextCodec","Lectura y escritura en 9 codificaciones, BOM, LF/CRLF/CR, ida y vuelta byte a byte; pendiente: informe de pérdidas","0.2.0","F2"],
     ["M10","M","Rust","Importers","TXT, HTML → MD","0.0.0","F6"],
     ["M11","M","Rust","Exporters","HTML, TXT, PDF (Typst)","0.0.0","F6"],
     ["M12","M","Rust","PandocBridge","DOCX/ODT vía Pandoc","0.0.0","F6"],
@@ -848,6 +860,7 @@ const PROJECT = {
   ],
 
   concepts: {
+    "roundtrip": ["Ida y vuelta byte a byte", "Abrir un fichero y guardarlo sin editar debe producir exactamente los mismos bytes: misma codificación, mismo BOM y mismos finales de línea. Se comprueba con ficheros de prueba binarios que git no puede alterar."],
     "worktree": ["git worktree", "Una segunda (o sexta) copia de trabajo del mismo repositorio, en otra carpeta y con su propia rama, que comparte el historial. Permite que varios agentes trabajen a la vez sin pisarse."],
     "hidden-tests": ["Pruebas ocultas", "Pruebas de aceptación que escribe el evaluador y que no ve quien implementa. Evitan que la solución se ajuste a las pruebas en lugar de a la especificación."],
     "mvc": ["MVC", "Modelo-Vista-Controlador. El <b>Modelo</b> contiene los datos y las reglas, la <b>Vista</b> los muestra y el <b>Controlador</b> traduce las acciones del usuario en operaciones sobre el modelo. Separarlos permite probar la lógica sin interfaz gráfica."],

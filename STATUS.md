@@ -9,7 +9,9 @@
 
 **Paso en curso:** F2 1/8 `feature/F2-text-codec-decode` (M09 detección y decodificación), hecho con el **experimento RQ.1 T1**: las 6 ejecuciones (3 Opus 5.5, 3 Sonnet 5.5) pasan las 31 pruebas ocultas. Revisión ciega: calidad equivalente (≈ 5 min cada una) → gana la más barata, **A = Sonnet** (PR #11 → rama del paso). B = Opus (PR #12, cerrado). Coste por ejecución: Sonnet 0,56 ± 0,11 y Opus 1,00 ± 0,11 USD eq. Falta: el usuario fusiona el PR #11 en la rama del paso → PR del paso hacia `main`.
 
-**Siguiente:** F2 2/8 `feature/F2-text-codec-encode` (sin experimento).
+**Paso 2/8** `feature/F2-text-codec-encode` (parte de la rama del paso 1): M09 v0.2.0 hecho (codificación, finales de línea, ida y vuelta byte a byte con 27 *fixtures*). PR cuando se fusione el #13.
+
+**Siguiente:** F2 3/8 `feature/F2-text-codec-loss` (informe de pérdidas y transliteración).
 
 **Lección del lanzamiento:** los *worktrees* de los subagentes se crean desde `main`, no desde la rama actual, y se borran solos si el agente termina sin cambios. El encargo debe empezar con `git merge --ff-only <commit de la especificación>` (para el paso 4, igual).
 
@@ -36,7 +38,7 @@
 | Versión de la app | **0.0.2** (PR #9) · última etiqueta publicada: [v0.0.2](https://github.com/IsmaelCaballero/editorMD/releases/tag/v0.0.2) |
 | Stack | Rust + Tauri 2 · WYSIWYG |
 | Salud | 🟢 CI en verde en los 4 SO; app arranca en Windows 11 |
-| Tests | TS: 341/341 ✅ · Rust: 28/28 + 4 doctests ✅ (+ 31 pruebas ocultas de RQ.1) |
+| Tests | TS: 341/341 ✅ · Rust: 53/53 + 10 doctests ✅ (+ 31 pruebas ocultas de RQ.1) |
 | Cobertura | Modelo + Controlador + Adaptadores: **100 % de líneas** |
 | CI | ✅ GitHub Actions: Windows, Ubuntu 22.04, macOS y Fedora |
 | Git | https://github.com/IsmaelCaballero/editorMD · F0: PR #1-#4 fusionados y ramas renombradas `hecha/F0.*de4/…` · F1: PR #5-#9 fusionados y ramas renombradas `hecha/F1.*de5/…` · PR #10 métricas de IA |
@@ -58,7 +60,7 @@
 | F9 QA y release | ⏳ Pendiente | 0/4 |
 
 ## Versiones de componentes (resumen)
-Implementados: **M00 AppInfo 0.1.0**, **M09 TextCodec 0.1.0**, **M01 DocumentState 0.2.0**, **M07 MarkdownCodec 0.2.0**, **V02 WysiwygEditorView 0.1.0**, **M17 SemVer 0.1.0**, **V01 MainWindow 0.3.0**, **V12 DialogService 0.1.0**, **C01 AppController 0.1.0**, **A01 TauriBackend 0.1.0**, **A02 TauriWindow 0.1.0**. El resto, en 0.0.0. Ver PLAN.md §4.3.
+Implementados: **M00 AppInfo 0.1.0**, **M09 TextCodec 0.2.0**, **M01 DocumentState 0.2.0**, **M07 MarkdownCodec 0.2.0**, **V02 WysiwygEditorView 0.1.0**, **M17 SemVer 0.1.0**, **V01 MainWindow 0.3.0**, **V12 DialogService 0.1.0**, **C01 AppController 0.1.0**, **A01 TauriBackend 0.1.0**, **A02 TauriWindow 0.1.0**. El resto, en 0.0.0. Ver PLAN.md §4.3.
 
 ## Estado de los tests por componente
 
@@ -73,7 +75,7 @@ Implementados: **M00 AppInfo 0.1.0**, **M09 TextCodec 0.1.0**, **M01 DocumentSta
 | V12 diálogos + ShellState (jsdom) | 11 | 11 | — |
 | A01/A02 adaptadores Tauri (vi.mock) | 4 | 4 | 100 % |
 | M00 AppInfo (Rust) | 3 + 1 doctest | 4 | — |
-| M09 TextCodec (Rust) | 25 + 3 doctests + 31 ocultas | 59 | — |
+| M09 TextCodec (Rust) | 50 + 9 doctests (+ 31 ocultas de RQ.1) | 59 | — |
 
 ## Bloqueos / pendiente del usuario
 - Ninguno por ahora. Al terminar el paso 1: revisión ciega de los PR «A» y «B» del experimento.
