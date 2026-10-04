@@ -1,0 +1,5 @@
+# rustfmt: formato del código Rust (F0.7). Valores estables; el resto, por defecto.
+edition = "2024"
+max_width = 100
+newline_style = "Unix"
+use_field_init_shorthand = true

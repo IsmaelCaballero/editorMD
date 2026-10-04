@@ -1,0 +1,4 @@
+# Configuración de clippy (F0.7).
+# Palabras con mayúsculas internas que NO son código y no necesitan `backticks`
+# en la documentación (lint doc_markdown). ".." conserva la lista por defecto.
+doc-valid-idents = ["SemVer", "WebView", "WebView2", "WebKitGTK", "WKWebView", "TypeScript", "JavaScript", "GitHub", "editorMD", ".."]
