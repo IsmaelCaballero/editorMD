@@ -172,7 +172,7 @@ Cada componente lleva su propia versión **[Semantic Versioning 2.0.0](https://s
 | ID | Capa | Lado | Componente | Responsabilidad | Versión | Fase |
 |---|---|---|---|---|---|---|
 | M00 | Modelo | Rust | `AppInfo` | Nombre y versión de la app (comando `app_info`) | **0.1.0** | F0 |
-| M01 | Modelo | TS | `DocumentState` | Contenido, ruta, modificado, metadatos de codificación/fin de línea | 0.0.0 | F1 |
+| M01 | Modelo | TS | `DocumentState` | Contenido, ruta, modificado, metadatos de codificación/fin de línea | **0.1.0** | F1 |
 | M02 | Modelo | TS | `History` | Deshacer/rehacer (adaptador a la historia de ProseMirror) | 0.0.0 | F3 |
 | M03 | Modelo | TS | `FormatCommands` | Títulos, negrita, cursiva, tachado, código, cita, quitar formato | 0.0.0 | F4 |
 | M04 | Modelo | TS | `ListCommands` | Viñetas, numeradas, tareas, sangrado | 0.0.0 | F5 |
@@ -212,6 +212,7 @@ Cada componente lleva su propia versión **[Semantic Versioning 2.0.0](https://s
 
 - M00 `AppInfo` v0.1.0 (2026-10-03) — primera versión: `AppInfo::current()` + comando Tauri `app_info`. Rama `feature/F0-scaffold`.
 - M17 `SemVer` v0.1.0 (2026-10-03) — primera versión: `parse`, `isValid`, `format`, `compare`, `bump`; 29 tests, 98 % de cobertura. Rama `feature/F0-scaffold`.
+- M01 `DocumentState` v0.1.0 (2026-10-04) — primera versión: estado observable (Observer), `isModified` por comparación con la última instantánea guardada, 9 codificaciones y 3 finales de línea; 22 tests, 100 % de líneas. Rama `feature/F1-document-model` (TDD: commit rojo + commit verde).
 - V01 `MainWindow` v0.1.0 (2026-10-03) — esqueleto: menús decorativos, área central y barra de estado con versión. Rama `feature/F0-scaffold`.
 
 ### 4.5 Versionado de la aplicación (hitos)
@@ -274,9 +275,18 @@ Asociación de `.md`, `.markdown`, `.Rmd` (y opcionalmente `.txt`), iconos y ent
 - [x] F0.8 Documentación del código: rustdoc (`cargo doc`) + TSDoc/TypeDoc, publicada en `docs/api/`
 - [x] F0.9 Página web del proyecto `docs/index.html` (plan, progreso, diario de aprendizaje, ramas y PR)
 
-### F1 — Esqueleto MVC
-- [ ] F1.1 Interfaces `IEditorView`, `IBackend`, `IDialogService`
-- [ ] F1.2 M01 `DocumentState` + tests
+### F1 — Esqueleto MVC  → app 0.0.2 · aprobado por el usuario el 2026-10-04
+
+| Paso | Rama | Contenido | Nombre al cerrar F1 |
+|---|---|---|---|
+| 1/5 | `feature/F1-document-model` | Interfaces MVC (`ports.ts`) + M01 `DocumentState` | `hecha/F1.1de5/feature/F1-document-model` |
+| 2/5 | `feature/F1-markdown-codec` | M07 `MarkdownCodec` (GFM, front matter, Rmd) + corpus de fidelidad | `hecha/F1.2de5/feature/F1-markdown-codec` |
+| 3/5 | `feature/F1-milkdown-editor` | V02 editor Milkdown *kit* + V01 menús declarativos | `hecha/F1.3de5/feature/F1-milkdown-editor` |
+| 4/5 | `feature/F1-app-controller` | C01 `AppController` + composition root (Nuevo, Acerca de, marca `*`) | `hecha/F1.4de5/feature/F1-app-controller` |
+| 5/5 | `chore/F1-close` | Versión 0.0.2, etiqueta, documentación y renombrado | `hecha/F1.5de5/chore/F1-close` |
+
+- [x] F1.1 Interfaces `IEditorView`, `IBackend`, `IDialogService` (`src/controller/ports.ts`)
+- [x] F1.2 M01 `DocumentState` + tests (22)
 - [ ] F1.3 M07 `MarkdownCodec` (GFM + front matter + bloques Rmd) + corpus de fidelidad
 - [ ] F1.4 V01 `MainWindow` (menús Archivo/Editar/Formato/Insertar/Ver/Ayuda) + V02 Milkdown
 - [ ] F1.5 C01 `AppController` + *composition root* + tests
@@ -350,6 +360,7 @@ Asociación de `.md`, `.markdown`, `.Rmd` (y opcionalmente `.txt`), iconos y ent
 | D-12 | Modo fuente Markdown además de WYSIWYG | **Sí, en la v1.0** (conmutación con un atajo) | ✅ Decidido 2026-10-03 |
 | D-13 | Framework frontend | **Svelte 5 + Vite** | ✅ Decidido 2026-10-03 |
 | D-14 | Librería WYSIWYG | **Milkdown** | ✅ Decidido 2026-10-03 |
+| D-17 | Variante de Milkdown | **Milkdown *kit*** (núcleo mínimo; menús y barra propios), no *Crepe* (editor ya montado, más pesado) | ✅ Decidido 2026-10-04 |
 | D-16 | Versionado / docs / git | SemVer 2.0.0 · rustdoc + TSDoc/TypeDoc · rama por feature con PR aprobado por el usuario · web de aprendizaje | ✅ Decidido 2026-10-03 |
 | D-15 | Codificaciones | UTF-8 (±BOM), UTF-16 LE/BE, ASCII, ISO-8859-1, ISO-8859-15, Windows-1252, Mac Roman · LF/CRLF/CR | ✅ Decidido 2026-10-03 (ampliable) |
 
@@ -447,7 +458,7 @@ Regla: un PR no se fusiona con el job `lint` de la CI en rojo. Los cambios de so
 4. Si la fase cierra un hito de versión: etiqueta `vX.Y.Z` + Release + enlace en la web.
 5. Actualizar la web (tabla de ramas con el nombre final y gráfico git), STATUS.md y CONTEXT.md.
 
-**F0 (4 pasos):**
+**F0 (4 pasos) — renombradas el 2026-10-04 ✔:**
 
 | Paso | Rama actual | Nombre al cerrar F0 | PR |
 |---|---|---|---|
