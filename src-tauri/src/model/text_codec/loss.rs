@@ -6,6 +6,8 @@
 //! un [`LossReport`]; si no está vacío, el usuario elige cancelar o una
 //! [`LossStrategy`], y se codifica con [`encode_lossy`].
 
+use std::fmt::Write as _;
+
 use serde::{Deserialize, Serialize};
 
 use super::{Encoding, encode};
@@ -52,7 +54,7 @@ pub struct LossReport {
 impl LossReport {
     /// `true` si el texto cabe entero en la codificación.
     pub fn is_lossless(&self) -> bool {
-        todo!()
+        self.items.is_empty()
     }
 }
 
@@ -68,7 +70,15 @@ impl LossReport {
 /// assert!(can_encode('€', Encoding::Iso8859_15));
 /// ```
 pub fn can_encode(ch: char, encoding: Encoding) -> bool {
-    todo!("{ch} {encoding:?} {}", stringify!(encode))
+    match encoding {
+        Encoding::Utf8 | Encoding::Utf8Bom | Encoding::Utf16Le | Encoding::Utf16Be => true,
+        Encoding::Ascii => ch.is_ascii(),
+        Encoding::Iso8859_1 => u32::from(ch) <= 0xFF,
+        // Codificaciones de 8 bits de `encoding_rs`: se prueba a codificar el carácter.
+        Encoding::Iso8859_15 | Encoding::Windows1252 | Encoding::MacRoman => {
+            ch.is_ascii() || encode(ch.encode_utf8(&mut [0; 4]), encoding).is_ok()
+        }
+    }
 }
 
 /// Analiza qué caracteres de `text` no caben en `encoding`. Las líneas se
@@ -86,7 +96,38 @@ pub fn can_encode(ch: char, encoding: Encoding) -> bool {
 /// assert_eq!(r.items[0].transliteration, "EUR");
 /// ```
 pub fn loss_report(text: &str, encoding: Encoding) -> LossReport {
-    todo!("{text} {encoding:?}")
+    let mut items: Vec<LossItem> = Vec::new();
+    let mut total = 0;
+    for (index, line) in text.split('\n').enumerate() {
+        for ch in line.chars().filter(|&c| !can_encode(c, encoding)) {
+            total += 1;
+            let line_number = index + 1;
+            match items.iter_mut().find(|item| item.ch == ch) {
+                Some(item) => {
+                    item.count += 1;
+                    if item.lines.last() != Some(&line_number) {
+                        item.lines.push(line_number);
+                    }
+                }
+                None => items.push(LossItem {
+                    ch,
+                    count: 1,
+                    lines: vec![line_number],
+                    transliteration: transliterate(ch),
+                }),
+            }
+        }
+    }
+    LossReport {
+        encoding,
+        items,
+        total,
+    }
+}
+
+/// Transliteración ASCII de un carácter (`deunicode`); `?` si no la hay.
+fn transliterate(ch: char) -> String {
+    deunicode::deunicode_char(ch).unwrap_or("?").to_owned()
 }
 
 /// Codifica `text` en `encoding` aplicando `strategy` a los caracteres que no
@@ -102,7 +143,24 @@ pub fn loss_report(text: &str, encoding: Encoding) -> LossReport {
 /// assert_eq!(encode_lossy("10 €", Encoding::Ascii, LossStrategy::HtmlEntities), b"10 &#x20AC;");
 /// ```
 pub fn encode_lossy(text: &str, encoding: Encoding, strategy: LossStrategy) -> Vec<u8> {
-    todo!("{text} {encoding:?} {strategy:?}")
+    let mut safe = String::with_capacity(text.len());
+    for ch in text.chars() {
+        if can_encode(ch, encoding) {
+            safe.push(ch);
+        } else {
+            match strategy {
+                LossStrategy::Replace => safe.push('?'),
+                LossStrategy::Transliterate => safe.push_str(&transliterate(ch)),
+                // Escribir en un `String` nunca falla.
+                LossStrategy::HtmlEntities => {
+                    let _ = write!(safe, "&#x{:X};", u32::from(ch));
+                }
+            }
+        }
+    }
+    // Todo lo que queda cabe en `encoding`: la transliteración y las entidades
+    // son ASCII, y ASCII cabe en todas las codificaciones soportadas.
+    encode(&safe, encoding).unwrap_or_else(|_| safe.bytes().filter(u8::is_ascii).collect())
 }
 
 #[cfg(test)]

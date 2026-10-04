@@ -31,9 +31,10 @@ pub fn write_text_lossy(
     line_ending: LineEnding,
     strategy: LossStrategy,
 ) -> Vec<u8> {
-    todo!(
-        "{text} {encoding:?} {line_ending:?} {strategy:?} {}",
-        stringify!(encode_lossy)
+    encode_lossy(
+        &normalize_line_endings(text, line_ending),
+        encoding,
+        strategy,
     )
 }
 
