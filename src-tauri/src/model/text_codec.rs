@@ -13,6 +13,13 @@ use std::fmt;
 
 use serde::{Deserialize, Serialize};
 
+/// BOM de UTF-8.
+const UTF8_BOM: &[u8] = &[0xEF, 0xBB, 0xBF];
+/// BOM de UTF-16 little-endian.
+const UTF16LE_BOM: &[u8] = &[0xFF, 0xFE];
+/// BOM de UTF-16 big-endian.
+const UTF16BE_BOM: &[u8] = &[0xFE, 0xFF];
+
 /// Codificaciones soportadas (D-15).
 ///
 /// Se serializa y deserializa con serde como su identificador estable
@@ -75,7 +82,17 @@ impl Encoding {
     /// assert_eq!(Encoding::MacRoman.id(), "macintosh");
     /// ```
     pub fn id(self) -> &'static str {
-        todo!()
+        match self {
+            Encoding::Utf8 => "utf-8",
+            Encoding::Utf8Bom => "utf-8-bom",
+            Encoding::Utf16Le => "utf-16le",
+            Encoding::Utf16Be => "utf-16be",
+            Encoding::Ascii => "ascii",
+            Encoding::Iso8859_1 => "iso-8859-1",
+            Encoding::Iso8859_15 => "iso-8859-15",
+            Encoding::Windows1252 => "windows-1252",
+            Encoding::MacRoman => "macintosh",
+        }
     }
 
     /// Inverso de [`Encoding::id`]; `None` si el identificador no existe
@@ -90,15 +107,19 @@ impl Encoding {
     /// assert_eq!(Encoding::from_id("UTF-8"), None);
     /// ```
     pub fn from_id(id: &str) -> Option<Encoding> {
-        let _ = id;
-        todo!()
+        Encoding::ALL.into_iter().find(|e| e.id() == id)
     }
 
     /// BOM de la codificación: `EF BB BF` ([`Encoding::Utf8Bom`]), `FF FE`
     /// ([`Encoding::Utf16Le`]), `FE FF` ([`Encoding::Utf16Be`]); vacío en las
     /// demás.
     pub fn bom(self) -> &'static [u8] {
-        todo!()
+        match self {
+            Encoding::Utf8Bom => UTF8_BOM,
+            Encoding::Utf16Le => UTF16LE_BOM,
+            Encoding::Utf16Be => UTF16BE_BOM,
+            _ => &[],
+        }
     }
 }
 
@@ -167,8 +188,16 @@ pub enum DecodeError {
 
 impl fmt::Display for DecodeError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let _ = f;
-        todo!()
+        match self {
+            DecodeError::InvalidSequence { encoding, offset } => write!(
+                f,
+                "secuencia no válida en {} en la posición {offset} (bytes)",
+                encoding.id()
+            ),
+            DecodeError::OddLength { encoding } => {
+                write!(f, "número impar de bytes en un texto {}", encoding.id())
+            }
+        }
     }
 }
 
@@ -194,8 +223,26 @@ impl std::error::Error for DecodeError {}
 /// assert_eq!(d.method, DetectionMethod::Bom);
 /// ```
 pub fn detect(bytes: &[u8]) -> Detection {
-    let _ = bytes;
-    todo!()
+    // 1. BOM.
+    for encoding in [Encoding::Utf8Bom, Encoding::Utf16Le, Encoding::Utf16Be] {
+        if bytes.starts_with(encoding.bom()) {
+            return Detection {
+                encoding,
+                method: DetectionMethod::Bom,
+            };
+        }
+    }
+    // 2. UTF-8 válido (incluye el vacío y el ASCII puro).
+    if std::str::from_utf8(bytes).is_ok() {
+        return Detection {
+            encoding: Encoding::Utf8,
+            method: DetectionMethod::Utf8Valid,
+        };
+    }
+    // 3-4. Heurística sobre toda la entrada, sin TLD y sin permitir UTF-8.
+    let mut detector = chardetng::EncodingDetector::new(chardetng::Iso2022JpDetection::Deny);
+    detector.feed(bytes, true);
+    map_guess(detector.guess(None, chardetng::Utf8Detection::Deny))
 }
 
 /// Decodifica `bytes` con `encoding` de forma estricta.
@@ -220,8 +267,24 @@ pub fn detect(bytes: &[u8]) -> Detection {
 /// );
 /// ```
 pub fn decode(bytes: &[u8], encoding: Encoding) -> Result<String, DecodeError> {
-    let _ = (bytes, encoding);
-    todo!()
+    match encoding {
+        Encoding::Utf8 => decode_utf8(bytes, encoding, 0),
+        Encoding::Utf8Bom => match bytes.strip_prefix(UTF8_BOM) {
+            Some(rest) => decode_utf8(rest, encoding, UTF8_BOM.len()),
+            None => decode_utf8(bytes, encoding, 0),
+        },
+        Encoding::Utf16Le | Encoding::Utf16Be => decode_utf16(bytes, encoding),
+        Encoding::Ascii => match bytes.iter().position(|b| !b.is_ascii()) {
+            Some(offset) => Err(DecodeError::InvalidSequence { encoding, offset }),
+            None => Ok(bytes.iter().copied().map(char::from).collect()),
+        },
+        // Latin-1 real: cada byte es el punto de código del mismo valor
+        // (`encoding_rs` lo trataría como windows-1252).
+        Encoding::Iso8859_1 => Ok(bytes.iter().copied().map(char::from).collect()),
+        Encoding::Iso8859_15 => Ok(decode_single_byte(bytes, encoding_rs::ISO_8859_15)),
+        Encoding::Windows1252 => Ok(decode_single_byte(bytes, encoding_rs::WINDOWS_1252)),
+        Encoding::MacRoman => Ok(decode_single_byte(bytes, encoding_rs::MACINTOSH)),
+    }
 }
 
 /// Detecta la codificación con [`detect`] y decodifica con [`decode`].
@@ -243,14 +306,97 @@ pub fn decode(bytes: &[u8], encoding: Encoding) -> Result<String, DecodeError> {
 /// assert_eq!(d.method, DetectionMethod::Bom);
 /// ```
 pub fn decode_auto(bytes: &[u8]) -> Result<Decoded, DecodeError> {
-    let _ = bytes;
-    todo!()
+    let Detection { encoding, method } = detect(bytes);
+    decode(bytes, encoding).map(|text| Decoded {
+        text,
+        encoding,
+        method,
+    })
 }
 
 /// Traduce el resultado de `chardetng` a una [`Detection`].
 fn map_guess(guess: &'static encoding_rs::Encoding) -> Detection {
-    let _ = guess;
-    todo!()
+    let supported = if guess == encoding_rs::WINDOWS_1252 {
+        Some(Encoding::Windows1252)
+    } else if guess == encoding_rs::ISO_8859_15 {
+        Some(Encoding::Iso8859_15)
+    } else if guess == encoding_rs::MACINTOSH {
+        Some(Encoding::MacRoman)
+    } else {
+        None
+    };
+    match supported {
+        Some(encoding) => Detection {
+            encoding,
+            method: DetectionMethod::Heuristic,
+        },
+        None => Detection {
+            encoding: Encoding::Windows1252,
+            method: DetectionMethod::Fallback,
+        },
+    }
+}
+
+/// Decodifica UTF-8 estricto; `base` se suma al offset (longitud del BOM
+/// quitado).
+fn decode_utf8(bytes: &[u8], encoding: Encoding, base: usize) -> Result<String, DecodeError> {
+    std::str::from_utf8(bytes)
+        .map(str::to_owned)
+        .map_err(|e| DecodeError::InvalidSequence {
+            encoding,
+            offset: base + e.valid_up_to(),
+        })
+}
+
+/// Decodifica UTF-16 estricto con la endianness de `encoding`, quitando su
+/// propio BOM si está al principio.
+fn decode_utf16(bytes: &[u8], encoding: Encoding) -> Result<String, DecodeError> {
+    let bom = encoding.bom();
+    let (base, body) = match bytes.strip_prefix(bom) {
+        Some(rest) => (bom.len(), rest),
+        None => (0, bytes),
+    };
+    if body.len() % 2 != 0 {
+        return Err(DecodeError::OddLength { encoding });
+    }
+    let (pairs, _rest) = body.as_chunks::<2>();
+    let units: Vec<u16> = pairs
+        .iter()
+        .map(|&pair| {
+            if encoding == Encoding::Utf16Be {
+                u16::from_be_bytes(pair)
+            } else {
+                u16::from_le_bytes(pair)
+            }
+        })
+        .collect();
+
+    let mut text = String::with_capacity(units.len());
+    // `index` cuenta las unidades de 16 bits ya decodificadas: al primer
+    // sustituto sin pareja, señala justo esa unidad.
+    let mut index = 0;
+    for result in char::decode_utf16(units) {
+        match result {
+            Ok(c) => {
+                text.push(c);
+                index += c.len_utf16();
+            }
+            Err(_) => {
+                return Err(DecodeError::InvalidSequence {
+                    encoding,
+                    offset: base + 2 * index,
+                });
+            }
+        }
+    }
+    Ok(text)
+}
+
+/// Decodifica con una codificación de un byte de `encoding_rs` que asigna
+/// un carácter a cada byte (no puede fallar).
+fn decode_single_byte(bytes: &[u8], encoding: &'static encoding_rs::Encoding) -> String {
+    let (text, _had_errors) = encoding.decode_without_bom_handling(bytes);
+    text.into_owned()
 }
 
 #[cfg(test)]
@@ -634,7 +780,7 @@ mod tests {
         let odd = DecodeError::OddLength {
             encoding: Encoding::Utf16Le,
         };
-        assert_eq!(decode(&[b'a'], Encoding::Utf16Le), Err(odd.clone()));
+        assert_eq!(decode(b"a", Encoding::Utf16Le), Err(odd.clone()));
         assert_eq!(decode(&[0xFF, 0xFE, b'a'], Encoding::Utf16Le), Err(odd));
         assert_eq!(
             decode(&[0x00, b'a', 0x00], Encoding::Utf16Be),
