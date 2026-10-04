@@ -5,15 +5,20 @@
 
 ## ⏸ Punto de reanudación (2026-10-04, sesión #2)
 
-**Dónde estamos:** **F0 completa (9/9).** Publicada la etiqueta **`v0.0.1`** (pre-release): https://github.com/IsmaelCaballero/editorMD/releases/tag/v0.0.1. Rama `feature/F0-linters` (F0.7) → **PR #3** en espera de la CI y de la revisión del usuario.
+**Dónde estamos:** F0 completa. PR #3 (linters) fusionado (`666d7c3`). Rama **`chore/F0-close`** (paso 4/4 de F0) → **PR #4**: documenta la convención de renombrado de ramas al cerrar la fase.
 
-**Reglas de trabajo** (ver CONTEXT.md 16-18): el usuario fusiona los PR desde GitHub; **las ramas no se borran**; cada etiqueta se enlaza en `docs/index.html`.
+**Al fusionar el PR #4, con el ok del usuario:** renombrar las 4 ramas de F0 (local + GitHub):
 
-> En un desarrollo normal se recomienda **borrar las ramas una vez fusionadas**. En este proyecto **se conservan deliberadamente**: por razones académicas (para mostrar a los alumnos el proceso completo) y por **trazabilidad del esfuerzo de desarrollo**, ya que en el futuro el trabajo se repartirá entre varios miembros del equipo, cada uno trabajando sobre una parte del sistema con su propio arnés.
+| Paso | Rama actual | Nombre al cerrar F0 | PR |
+|---|---|---|---|
+| 1/4 | `feature/F0-scaffold` | `hecha/F0.1de4/feature/F0-scaffold` | #1 |
+| 2/4 | `chore/release-0.0.1` | `hecha/F0.2de4/chore/release-0.0.1` | #2 |
+| 3/4 | `feature/F0-linters` | `hecha/F0.3de4/feature/F0-linters` | #3 |
+| 4/4 | `chore/F0-close` | `hecha/F0.4de4/chore/F0-close` | #4 |
 
-**Siguientes pasos:**
-1. CI del PR #3 en verde → avisar al usuario → él fusiona → revisar la fusión.
-2. Explicar el plan de F1 y esperar su ok → rama `feature/F1-mvc-skeleton`.
+**Después:** el usuario revisa el plan detallado de F1 y da su ok → rama `feature/F1-...` (paso 1 de F1).
+
+**Reglas de trabajo** (CONTEXT.md 16-18): el usuario fusiona los PR desde GitHub; las ramas no se borran: se renombran al cerrar la fase; cada etiqueta se enlaza en `docs/index.html`.
 
 ## Resumen
 
@@ -26,14 +31,14 @@
 | Tests | TS: 29/29 ✅ · Rust: 3/3 + 1 doctest ✅ |
 | Cobertura | TS Modelo: 97,95 % líneas |
 | CI | ✅ GitHub Actions: Windows, Ubuntu 22.04, macOS y Fedora |
-| Git | https://github.com/IsmaelCaballero/editorMD · PR #1 y #2 fusionados · `feature/F0-linters` (PR #3) · ramas conservadas (motivo académico) |
+| Git | https://github.com/IsmaelCaballero/editorMD · PR #1, #2 y #3 fusionados · `chore/F0-close` (PR #4) · ramas conservadas y renombradas al cerrar cada fase |
 | Web del proyecto | `docs/index.html` |
 
 ## Progreso por fase
 
 | Fase | Estado | Avance |
 |---|---|---|
-| F0 Decisiones y entorno | ✅ Completa (pendiente del PR #3) | 9/9 |
+| F0 Decisiones y entorno | ✅ Completa · cierre en PR #4 | 9/9 |
 | F1 Esqueleto MVC | ⏳ Pendiente | 0/5 |
 | F2 Ficheros y codificaciones | ⏳ Pendiente | 0/8 |
 | F3 Edición | ⏳ Pendiente | 0/3 |
@@ -55,10 +60,11 @@ Implementados: **M00 AppInfo 0.1.0**, **M17 SemVer 0.1.0**, **V01 MainWindow 0.1
 | M00 AppInfo (Rust) | 3 + 1 doctest | 4 | — |
 
 ## Bloqueos / pendiente del usuario
-- Revisar y fusionar el PR #3 (`feature/F0-linters`).
+- Revisar y fusionar el PR #4 (`chore/F0-close`) y dar el ok al renombrado de las ramas de F0.
+- Dar el ok al plan de F1.
 
 ## Próximos pasos
-1. PR #3 (linters).
+1. PR #4 y renombrado de las ramas de F0.
 2. F1 (esqueleto MVC con Milkdown), tras el ok del usuario al plan.
 
 ## Registro de sesiones
@@ -67,6 +73,7 @@ Implementados: **M00 AppInfo 0.1.0**, **M17 SemVer 0.1.0**, **V01 MainWindow 0.1
 | 2026-10-03 | #1 | Plan inicial; creados PLAN.md, STATUS.md y CONTEXT.md; propuesta de stacks y arquitectura MVC |
 | 2026-10-03 | #1 | Decididos D-01 (Tauri), D-02 (WYSIWYG), D-03 (formatos), D-15 (codificaciones y fin de línea). Añadido el soporte .Rmd. Plan reescrito para Tauri |
 | 2026-10-03 | #1 | Decididos D-05 (extras + barra de accesos directos), D-07 (MIT), D-11 (Typst), D-12 (modo fuente). Nuevos componentes M14–M16, V09–V11 |
+| 2026-10-04 | #2 | PR #3 fusionado por el usuario. Restaurada la rama local `feature/F0-scaffold` (se había borrado antes de la norma). Nueva convención: renombrar las ramas a `hecha/F<m>.<n>de<T>/…` al cerrar la fase. Rama `chore/F0-close` (PR #4). |
 | 2026-10-04 | #2 | PR #2 fusionado por el usuario. Etiqueta + release `v0.0.1`. Decidido: ramas conservadas y enlace a cada etiqueta en la web. F0.7: ESLint, Prettier, rustfmt, clippy pedantic, EditorConfig y job lint en CI (rama `feature/F0-linters`, PR #3). |
 | 2026-10-04 | #2 | `tauri dev` ✅ (la app arranca). Repositorio público creado; PR #1 con CI verde en los 4 SO; fusionado por el usuario. Rama `chore/release-0.0.1`: CHANGELOG 0.0.1 y actualización de la documentación y de la web. |
 | 2026-10-03 | #1 | Toolchain instalada (Rust 1.99, MSVC, gh 2.102). cargo test ✅, rustdoc ✅. Fin de la sesión. |

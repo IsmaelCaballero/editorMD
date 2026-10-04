@@ -187,11 +187,12 @@
     <section id="git">
       <h2>Ramas y pull requests</h2>
       <p class="lead">Se usa <a href="#c-branch">una rama por feature</a>. Ninguna rama se fusiona en <code>main</code> sin tu aprobación (<a href="#c-pr">pull request</a>).</p>
+      <div class="callout info"><strong>Renombrado al cerrar la fase.</strong> Al <b>cerrar cada fase</b>, sus ramas no se borran: se <b>renombran</b> a <code>hecha/F&lt;m&gt;.&lt;n&gt;de&lt;T&gt;/&lt;nombre-original&gt;</code> (<i>m</i> = fase, <i>n</i> = orden del paso dentro de la fase, <i>T</i> = total de pasos de la fase; con ceros a la izquierda si T ≥ 10, p. ej. <code>F1.03de12</code>). Así se ve la <b>secuencia temporal de todo el proceso</b>, no solo el resultado. Ejemplo: <code>feature/F0-scaffold</code> → <code>hecha/F0.1de4/feature/F0-scaffold</code>. <i>n</i> numera pasos (ramas), no tareas del plan.</div>
       <div class="callout info"><strong>¿Por qué no se borran las ramas?</strong> En un desarrollo normal se recomienda <b>borrar las ramas una vez fusionadas</b>. En este proyecto <b>se conservan deliberadamente</b>: por razones académicas (para mostrar a los alumnos el proceso completo) y por <b>trazabilidad del esfuerzo de desarrollo</b>, ya que en el futuro el trabajo se repartirá entre varios miembros del equipo, cada uno trabajando sobre una parte del sistema con su propio arnés.</div>
       <div class="mermaid-box"><pre class="mermaid" id="gitgraph"></pre></div>
       <h3>Estado de las ramas</h3>
       <div class="table-wrap"><table>
-        <thead><tr><th>Rama</th><th>Objetivo</th><th>Estado</th><th>Commits</th><th>PR</th></tr></thead>
+        <thead><tr><th>Paso</th><th>Rama</th><th>Objetivo</th><th>Estado</th><th>Commits</th><th>PR</th><th>Nombre al cerrar la fase</th></tr></thead>
         <tbody id="branches"></tbody>
       </table></div>
     </section>
@@ -294,12 +295,13 @@ const PROJECT = {
     <a href="https://github.com/IsmaelCaballero/editorMD/pull/1">PR #1</a>. La <a href="#c-ci">CI</a> pasó a la primera en
     <b>Windows, Ubuntu, macOS y Fedora</b>, y lo fusionaste desde GitHub. Se revisó la fusión y tras el PR #2 se publicó la etiqueta
     <a href="https://github.com/IsmaelCaballero/editorMD/releases/tag/v0.0.1"><b>v0.0.1</b></a> (ver <a href="#versiones">versiones</a>).
-    Por último se completó <b>F0.7</b> (<a href="#c-linter">linters</a> y <a href="#c-formatter">formateadores</a>) en la rama
-    <code>feature/F0-linters</code> → PR #3. <b>F0 queda completa.</b></p>
+    Después se completó <b>F0.7</b> (<a href="#c-linter">linters</a> y <a href="#c-formatter">formateadores</a>) en la rama
+    <code>feature/F0-linters</code> → PR #3. <b>F0 queda completa.</b> Para cerrarla, se acordó
+    <a href="#c-rename">renombrar las ramas</a> a <code>hecha/F0.&lt;n&gt;de4/…</code> en lugar de borrarlas (PR #4).</p>
     <p><strong>Sesión 1 (2026-10-03).</strong> Plan completo, 16 decisiones, esqueleto Tauri 2 + Svelte 5,
     primer componente <a href="#comp-M17">M17 SemVer</a> (29 tests) y documentación con rustdoc y TypeDoc.</p>`,
-  next: `<strong>Siguiente paso:</strong> revisar y fusionar el <a href="https://github.com/IsmaelCaballero/editorMD/pull/3">PR #3</a> (linters)
-    cuando la CI esté en verde. Después, presentaré el plan detallado de <a href="#phase-F1">F1 · Esqueleto MVC</a> para tu ok.`,
+  next: `<strong>Siguiente paso:</strong> revisar y fusionar el <a href="https://github.com/IsmaelCaballero/editorMD/pull/4">PR #4</a>
+    (cierre de F0), dar el ok al renombrado de sus 4 ramas y al plan de <a href="#phase-F1">F1 · Esqueleto MVC</a>.`,
 
   phases: [
     { id: "F0", name: "Decisiones y entorno", target: "0.0.x", tasks: [
@@ -495,6 +497,20 @@ const PROJECT = {
             "Va en un commit <code>style:</code> separado para que en el PR se distinga de los cambios de configuración."],
       why: "Mezclar formato y lógica en un commit hace casi imposible revisar qué cambió de verdad.",
       concepts: ["formatter", "conventional-commits"] },
+    { date: "2026-10-04", title: "Fusión del PR #3 y restauración de una rama", branch: "main", commit: "666d7c3",
+      did: ["Fusionaste el PR #3 (linters): 5 trabajos de CI en verde; <code>main</code> coincide con la rama probada.",
+            "Corrección: la rama local <code>feature/F0-scaffold</code> se había borrado (antes de la norma de conservar ramas). Se restauró desde GitHub con <code>git branch --track</code>; no se perdió nada, porque la remota seguía existiendo."],
+      cmds: "git branch --track feature/F0-scaffold origin/feature/F0-scaffold",
+      why: "Una rama solo apunta a un commit: mientras exista en algún remoto (o el commit siga en el historial), se puede recrear.",
+      concepts: ["branch"] },
+    { date: "2026-10-04", title: "Convención: renombrar las ramas al cerrar cada fase", branch: "chore/F0-close",
+      did: ["En lugar de borrarlas, las ramas de cada fase se renombran al cerrarla a <code>hecha/F&lt;m&gt;.&lt;n&gt;de&lt;T&gt;/&lt;nombre&gt;</code>.",
+            "F0 tiene 4 pasos: <code>hecha/F0.1de4/feature/F0-scaffold</code>, <code>hecha/F0.2de4/chore/release-0.0.1</code>, <code>hecha/F0.3de4/feature/F0-linters</code> y <code>hecha/F0.4de4/chore/F0-close</code>.",
+            "Se comprobó que el formato es válido para git (<code>git check-ref-format</code>), también con relleno de ceros (<code>F1.03de12</code>).",
+            "Documentado en PLAN.md (§10.3 y la nueva §10.6 «Cierre de fase»), CONTEXT.md, STATUS.md, README.md y esta web (columna «Nombre al cerrar la fase»)."],
+      cmds: "git branch -m feature/F0-scaffold hecha/F0.1de4/feature/F0-scaffold\ngh api -X POST repos/IsmaelCaballero/editorMD/branches/feature/F0-scaffold/rename -f new_name=hecha/F0.1de4/feature/F0-scaffold",
+      why: "Interesa ver todo el proceso de desarrollo, no solo el resultado: la lista de ramas queda ordenada en el tiempo, fase a fase.",
+      concepts: ["rename", "branch"] },
   ],
 
   git: {
@@ -514,13 +530,17 @@ const PROJECT = {
       { t: "branch", name: "feature/F0-linters" },
       { t: "commit", branch: "feature/F0-linters", id: "97b8908", msg: "build: linters y formateadores" },
       { t: "commit", branch: "feature/F0-linters", id: "8e7b747", msg: "style: Prettier" },
-      { t: "commit", branch: "feature/F0-linters", id: "PR #3", msg: "docs: F0 cerrada" },
+      { t: "commit", branch: "feature/F0-linters", id: "a6496d2", msg: "docs: F0 cerrada" },
+      { t: "merge", into: "main", from: "feature/F0-linters", id: "666d7c3 Merge PR #3" },
+      { t: "branch", name: "chore/F0-close" },
+      { t: "commit", branch: "chore/F0-close", id: "PR #4", msg: "docs: renombrado de ramas" },
     ],
     branches: [
-      { name: "main", goal: "Rama estable", status: ["ok", "estable · CI verde · v0.0.1"], commits: 3, pr: "" },
-      { name: "feature/F0-scaffold", goal: "F0: esqueleto, tests, documentación, CI y web", status: ["ok", "fusionada (PR #1) · se conserva"], commits: 6, pr: 1 },
-      { name: "chore/release-0.0.1", goal: "CHANGELOG 0.0.1 y actualización de la documentación", status: ["ok", "fusionada (PR #2) · se conserva"], commits: 1, pr: 2 },
-      { name: "feature/F0-linters", goal: "F0.7: linters, formateadores y job lint en CI", status: ["wip", "PR #3 · pendiente de CI y de tu revisión"], commits: 3, pr: 3 },
+      { name: "main", goal: "Rama estable", status: ["ok", "estable · CI verde · v0.0.1"], commits: 4, pr: "" },
+      { name: "feature/F0-scaffold", step: "F0 · 1/4", final: "hecha/F0.1de4/feature/F0-scaffold", goal: "F0: esqueleto, tests, documentación, CI y web", status: ["ok", "fusionada (PR #1)"], commits: 6, pr: 1 },
+      { name: "chore/release-0.0.1", step: "F0 · 2/4", final: "hecha/F0.2de4/chore/release-0.0.1", goal: "CHANGELOG 0.0.1 y actualización de la documentación", status: ["ok", "fusionada (PR #2)"], commits: 1, pr: 2 },
+      { name: "feature/F0-linters", step: "F0 · 3/4", final: "hecha/F0.3de4/feature/F0-linters", goal: "F0.7: linters, formateadores y job lint en CI", status: ["ok", "fusionada (PR #3)"], commits: 3, pr: 3 },
+      { name: "chore/F0-close", step: "F0 · 4/4", final: "hecha/F0.4de4/chore/F0-close", goal: "Cierre de F0: convención de renombrado de ramas", status: ["wip", "PR #4 · pendiente de CI y de tu revisión"], commits: 1, pr: 4 },
     ],
   },
 
@@ -590,6 +610,7 @@ const PROJECT = {
     "svelte": ["Svelte 5", "Framework de interfaz que <i>compila</i> los componentes a JavaScript directo, sin DOM virtual. El resultado son bundles pequeños y rápidos."],
     "ci": ["Integración continua (CI)", "Un servicio (aquí, GitHub Actions) compila y ejecuta los tests automáticamente en cada push o PR, en máquinas limpias de cada SO. Un PR con la CI en rojo no se fusiona."],
     "tag": ["Etiqueta git (tag)", "Nombre fijo que apunta a un commit concreto, p. ej. <code>v0.0.1</code>. Las <i>anotadas</i> (<code>git tag -a</code>) guardan autor, fecha y mensaje. GitHub las usa para crear <i>Releases</i> descargables."],
+    "rename": ["Renombrar ramas al cerrar la fase", "Convención propia del proyecto: en lugar de borrar las ramas fusionadas, al cerrar la fase se renombran a <code>hecha/F&lt;m&gt;.&lt;n&gt;de&lt;T&gt;/…</code>. La lista de ramas pasa a ser un registro ordenado de los pasos del desarrollo. GitHub conserva los PR y redirige los enlaces antiguos."],
     "linter": ["Linter", "Herramienta que analiza el código sin ejecutarlo y avisa de errores probables y malas prácticas: variables sin usar, comparaciones peligrosas, código poco idiomático… Aquí: <b>ESLint</b> (TS/Svelte) y <b>clippy</b> (Rust)."],
     "formatter": ["Formateador", "Reescribe el código con un estilo único (espacios, comillas, saltos de línea), para que nadie discuta de estilo y los diffs muestren solo los cambios reales. Aquí: <b>Prettier</b> y <b>rustfmt</b>."],
     "editorconfig": ["EditorConfig", "Fichero <code>.editorconfig</code> que la mayoría de editores leen para aplicar la misma codificación (UTF-8), el mismo fin de línea (LF) y la misma indentación, independientemente de la configuración personal."],
@@ -665,7 +686,7 @@ $("journal").innerHTML = PROJECT.journal.map((j, i) => ({ ...j, n: i + 1 })).rev
 
 // Git
 $("branches").innerHTML = PROJECT.git.branches.map((b) =>
-  `<tr><td><code>${esc(b.name)}</code></td><td>${esc(b.goal)}</td><td><span class="pill ${b.status[0]}">${esc(b.status[1])}</span></td><td>${b.commits}</td><td>${b.pr ? `<a href="${PROJECT.repo}/pull/${b.pr}">#${b.pr}</a>` : "—"}</td></tr>`).join("");
+  `<tr><td>${b.step || "—"}</td><td><code>${esc(b.name)}</code></td><td>${esc(b.goal)}</td><td><span class="pill ${b.status[0]}">${esc(b.status[1])}</span></td><td>${b.commits}</td><td>${b.pr ? `<a href="${PROJECT.repo}/pull/${b.pr}">#${b.pr}</a>` : "—"}</td><td>${b.final ? `<code>${esc(b.final)}</code>${b.renamed ? " ✔" : ""}` : "—"}</td></tr>`).join("");
 $("gitgraph").textContent = "gitGraph\n" + PROJECT.git.events.map((e) => {
   if (e.t === "commit") return `  checkout ${e.branch}\n  commit id: "${e.id} ${e.msg.replace(/"/g, "'")}"`;
   if (e.t === "branch") return `  branch ${e.name}`;

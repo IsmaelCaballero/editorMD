@@ -413,6 +413,7 @@ Reglas:
 - La fusión se hace con `--no-ff`, para que cada feature quede visible en el historial. Se etiqueta `vX.Y.Z` al cerrar un hito.
 - **El usuario fusiona los PR personalmente desde GitHub** (para aprender el proceso). El asistente abre el PR, espera la CI en verde en los 4 SO y avisa con una guía de revisión.
 - **Las ramas NO se borran tras fusionarse.** En un desarrollo normal se recomienda **borrar las ramas una vez fusionadas**. En este proyecto **se conservan deliberadamente**: por razones académicas (para mostrar a los alumnos el proceso completo) y por **trazabilidad del esfuerzo de desarrollo**, ya que en el futuro el trabajo se repartirá entre varios miembros del equipo, cada uno trabajando sobre una parte del sistema con su propio arnés.
+- **Renombrado al cerrar la fase:** Al **cerrar cada fase**, sus ramas no se borran: se **renombran** a `hecha/F<m>.<n>de<T>/<nombre-original>` (*m* = fase, *n* = orden del paso/rama dentro de la fase, *T* = total de pasos de la fase; *n* con ceros a la izquierda si T ≥ 10, p. ej. `F1.03de12`). Así se ve la **secuencia temporal de todo el proceso de desarrollo**, no solo el resultado. Ejemplo: `feature/F0-scaffold` → `hecha/F0.1de4/feature/F0-scaffold`. *n* numera **pasos (ramas)**, no tareas del plan: F0.7 es una tarea; la rama de los linters es el paso 3 de 4.
 - **Etiquetas:** anotadas (`git tag -a vX.Y.Z`) sobre el merge commit de `main`, con su *GitHub Release* (pre-release mientras sea `0.x`). **Cada etiqueta se enlaza en `docs/index.html`** (sección «Versiones publicadas»).
 - Remoto: https://github.com/IsmaelCaballero/editorMD (D-06).
 
@@ -432,3 +433,25 @@ Reglas:
 | Todos | EditorConfig | (editor) | `.editorconfig` |
 
 Regla: un PR no se fusiona con el job `lint` de la CI en rojo. Los cambios de solo formato van en commits `style:` separados.
+
+### 10.6 Cierre de fase (checklist)
+1. Todas las ramas de la fase fusionadas en `main` (PR revisados y fusionados por el usuario).
+2. Última rama de la fase: `chore/F<m>-close` (documentación, web y lista de renombrados).
+3. Tras fusionarla, y **con el ok del usuario**, renombrar todas las ramas de la fase en local y en GitHub:
+   ```
+   git branch -m <original> hecha/F<m>.<n>de<T>/<original>
+   gh api -X POST repos/IsmaelCaballero/editorMD/branches/<original>/rename -f new_name=hecha/F<m>.<n>de<T>/<original>
+   git fetch --prune && git branch -u origin/<nuevo> <nuevo>
+   ```
+   GitHub conserva los PR y redirige los enlaces al nombre antiguo.
+4. Si la fase cierra un hito de versión: etiqueta `vX.Y.Z` + Release + enlace en la web.
+5. Actualizar la web (tabla de ramas con el nombre final y gráfico git), STATUS.md y CONTEXT.md.
+
+**F0 (4 pasos):**
+
+| Paso | Rama actual | Nombre al cerrar F0 | PR |
+|---|---|---|---|
+| 1/4 | `feature/F0-scaffold` | `hecha/F0.1de4/feature/F0-scaffold` | #1 |
+| 2/4 | `chore/release-0.0.1` | `hecha/F0.2de4/chore/release-0.0.1` | #2 |
+| 3/4 | `feature/F0-linters` | `hecha/F0.3de4/feature/F0-linters` | #3 |
+| 4/4 | `chore/F0-close` | `hecha/F0.4de4/chore/F0-close` | #4 |
