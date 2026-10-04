@@ -13,3 +13,5 @@ fixtures/
 *.md
 # Web del proyecto: un solo fichero con datos editados a mano
 docs/index.html
+# Corpus de fidelidad de M07: debe quedarse exactamente como está
+tests/corpus/

@@ -1,0 +1,16 @@
+---
+title: "Análisis R"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Resumen
+
+```{r cars}
+summary(cars)
+```
+
+La media es `r mean(cars$speed)` km/h.

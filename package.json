@@ -29,6 +29,7 @@
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
     "@tauri-apps/cli": "^2.12.1",
     "@tsconfig/svelte": "^5.0.8",
+    "@types/mdast": "^4.0.4",
     "@types/node": "^24.19.1",
     "@vitest/coverage-v8": "^5.0.3",
     "eslint": "^10.12.0",
@@ -46,6 +47,11 @@
     "vitest": "^5.0.3"
   },
   "dependencies": {
-    "@tauri-apps/api": "^2.12.1"
+    "@tauri-apps/api": "^2.12.1",
+    "remark-frontmatter": "^5.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-stringify": "^11.0.0",
+    "unified": "^11.0.5"
   }
 }
