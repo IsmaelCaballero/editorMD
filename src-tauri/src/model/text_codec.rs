@@ -1,13 +1,27 @@
-//! **M09 `TextCodec`** (Modelo · Rust) — detección y decodificación de la
-//! codificación de los ficheros de texto (D-15).
+//! **M09 `TextCodec`** (Modelo · Rust) — codificaciones y finales de línea de
+//! los ficheros de texto (D-15, `PLAN.md` §2.5).
 //!
-//! Este módulo cubre solo la **lectura**: detectar la codificación de unos
-//! bytes y convertirlos a texto Unicode, sin sustituciones silenciosas por
-//! `U+FFFD`. La escritura y los finales de línea son tareas posteriores.
+//! - **Lectura** (este fichero): detectar la codificación de unos bytes y
+//!   convertirlos a texto Unicode, sin sustituciones silenciosas por `U+FFFD`.
+//! - **Escritura** ([`encode`]): texto → bytes con BOM, estricta.
+//! - **Finales de línea** ([`LineEnding`], [`LineEndingStats`],
+//!   [`normalize_line_endings`]).
+//! - **Ficheros completos** ([`read_text`], [`read_text_as`], [`write_text`]):
+//!   ida y vuelta byte a byte.
+//!
+//! El informe de pérdidas y la transliteración llegarán en el paso 3 de F2.
 
 use std::fmt;
 
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+mod encode;
+mod line_ending;
+mod text_file;
+
+pub use encode::{encode, EncodeError};
+pub use line_ending::{normalize_line_endings, LineEnding, LineEndingStats};
+pub use text_file::{read_text, read_text_as, write_text, TextFile};
 
 /// Codificaciones soportadas (D-15).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
