@@ -109,7 +109,6 @@ export class MilkdownEditorView implements IEditorView {
     return this.#editor
   }
 
-  /** {@inheritDoc IEditorView.setMarkdown} */
   setMarkdown(markdown: string): void {
     const { frontMatter, body } = splitFrontMatter(markdown)
     this.#frontMatter = frontMatter
@@ -117,28 +116,23 @@ export class MilkdownEditorView implements IEditorView {
     this.#last = this.getMarkdown()
   }
 
-  /** {@inheritDoc IEditorView.getMarkdown} */
   getMarkdown(): string {
     return joinFrontMatter(this.#frontMatter, this.#editor.action(getMarkdown()))
   }
 
-  /** {@inheritDoc IEditorView.onChange} */
   onChange(listener: (markdown: string) => void): Unsubscribe {
     this.#listeners.add(listener)
     return () => this.#listeners.delete(listener)
   }
 
-  /** {@inheritDoc IEditorView.focus} */
   focus(): void {
     this.#editor.action((ctx) => ctx.get(editorViewCtx).focus())
   }
 
-  /** {@inheritDoc IEditorView.undo} */
   undo(): void {
     this.#editor.action(callCommand(undoCommand.key))
   }
 
-  /** {@inheritDoc IEditorView.redo} */
   redo(): void {
     this.#editor.action(callCommand(redoCommand.key))
   }

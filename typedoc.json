@@ -1,7 +1,7 @@
 {
   "$schema": "https://typedoc.org/schema.json",
   "name": "editorMD — API TypeScript",
-  "entryPoints": ["src/model", "src/controller", "src/view"],
+  "entryPoints": ["src/model", "src/controller", "src/view", "src/adapters"],
   "entryPointStrategy": "expand",
   "exclude": ["**/*.svelte", "**/*.d.ts"],
   "tsconfig": "tsconfig.app.json",

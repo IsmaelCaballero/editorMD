@@ -5,7 +5,7 @@
 
 ## ⏸ Punto de reanudación (2026-10-04, sesión #2)
 
-**Dónde estamos:** **F1 en curso, paso 3/5.** PR #6 (paso 2) fusionado (`47db0a9`). Rama `feature/F1-milkdown-editor` → **PR #7**: *spike* con Milkdown → M07 v0.2.0 (TDD) → V01 menús → V02 editor Milkdown *kit*. RAM medida: 113 MB privados. Siguiente: paso 4/5 `feature/F1-app-controller`.
+**Dónde estamos:** **F1 en curso, paso 4/5.** PR #7 (paso 3) fusionado (`efc4b42`). Rama `feature/F1-app-controller` → **PR #8**: C01 `AppController` (TDD con mocks), adaptadores A01/A02, diálogos V12, atajos y composition root. Siguiente: paso 5/5 `chore/F1-close` (versión 0.0.2, etiqueta y renombrado de las ramas de F1).
 
 **Plan de F1 (aprobado, Milkdown *kit*):**
 
@@ -23,14 +23,14 @@
 
 | Campo | Valor |
 |---|---|
-| Fase actual | **F1 — Esqueleto MVC** (paso 3/5) |
+| Fase actual | **F1 — Esqueleto MVC** (paso 4/5) |
 | Versión de la app | **0.0.1** · etiqueta [v0.0.1](https://github.com/IsmaelCaballero/editorMD/releases/tag/v0.0.1) |
 | Stack | Rust + Tauri 2 · WYSIWYG |
 | Salud | 🟢 CI en verde en los 4 SO; app arranca en Windows 11 |
-| Tests | TS: 289/289 ✅ (incluye editor real en jsdom) · Rust: 3/3 + 1 doctest ✅ |
-| Cobertura | TS Modelo: 99,1 % líneas (document.ts y markdown-codec.ts 100 %) |
+| Tests | TS: 336/336 ✅ · Rust: 3/3 + 1 doctest ✅ |
+| Cobertura | Modelo + Controlador + Adaptadores: **100 % de líneas** |
 | CI | ✅ GitHub Actions: Windows, Ubuntu 22.04, macOS y Fedora |
-| Git | https://github.com/IsmaelCaballero/editorMD · F0: PR #1-#4 fusionados y ramas renombradas `hecha/F0.*de4/…` · F1: pasos 1-2 fusionados (PR #5, #6) · `feature/F1-milkdown-editor` (PR #7) |
+| Git | https://github.com/IsmaelCaballero/editorMD · F0: PR #1-#4 fusionados y ramas renombradas `hecha/F0.*de4/…` · F1: pasos 1-3 fusionados (PR #5-#7) · `feature/F1-app-controller` (PR #8) |
 | Web del proyecto | `docs/index.html` |
 
 ## Progreso por fase
@@ -38,7 +38,7 @@
 | Fase | Estado | Avance |
 |---|---|---|
 | F0 Decisiones y entorno | ✅ Cerrada (ramas renombradas) | 9/9 |
-| F1 Esqueleto MVC | 🔄 En curso (paso 3/5) | 4/5 |
+| F1 Esqueleto MVC | 🔄 En curso (paso 4/5) | 5/5 tareas · falta el cierre |
 | F2 Ficheros y codificaciones | ⏳ Pendiente | 0/8 |
 | F3 Edición | ⏳ Pendiente | 0/3 |
 | F4 Formato | ⏳ Pendiente | 0/4 |
@@ -49,7 +49,7 @@
 | F9 QA y release | ⏳ Pendiente | 0/4 |
 
 ## Versiones de componentes (resumen)
-Implementados: **M00 AppInfo 0.1.0**, **M01 DocumentState 0.1.0**, **M07 MarkdownCodec 0.2.0**, **V02 WysiwygEditorView 0.1.0**, **M17 SemVer 0.1.0**, **V01 MainWindow 0.2.0** (menús). El resto, en 0.0.0. Ver PLAN.md §4.3.
+Implementados: **M00 AppInfo 0.1.0**, **M01 DocumentState 0.2.0**, **M07 MarkdownCodec 0.2.0**, **V02 WysiwygEditorView 0.1.0**, **M17 SemVer 0.1.0**, **V01 MainWindow 0.3.0**, **V12 DialogService 0.1.0**, **C01 AppController 0.1.0**, **A01 TauriBackend 0.1.0**, **A02 TauriWindow 0.1.0**. El resto, en 0.0.0. Ver PLAN.md §4.3.
 
 ## Estado de los tests por componente
 
@@ -60,14 +60,17 @@ Implementados: **M00 AppInfo 0.1.0**, **M01 DocumentState 0.1.0**, **M07 Markdow
 | M07 MarkdownCodec (TS) | 163 | 163 | 100 % |
 | V01 menús + MenuBar (TS/Svelte) | 43 | 43 | — |
 | V02 MilkdownEditorView (jsdom) | 33 | 33 | — |
+| C01 AppController (mocks) | 13 | 13 | 100 % |
+| V12 diálogos + ShellState (jsdom) | 11 | 11 | — |
+| A01/A02 adaptadores Tauri (vi.mock) | 4 | 4 | 100 % |
 | M00 AppInfo (Rust) | 3 + 1 doctest | 4 | — |
 
 ## Bloqueos / pendiente del usuario
-- Revisar y fusionar el PR #7 (`feature/F1-milkdown-editor`).
+- Revisar y fusionar el PR #8 (`feature/F1-app-controller`).
 
 ## Próximos pasos
-1. PR #7.
-2. F1 paso 4/5: `feature/F1-app-controller` (C01 + composition root).
+1. PR #8.
+2. F1 paso 5/5: `chore/F1-close` (0.0.2 + etiqueta + renombrado).
 
 ## Registro de sesiones
 | Fecha | Sesión | Hecho |
@@ -75,6 +78,7 @@ Implementados: **M00 AppInfo 0.1.0**, **M01 DocumentState 0.1.0**, **M07 Markdow
 | 2026-10-03 | #1 | Plan inicial; creados PLAN.md, STATUS.md y CONTEXT.md; propuesta de stacks y arquitectura MVC |
 | 2026-10-03 | #1 | Decididos D-01 (Tauri), D-02 (WYSIWYG), D-03 (formatos), D-15 (codificaciones y fin de línea). Añadido el soporte .Rmd. Plan reescrito para Tauri |
 | 2026-10-03 | #1 | Decididos D-05 (extras + barra de accesos directos), D-07 (MIT), D-11 (Typst), D-12 (modo fuente). Nuevos componentes M14–M16, V09–V11 |
+| 2026-10-04 | #2 | PR #7 fusionado. F1 paso 4: C01 con TDD (mocks), adaptadores Tauri, diálogos propios, atajos y composition root; investigación de un `*` en el título que no se pudo reproducir (jsdom, Edge con y sin ventana, 3 arranques de la app) → PR #8. |
 | 2026-10-04 | #2 | PR #6 fusionado. F1 paso 3: spike Milkdown (2 pérdidas de datos descubiertas) → M07 v0.2.0 con TDD → V01 menús → V02 editor real; RAM 113 MB privados; bundle 508 kB → PR #7. |
 | 2026-10-04 | #2 | PR #5 fusionado. F1 paso 2: M07 MarkdownCodec + corpus de 24 documentos, TDD (101 tests, todos en verde a la primera) → PR #6. |
 | 2026-10-04 | #2 | PR #4 fusionado; ramas de F0 renombradas (`hecha/F0.<n>de4/…`). Plan de F1 aprobado (Milkdown *kit*, 5 pasos). F1 paso 1: interfaces MVC + M01 DocumentState con TDD (PR #5). |

@@ -1,57 +1,65 @@
 <!--
   @component
   **V01 `MainWindow`** (Vista): ventana principal con la barra de menús, el
-  editor WYSIWYG (V02) y la barra de estado.
+  editor WYSIWYG (V02), la barra de estado y los diálogos (V12).
 
-  F1 · paso 3/5: los menús y el editor ya funcionan, pero las órdenes de menú
-  solo se registran en la consola. En el paso 4/5, C01 `AppController` se
-  conectará en `main.ts` (composition root) y las ejecutará.
+  Es una vista pasiva: muestra el estado de `ShellState` y `DialogService`
+  y reenvía las órdenes (menús y atajos) con `onCommand`. Quien decide qué
+  hacer es C01 `AppController`, que se crea en `main.ts` (composition root)
+  cuando el editor está listo (`onEditorReady`).
 -->
 <script lang="ts">
   import { onMount } from 'svelte'
+  import type { IEditorView } from './controller/ports'
+  import DialogHost from './view/DialogHost.svelte'
+  import type { DialogService } from './view/dialogs.svelte'
+  import { ENCODING_LABELS, LINE_ENDING_LABELS } from './view/labels'
   import MenuBar from './view/MenuBar.svelte'
-  import { type CommandId, detectPlatform } from './view/menus'
+  import { type CommandId, commandForKey, detectPlatform } from './view/menus'
   import { MilkdownEditorView } from './view/milkdown-editor'
+  import type { ShellState } from './view/shell.svelte'
+
+  interface Props {
+    /** Título y barra de estado (lo escribe el controlador). */
+    shell: ShellState
+    /** Diálogos modales (los pide el controlador). */
+    dialogs: DialogService
+    /** Orden emitida desde un menú o un atajo de teclado. */
+    onCommand: (id: CommandId) => void
+    /** Se llama cuando el editor ya está montado y listo. */
+    onEditorReady: (editor: IEditorView) => void
+  }
+
+  let { shell, dialogs, onCommand, onEditorReady }: Props = $props()
 
   /** Versión SemVer inyectada por Vite desde package.json. */
   const version = __APP_VERSION__
   const platform = detectPlatform(navigator.userAgent)
-
-  /** Documento de bienvenida hasta que exista «Abrir» (F2). */
-  const WELCOME = `# Bienvenido a editorMD
-
-Editor **WYSIWYG** de Markdown. Escribe aquí directamente: *cursiva*, **negrita**, \`código\`…
-
-- [x] Editor Milkdown funcionando (F1 · paso 3/5)
-- [ ] Abrir y guardar ficheros (F2)
-
-| Atajo | Acción |
-| --- | --- |
-| Ctrl/⌘ + Z | Deshacer |
-| Ctrl/⌘ + Shift + Z | Rehacer |
-`
+  /** Órdenes que el editor ya gestiona con su propio teclado. */
+  const EDITOR_KEYS: CommandId[] = ['edit.undo', 'edit.redo']
 
   let editorRoot: HTMLDivElement
-  let words = $state(0)
-
-  const countWords = (md: string) => (md.match(/[\p{L}\p{N}]+/gu) ?? []).length
 
   onMount(() => {
     let view: MilkdownEditorView | undefined
-    MilkdownEditorView.create(editorRoot, WELCOME).then((v) => {
+    MilkdownEditorView.create(editorRoot).then((v) => {
       view = v
-      words = countWords(v.getMarkdown())
-      v.onChange((md) => (words = countWords(md)))
-      v.focus()
+      onEditorReady(v)
     })
     return () => view?.destroy()
   })
 
-  function onCommand(id: CommandId): void {
-    // Temporal hasta el paso 4/5: el controlador C01 ejecutará las órdenes.
-    console.info(`[editorMD] orden «${id}»: la ejecutará C01 AppController (F1 · paso 4/5)`)
+  function onKeydown(event: KeyboardEvent): void {
+    if (dialogs.current) return
+    const id = commandForKey(event, platform, { exclude: EDITOR_KEYS })
+    if (id) {
+      event.preventDefault()
+      onCommand(id)
+    }
   }
 </script>
+
+<svelte:window onkeydown={onKeydown} />
 
 <div class="window">
   <MenuBar {onCommand} {platform} />
@@ -61,11 +69,16 @@ Editor **WYSIWYG** de Markdown. Escribe aquí directamente: *cursiva*, **negrita
   </main>
 
   <footer class="statusbar">
-    <span>UTF-8 · LF</span>
-    <span>{words} palabras</span>
+    <span>
+      {ENCODING_LABELS[shell.status.encoding]} · {LINE_ENDING_LABELS[shell.status.lineEnding]}
+      {#if shell.status.modified}<span class="modified" title="Cambios sin guardar">●</span>{/if}
+    </span>
+    <span>{shell.status.words} palabras</span>
     <span>v{version}</span>
   </footer>
 </div>
+
+<DialogHost service={dialogs} />
 
 <style>
   .window {
@@ -89,5 +102,9 @@ Editor **WYSIWYG** de Markdown. Escribe aquí directamente: *cursiva*, **negrita
     font-size: 0.8rem;
     border-top: 1px solid var(--border);
     background: var(--panel);
+  }
+  .modified {
+    color: var(--accent);
+    margin-left: 0.4rem;
   }
 </style>

@@ -177,3 +177,17 @@ describe('DocumentState · reutilización', () => {
     expect(doc.isModified).toBe(false)
   })
 })
+
+describe('DocumentState · wordCount (v0.2.0)', () => {
+  it.each([
+    ['', 0],
+    ['Hola', 1],
+    ['# Hola mundo', 2],
+    ['**negrita** y *cursiva*', 3],
+    ['Ñandú, cigüeña; café.', 3],
+    ['- [x] tarea 1\n- [ ] tarea 2', 4],
+    ['日本語 text', 2],
+  ])('%j tiene %i palabras', (content, words) => {
+    expect(DocumentState.fromFile(content, { path: 'a.md' }).wordCount).toBe(words)
+  })
+})

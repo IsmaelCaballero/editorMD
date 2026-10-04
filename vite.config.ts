@@ -27,7 +27,7 @@ export default defineConfig({
     environment: 'node',
     coverage: {
       provider: 'v8',
-      include: ['src/model/**', 'src/controller/**'],
+      include: ['src/model/**', 'src/controller/**', 'src/adapters/**'],
       reporter: ['text', 'html'],
       thresholds: { lines: 85 },
     },
