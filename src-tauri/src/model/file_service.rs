@@ -9,9 +9,15 @@
 //! - [`FileError`]: error serializable para el frontend.
 
 use std::fmt;
-use std::path::Path;
+use std::fs::{self, File, OpenOptions};
+use std::io::{ErrorKind, Write};
+use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
 
-use crate::model::text_codec::{Encoding, LineEnding, LossReport, LossStrategy, TextFile};
+use crate::model::text_codec::{
+    DecodeError, Encoding, LineEnding, LossReport, LossStrategy, TextFile, loss_report, read_text,
+    read_text_as, write_text, write_text_lossy,
+};
 
 /// Error al abrir o guardar un fichero. Serializable para el frontend.
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
@@ -70,8 +76,28 @@ pub enum FileError {
 
 impl fmt::Display for FileError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let _ = f;
-        todo!()
+        match self {
+            FileError::NotFound { path } => write!(f, "no se encuentra «{path}»"),
+            FileError::PermissionDenied { path } => {
+                write!(f, "acceso denegado a «{path}»")
+            }
+            FileError::ReadOnly { path } => {
+                write!(f, "«{path}» es de solo lectura")
+            }
+            FileError::IsDirectory { path } => write!(f, "«{path}» es una carpeta"),
+            FileError::Io { path, message } => {
+                write!(f, "error de E/S en «{path}»: {message}")
+            }
+            FileError::Decode { path, message, .. } => {
+                write!(f, "no se puede decodificar «{path}»: {message}")
+            }
+            FileError::Unmappable { path, report } => write!(
+                f,
+                "hay {} carácter(es) que no caben en {} al guardar «{path}»",
+                report.total,
+                report.encoding.id()
+            ),
+        }
     }
 }
 
@@ -106,18 +132,72 @@ pub struct SavedFile {
     pub losses: Option<LossReport>,
 }
 
+/// Traduce un error de E/S al [`FileError`] correspondiente.
 fn map_io(path: &Path, err: &std::io::Error) -> FileError {
-    let _ = (path, err);
-    todo!()
+    let path = path.display().to_string();
+    match err.kind() {
+        ErrorKind::NotFound => FileError::NotFound { path },
+        ErrorKind::PermissionDenied => FileError::PermissionDenied { path },
+        _ => FileError::Io {
+            path,
+            message: err.to_string(),
+        },
+    }
 }
 
+/// Contador para que dos escrituras simultáneas no compartan temporal.
+static TEMP_COUNTER: AtomicU64 = AtomicU64::new(0);
+
+/// Crea un fichero temporal nuevo (`create_new`) junto a `path`.
+fn create_temp(path: &Path) -> std::io::Result<(PathBuf, File)> {
+    let dir = match path.parent() {
+        Some(d) if !d.as_os_str().is_empty() => d,
+        _ => Path::new("."),
+    };
+    let name = path.file_name().map_or_else(
+        || "fichero".to_string(),
+        |n| n.to_string_lossy().into_owned(),
+    );
+    let pid = std::process::id();
+    // Si el nombre ya existe (muy improbable), se reintenta con otro número.
+    for _ in 0..100 {
+        let n = TEMP_COUNTER.fetch_add(1, Ordering::Relaxed);
+        let tmp = dir.join(format!(".{name}.{pid}.{n}.tmp"));
+        match OpenOptions::new().write(true).create_new(true).open(&tmp) {
+            Ok(file) => return Ok((tmp, file)),
+            Err(e) if e.kind() == ErrorKind::AlreadyExists => {}
+            Err(e) => return Err(e),
+        }
+    }
+    Err(std::io::Error::other(
+        "no se pudo crear un fichero temporal único",
+    ))
+}
+
+/// Escribe en un temporal, lo vuelca al disco y lo mueve al destino con
+/// `rename`. Si algo falla, borra el temporal y deja el destino intacto.
 fn write_via_temp(
     path: &Path,
     bytes: &[u8],
     rename: impl FnOnce(&Path, &Path) -> std::io::Result<()>,
 ) -> Result<(), FileError> {
-    let _ = (path, bytes, rename);
-    todo!()
+    let (tmp, mut file) = create_temp(path).map_err(|e| map_io(path, &e))?;
+    let result = (|| {
+        file.write_all(bytes)?;
+        // En Unix, el resultado conserva el modo del destino si ya existía.
+        #[cfg(unix)]
+        if let Ok(meta) = fs::metadata(path) {
+            file.set_permissions(meta.permissions())?;
+        }
+        file.sync_all()?;
+        drop(file);
+        rename(&tmp, path)
+    })();
+    result.map_err(|e| {
+        // Limpieza best-effort: el error relevante es el original.
+        let _ = fs::remove_file(&tmp);
+        map_io(path, &e)
+    })
 }
 
 /// Lee un fichero completo.
@@ -127,32 +207,123 @@ fn write_via_temp(
 /// [`FileError::IsDirectory`], [`FileError::NotFound`], [`FileError::PermissionDenied`]
 /// o [`FileError::Io`].
 pub fn read_file(path: &Path) -> Result<FileBytes, FileError> {
-    let _ = path;
-    todo!()
+    let meta = fs::metadata(path).map_err(|e| map_io(path, &e))?;
+    // Se comprueba antes de abrir: en Windows abrir una carpeta da «acceso denegado».
+    if meta.is_dir() {
+        return Err(is_directory(path));
+    }
+    let bytes = fs::read(path).map_err(|e| map_io(path, &e))?;
+    Ok(FileBytes {
+        bytes,
+        read_only: meta.permissions().readonly(),
+    })
+}
+
+fn is_directory(path: &Path) -> FileError {
+    FileError::IsDirectory {
+        path: path.display().to_string(),
+    }
 }
 
 /// Escribe `bytes` en `path` de forma atómica.
 ///
+/// Los bytes se escriben en un fichero temporal **de la misma carpeta**, se
+/// vuelcan al disco (`sync_all`) y se **renombra** sobre el destino
+/// (sustituyéndolo si existe). Si algo falla, el destino queda intacto y no
+/// queda ningún temporal. No crea carpetas. En Unix, si el destino existía,
+/// conserva sus permisos.
+///
 /// # Errors
 ///
-/// [`FileError::IsDirectory`], [`FileError::ReadOnly`], [`FileError::NotFound`],
-/// [`FileError::PermissionDenied`] o [`FileError::Io`].
+/// - [`FileError::IsDirectory`] si `path` es una carpeta.
+/// - [`FileError::ReadOnly`] si el destino existe y es de solo lectura.
+/// - [`FileError::NotFound`] si la carpeta del destino no existe.
+/// - [`FileError::PermissionDenied`] o [`FileError::Io`] en otros fallos de E/S.
+///
+/// # Examples
+///
+/// ```
+/// use editormd_lib::model::file_service::{read_file, write_atomic};
+///
+/// let dir = std::env::temp_dir().join("editormd-doctest-write-atomic");
+/// std::fs::create_dir_all(&dir).unwrap();
+/// let file = dir.join("nota.txt");
+///
+/// write_atomic(&file, b"hola").unwrap();
+/// assert_eq!(read_file(&file).unwrap().bytes, b"hola");
+///
+/// std::fs::remove_dir_all(&dir).unwrap();
+/// ```
 pub fn write_atomic(path: &Path, bytes: &[u8]) -> Result<(), FileError> {
-    let _ = (path, bytes);
-    todo!()
+    match fs::metadata(path) {
+        Ok(meta) if meta.is_dir() => return Err(is_directory(path)),
+        Ok(meta) if meta.permissions().readonly() => {
+            return Err(FileError::ReadOnly {
+                path: path.display().to_string(),
+            });
+        }
+        // Un destino inexistente es lo normal al crear; el resto de errores
+        // (p. ej. permisos) se detectarán al escribir.
+        Ok(_) | Err(_) => {}
+    }
+    write_via_temp(path, bytes, |tmp, dest| fs::rename(tmp, dest))
 }
 
-/// Abre un fichero de texto.
+/// Abre un fichero de texto: lo lee y lo decodifica.
+///
+/// Con `encoding` a `None` detecta la codificación ([`read_text`]); con
+/// `Some` usa esa ([`read_text_as`]).
 ///
 /// # Errors
 ///
-/// Los de [`read_file`] y [`FileError::Decode`].
+/// Los de [`read_file`] y [`FileError::Decode`] si el contenido no es válido.
+///
+/// # Examples
+///
+/// ```
+/// use editormd_lib::model::file_service::{open_text, write_atomic};
+/// use editormd_lib::model::text_codec::{Encoding, LineEnding};
+///
+/// let dir = std::env::temp_dir().join("editormd-doctest-open-text");
+/// std::fs::create_dir_all(&dir).unwrap();
+/// let file = dir.join("nota.md");
+/// write_atomic(&file, "uno\r\ndós\r\n".as_bytes()).unwrap();
+///
+/// let opened = open_text(&file, None).unwrap();
+/// assert_eq!(opened.file.text, "uno\ndós\n");
+/// assert_eq!(opened.file.encoding, Encoding::Utf8);
+/// assert_eq!(opened.file.line_ending, LineEnding::Crlf);
+/// assert!(!opened.read_only);
+///
+/// std::fs::remove_dir_all(&dir).unwrap();
+/// ```
 pub fn open_text(path: &Path, encoding: Option<Encoding>) -> Result<OpenedFile, FileError> {
-    let _ = (path, encoding);
-    todo!()
+    let FileBytes { bytes, read_only } = read_file(path)?;
+    let decoded = match encoding {
+        None => read_text(&bytes),
+        Some(enc) => read_text_as(&bytes, enc),
+    };
+    let file = decoded.map_err(|e| {
+        let (encoding, offset) = match e {
+            DecodeError::InvalidSequence { encoding, offset } => (encoding, Some(offset)),
+            DecodeError::OddLength { encoding } => (encoding, None),
+        };
+        FileError::Decode {
+            path: path.display().to_string(),
+            encoding,
+            offset,
+            message: e.to_string(),
+        }
+    })?;
+    Ok(OpenedFile { file, read_only })
 }
 
-/// Guarda un texto.
+/// Guarda un texto con la codificación y el fin de línea indicados.
+///
+/// Primero prepara los bytes (sin tocar el disco) y después escribe con
+/// [`write_atomic`]. Si hay caracteres que no caben en `encoding`: sin
+/// `strategy` es un error; con `strategy` se aplica y se devuelve el informe
+/// en [`SavedFile::losses`].
 ///
 /// # Errors
 ///
@@ -164,8 +335,29 @@ pub fn save_text(
     line_ending: LineEnding,
     strategy: Option<LossStrategy>,
 ) -> Result<SavedFile, FileError> {
-    let _ = (path, text, encoding, line_ending, strategy);
-    todo!()
+    let report = loss_report(text, encoding);
+    let (bytes, losses) = if report.is_lossless() {
+        let bytes = write_text(text, encoding, line_ending).map_err(|_| FileError::Unmappable {
+            path: path.display().to_string(),
+            report: report.clone(),
+        })?;
+        (bytes, None)
+    } else if let Some(strategy) = strategy {
+        (
+            write_text_lossy(text, encoding, line_ending, strategy),
+            Some(report),
+        )
+    } else {
+        return Err(FileError::Unmappable {
+            path: path.display().to_string(),
+            report,
+        });
+    };
+    write_atomic(path, &bytes)?;
+    Ok(SavedFile {
+        bytes_written: bytes.len(),
+        losses,
+    })
 }
 
 #[cfg(test)]
@@ -290,7 +482,7 @@ mod tests {
                 path: f.display().to_string()
             })
         );
-        assert!(names(d.path()).is_empty());
+        assert_eq!(names(d.path()), Vec::<String>::new());
     }
 
     #[test]
@@ -305,7 +497,7 @@ mod tests {
             })
         );
         assert_eq!(names(d.path()), vec!["carpeta"]);
-        assert!(names(&sub).is_empty());
+        assert_eq!(names(&sub), Vec::<String>::new());
     }
 
     #[test]
@@ -354,7 +546,7 @@ mod tests {
             Err(std::io::Error::other("fallo simulado"))
         });
         assert!(r.is_err());
-        assert!(names(d.path()).is_empty());
+        assert_eq!(names(d.path()), Vec::<String>::new());
     }
 
     #[cfg(unix)]
@@ -482,7 +674,7 @@ mod tests {
                 report: loss_report("10 €\n", Encoding::Ascii)
             })
         );
-        assert!(names(d.path()).is_empty());
+        assert_eq!(names(d.path()), Vec::<String>::new());
     }
 
     #[test]
