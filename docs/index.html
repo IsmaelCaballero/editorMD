@@ -283,13 +283,16 @@ const PROJECT = {
   repo: "https://github.com/IsmaelCaballero/editorMD",
   appVersion: "0.0.1",
   currentPhase: "F1",
-  tests: { passed: 55, total: 55, coverage: "99 %" },
+  tests: { passed: 156, total: 156, coverage: "99 %" },
   ci: "4/4 SO en verde",
   tags: [
     { name: "v0.0.1", date: "2026-10-04", pre: true, commit: "86df753", url: "https://github.com/IsmaelCaballero/editorMD/releases/tag/v0.0.1",
       summary: "Esqueleto F0: Tauri 2 + Svelte 5, M17 SemVer, rustdoc/TypeDoc, CI en 4 SO, web del proyecto" },
   ],
   summary: `
+    <p><strong>F1 · paso 2/5.</strong> <a href="#comp-M07">M07 MarkdownCodec</a>, la pieza crítica del WYSIWYG:
+    convierte Markdown en un <a href="#c-ast">árbol sintáctico</a> y lo devuelve a texto sin cambiar su significado.
+    Se comprueba con un <a href="#c-corpus">corpus de fidelidad</a> de 24 documentos (101 tests, TDD).</p>
     <p><strong>F1 en marcha.</strong> Cerrada F0 (sus 4 ramas se <a href="#c-rename">renombraron</a> a <code>hecha/F0.&lt;n&gt;de4/…</code>)
     y aprobado el plan de <a href="#phase-F1">F1</a> en 5 pasos con Milkdown <i>kit</i>. Paso 1/5: interfaces MVC
     (<a href="#c-ports">puertos</a>) y <a href="#comp-M01">M01 DocumentState</a>, desarrollado con <a href="#c-tdd">TDD</a>
@@ -304,8 +307,8 @@ const PROJECT = {
     <a href="#c-rename">renombrar las ramas</a> a <code>hecha/F0.&lt;n&gt;de4/…</code> en lugar de borrarlas (PR #4).</p>
     <p><strong>Sesión 1 (2026-10-03).</strong> Plan completo, 16 decisiones, esqueleto Tauri 2 + Svelte 5,
     primer componente <a href="#comp-M17">M17 SemVer</a> (29 tests) y documentación con rustdoc y TypeDoc.</p>`,
-  next: `<strong>Siguiente paso:</strong> revisar y fusionar el <a href="https://github.com/IsmaelCaballero/editorMD/pull/5">PR #5</a>
-    (F1 · paso 1/5). Después: paso 2/5, <code>feature/F1-markdown-codec</code> (M07 y corpus de fidelidad).`,
+  next: `<strong>Siguiente paso:</strong> revisar y fusionar el <a href="https://github.com/IsmaelCaballero/editorMD/pull/6">PR #6</a>
+    (F1 · paso 2/5). Después: paso 3/5, <code>feature/F1-milkdown-editor</code> (editor Milkdown <i>kit</i> y menús).`,
 
   phases: [
     { id: "F0", name: "Decisiones y entorno", target: "0.0.x", tasks: [
@@ -322,7 +325,7 @@ const PROJECT = {
     { id: "F1", name: "Esqueleto MVC", target: "0.0.x", tasks: [
       ["ok", "F1.1 Interfaces IEditorView, IBackend, IDialogService (ports.ts)"],
       ["ok", "F1.2 M01 DocumentState + 22 tests (TDD)"],
-      ["todo", "F1.3 M07 MarkdownCodec (GFM, front matter, Rmd) + corpus de fidelidad"],
+      ["ok", "F1.3 M07 MarkdownCodec (GFM, front matter, Rmd) + corpus de 24 documentos (101 tests)"],
       ["todo", "F1.4 V01 MainWindow con menús + V02 Milkdown kit"],
       ["todo", "F1.5 C01 AppController + composition root + tests"],
     ]},
@@ -545,6 +548,23 @@ const PROJECT = {
       cmds: "npx vitest run --coverage   # 51 passed · document.ts 100 %",
       why: "El modelo sin dependencias de interfaz se prueba en milisegundos y es la base de todo lo demás.",
       concepts: ["tdd", "observer", "coverage"] },
+    { date: "2026-10-04", title: "F1 · 2/5 — Corpus de fidelidad y pruebas de M07 (fase roja)", branch: "feature/F1-markdown-codec", commit: "f22d59f",
+      did: ["Fusionaste el PR #5 (paso 1/5); revisión correcta (<code>026e472</code>).",
+            "<code>tests/corpus/</code>: 24 documentos que cubren CommonMark, GFM (tablas, tareas, tachado, notas al pie), front matter, <b>R Markdown</b> con opciones, Unicode y emojis, HTML, escapes, entidades y casos límite (documento vacío, sin salto final).",
+            "Por cada documento, 3 pruebas: ida y vuelta <b>equivalente</b>, <b>idempotente</b> y solo LF. Además, pruebas del estilo canónico, GFM, front matter y bloques R.",
+            "El corpus se excluye de Prettier: debe quedarse exactamente como está."],
+      cmds: "npm install unified remark-parse remark-stringify remark-gfm remark-frontmatter\nnpx vitest run   # FAIL: Cannot find module markdown-codec",
+      why: "En un WYSIWYG, el mayor riesgo es que al guardar se estropee el Markdown del usuario; el corpus lo vigila de forma automática.",
+      concepts: ["corpus", "tdd"] },
+    { date: "2026-10-04", title: "F1 · 2/5 — M07 MarkdownCodec (fase verde)", branch: "feature/F1-markdown-codec", commit: "6600229",
+      did: ["<code>parse</code> (texto → <a href='#c-ast'>mdast</a>), <code>stringify</code> (árbol → texto), <code>normalize</code> (ciclo completo) y <code>equivalent</code> (compara árboles sin posiciones).",
+            "<code>STRINGIFY_OPTIONS</code> fija el estilo canónico (<code>-</code>, <code>*</code>, <code>**</code>, <code>```</code>, títulos <code>#</code>). Lo usará también el editor Milkdown, para que editor y tests conviertan igual.",
+            "R Markdown: remark separa <code>{r setup, include=FALSE}</code> en <code>lang</code> + <code>meta</code>; <code>rmdChunkHeader</code> los vuelve a unir y se comprueba que salen idénticos.",
+            "Las <b>101 pruebas pasaron a la primera</b>: 152/152 en total, <code>markdown-codec.ts</code> con un 100 % de líneas.",
+            "Diferencias de estilo conocidas (sin cambio de significado) documentadas en el TSDoc: <code>_a_</code>→<code>*a*</code>, <code>* x</code>→<code>- x</code>, setext→ATX, <code>~~~</code>→<code>```</code>, <code>&amp;copy;</code>→<code>©</code>…"],
+      cmds: "npx vitest run --coverage   # 152 passed · markdown-codec.ts 100 %",
+      why: "Separar la conversión en un módulo puro permite probarla a fondo sin editor ni navegador.",
+      concepts: ["ast", "corpus", "coverage"] },
   ],
 
   git: {
@@ -572,15 +592,21 @@ const PROJECT = {
       { t: "branch", name: "feature/F1-document-model" },
       { t: "commit", branch: "feature/F1-document-model", id: "9c18134", msg: "test(M01): fase roja" },
       { t: "commit", branch: "feature/F1-document-model", id: "1a75a04", msg: "feat(M01): fase verde" },
-      { t: "commit", branch: "feature/F1-document-model", id: "PR #5", msg: "docs: F1 paso 1" },
+      { t: "commit", branch: "feature/F1-document-model", id: "a54f575", msg: "docs: F1 paso 1" },
+      { t: "merge", into: "main", from: "feature/F1-document-model", id: "026e472 Merge PR #5" },
+      { t: "branch", name: "feature/F1-markdown-codec" },
+      { t: "commit", branch: "feature/F1-markdown-codec", id: "f22d59f", msg: "test(M07): fase roja" },
+      { t: "commit", branch: "feature/F1-markdown-codec", id: "6600229", msg: "feat(M07): fase verde" },
+      { t: "commit", branch: "feature/F1-markdown-codec", id: "PR #6", msg: "docs: F1 paso 2" },
     ],
     branches: [
-      { name: "main", goal: "Rama estable", status: ["ok", "estable · CI verde · v0.0.1"], commits: 5, pr: "" },
+      { name: "main", goal: "Rama estable", status: ["ok", "estable · CI verde · v0.0.1"], commits: 6, pr: "" },
       { name: "feature/F0-scaffold", step: "F0 · 1/4", final: "hecha/F0.1de4/feature/F0-scaffold", renamed: true, goal: "F0: esqueleto, tests, documentación, CI y web", status: ["ok", "fusionada (PR #1)"], commits: 6, pr: 1 },
       { name: "chore/release-0.0.1", step: "F0 · 2/4", final: "hecha/F0.2de4/chore/release-0.0.1", renamed: true, goal: "CHANGELOG 0.0.1 y actualización de la documentación", status: ["ok", "fusionada (PR #2)"], commits: 1, pr: 2 },
       { name: "feature/F0-linters", step: "F0 · 3/4", final: "hecha/F0.3de4/feature/F0-linters", renamed: true, goal: "F0.7: linters, formateadores y job lint en CI", status: ["ok", "fusionada (PR #3)"], commits: 3, pr: 3 },
       { name: "chore/F0-close", step: "F0 · 4/4", final: "hecha/F0.4de4/chore/F0-close", renamed: true, goal: "Cierre de F0: convención de renombrado de ramas", status: ["ok", "fusionada (PR #4)"], commits: 1, pr: 4 },
-      { name: "feature/F1-document-model", step: "F1 · 1/5", final: "hecha/F1.1de5/feature/F1-document-model", goal: "Interfaces MVC + M01 DocumentState (TDD)", status: ["wip", "PR #5 · pendiente de CI y de tu revisión"], commits: 3, pr: 5 },
+      { name: "feature/F1-document-model", step: "F1 · 1/5", final: "hecha/F1.1de5/feature/F1-document-model", goal: "Interfaces MVC + M01 DocumentState (TDD)", status: ["ok", "fusionada (PR #5)"], commits: 3, pr: 5 },
+      { name: "feature/F1-markdown-codec", step: "F1 · 2/5", final: "hecha/F1.2de5/feature/F1-markdown-codec", goal: "M07 MarkdownCodec + corpus de fidelidad (TDD)", status: ["wip", "PR #6 · pendiente de CI y de tu revisión"], commits: 3, pr: 6 },
     ],
   },
 
@@ -592,7 +618,7 @@ const PROJECT = {
     ["M04","M","TS","ListCommands","Viñetas, numeradas, tareas, sangrado","0.0.0","F5"],
     ["M05","M","TS","TableModel","Tablas GFM","0.0.0","F5"],
     ["M06","M","TS","SearchEngine","Buscar/reemplazar","0.0.0","F3"],
-    ["M07","M","TS","MarkdownCodec","MD ⇄ WYSIWYG (GFM, front matter, Rmd)","0.0.0","F1"],
+    ["M07","M","TS","MarkdownCodec","MD ⇄ árbol mdast fiel (GFM, front matter, Rmd), estilo canónico","0.1.0","F1"],
     ["M08","M","Rust","FileService","Lectura/escritura atómica","0.0.0","F2"],
     ["M09","M","Rust","TextCodec","Codificaciones, BOM, fin de línea, transliteración","0.0.0","F2"],
     ["M10","M","Rust","Importers","TXT, HTML → MD","0.0.0","F6"],
@@ -650,6 +676,8 @@ const PROJECT = {
     "svelte": ["Svelte 5", "Framework de interfaz que <i>compila</i> los componentes a JavaScript directo, sin DOM virtual. El resultado son bundles pequeños y rápidos."],
     "ci": ["Integración continua (CI)", "Un servicio (aquí, GitHub Actions) compila y ejecuta los tests automáticamente en cada push o PR, en máquinas limpias de cada SO. Un PR con la CI en rojo no se fusiona."],
     "tag": ["Etiqueta git (tag)", "Nombre fijo que apunta a un commit concreto, p. ej. <code>v0.0.1</code>. Las <i>anotadas</i> (<code>git tag -a</code>) guardan autor, fecha y mensaje. GitHub las usa para crear <i>Releases</i> descargables."],
+    "ast": ["Árbol sintáctico (AST / mdast)", "Representación del documento como árbol de nodos (<code>heading</code>, <code>paragraph</code>, <code>list</code>, <code>table</code>…). El editor WYSIWYG trabaja sobre un árbol; el fichero es texto. <b>Parsear</b> = texto → árbol; <b>serializar</b> = árbol → texto. mdast es el formato de árbol de remark."],
+    "corpus": ["Corpus de fidelidad e idempotencia", "Colección de documentos reales que se pasan por el ciclo texto → árbol → texto. Se exige que el resultado sea <b>equivalente</b> (el mismo árbol) e <b>idempotente</b> (una segunda pasada no cambia nada). Si alguien rompe la conversión, algún documento del corpus lo detecta."],
     "observer": ["Patrón Observer", "El modelo mantiene una lista de suscriptores y les avisa cuando cambia (<code>doc.subscribe(fn)</code>). Así el modelo no conoce las vistas: el controlador se suscribe y actualiza lo que haga falta (título, barra de estado…)."],
     "ports": ["Puertos e inyección de dependencias", "Los controladores dependen de <b>interfaces</b> (<code>IEditorView</code>, <code>IBackend</code>, <code>IDialogService</code>), no de Svelte ni de Tauri. Las piezas reales se «inyectan» al arrancar (<i>composition root</i>) y en los tests se sustituyen por <i>mocks</i>."],
     "rename": ["Renombrar ramas al cerrar la fase", "Convención propia del proyecto: en lugar de borrar las ramas fusionadas, al cerrar la fase se renombran a <code>hecha/F&lt;m&gt;.&lt;n&gt;de&lt;T&gt;/…</code>. La lista de ramas pasa a ser un registro ordenado de los pasos del desarrollo. GitHub conserva los PR y redirige los enlaces antiguos."],
