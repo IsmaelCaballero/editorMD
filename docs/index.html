@@ -86,6 +86,7 @@
   .pill.M { background: color-mix(in srgb, var(--m) 15%, transparent); color: var(--m); }
   .pill.V { background: color-mix(in srgb, var(--v) 15%, transparent); color: var(--v); }
   .pill.C { background: color-mix(in srgb, var(--c) 15%, transparent); color: var(--c); }
+  .pill.A { background: color-mix(in srgb, var(--ok) 15%, transparent); color: var(--ok); }
   .ver { font-family: ui-monospace, Consolas, monospace; font-size: .85rem; font-weight: 600; }
   .ver.zero { color: var(--todo); font-weight: 400; }
 
@@ -283,7 +284,7 @@ const PROJECT = {
   repo: "https://github.com/IsmaelCaballero/editorMD",
   appVersion: "0.0.1",
   currentPhase: "F1",
-  tests: { passed: 293, total: 293, coverage: "99 %" },
+  tests: { passed: 340, total: 340, coverage: "100 %" },
   metrics: { ram: "113 MB", bundle: "508 kB (158 kB gzip)" },
   ci: "4/4 SO en verde",
   tags: [
@@ -291,6 +292,10 @@ const PROJECT = {
       summary: "Esqueleto F0: Tauri 2 + Svelte 5, M17 SemVer, rustdoc/TypeDoc, CI en 4 SO, web del proyecto" },
   ],
   summary: `
+    <p><strong>F1 · paso 4/5.</strong> ¡Los menús ya <b>hacen</b> cosas! <a href="#comp-C01">C01 AppController</a>
+    (TDD con <i>mocks</i>) conecta modelo y vistas mediante <a href="#c-ports">puertos</a>; los <a href="#c-adapters">adaptadores</a>
+    de Tauri y los diálogos propios los implementan, y <code>main.ts</code> es el <a href="#c-composition-root">composition root</a>.
+    Modelo, controlador y adaptadores al <b>100 %</b> de cobertura.</p>
     <p><strong>F1 · paso 3/5.</strong> ¡Ya hay <b>editor WYSIWYG</b>! Un <a href="#c-spike">spike</a> con Milkdown descubrió
     dos pérdidas de datos (front matter y cabeceras de bloques R) <i>antes</i> de escribir la vista; se resolvieron en
     <a href="#comp-M07">M07 v0.2.0</a> con TDD. Después: menús declarativos (<a href="#comp-V01">V01</a>) y el editor
@@ -312,8 +317,8 @@ const PROJECT = {
     <a href="#c-rename">renombrar las ramas</a> a <code>hecha/F0.&lt;n&gt;de4/…</code> en lugar de borrarlas (PR #4).</p>
     <p><strong>Sesión 1 (2026-10-03).</strong> Plan completo, 16 decisiones, esqueleto Tauri 2 + Svelte 5,
     primer componente <a href="#comp-M17">M17 SemVer</a> (29 tests) y documentación con rustdoc y TypeDoc.</p>`,
-  next: `<strong>Siguiente paso:</strong> revisar y fusionar el <a href="https://github.com/IsmaelCaballero/editorMD/pull/7">PR #7</a>
-    (F1 · paso 3/5). Después: paso 4/5, <code>feature/F1-app-controller</code> (C01 y composition root).`,
+  next: `<strong>Siguiente paso:</strong> revisar y fusionar el <a href="https://github.com/IsmaelCaballero/editorMD/pull/8">PR #8</a>
+    (F1 · paso 4/5). Después: paso 5/5, <code>chore/F1-close</code> (versión <b>0.0.2</b>, etiqueta y renombrado de las ramas de F1).`,
 
   phases: [
     { id: "F0", name: "Decisiones y entorno", target: "0.0.x", tasks: [
@@ -332,7 +337,7 @@ const PROJECT = {
       ["ok", "F1.2 M01 DocumentState + 22 tests (TDD)"],
       ["ok", "F1.3 M07 MarkdownCodec (GFM, front matter, Rmd) + corpus de 24 documentos (101 tests)"],
       ["ok", "F1.4 V01 menús declarativos + V02 editor Milkdown kit (corpus en el editor real)"],
-      ["todo", "F1.5 C01 AppController + composition root + tests"],
+      ["ok", "F1.5 C01 AppController (TDD con mocks) + adaptadores + composition root"],
     ]},
     { id: "F2", name: "Ficheros y codificaciones", target: "0.1.0", tasks: [
       ["todo", "F2.1 TextCodec: detección y decodificación de las 8 codificaciones"],
@@ -607,6 +612,31 @@ const PROJECT = {
       cmds: "Get-CimInstance Win32_PerfFormattedData_PerfProc_Process   # WorkingSetPrivate",
       why: "Medir pronto y con la métrica correcta evita decisiones basadas en números engañosos.",
       concepts: ["memory", "tauri"] },
+    { date: "2026-10-04", title: "F1 · 4/5 — C01 con TDD: el controlador probado con mocks", branch: "feature/F1-app-controller", commit: "55b7fb4",
+      did: ["Fusionaste el PR #7; revisión correcta (<code>efc4b42</code>).",
+            "Nuevo puerto <code>IWindowView</code> (título y barra de estado).",
+            "Rojo (<code>d965a3c</code>): 13 pruebas de C01 con <a href='#c-mock'>mocks</a> de los 4 puertos, más 7 de <code>wordCount</code>. Verde (<code>55b7fb4</code>): <code>AppController</code> + <code>wordCount</code>.",
+            "«Nuevo» con cambios pregunta guardar / descartar / cancelar. En F1 «guardar» solo avisa de que llega en F2, <b>sin descartar nada</b>.",
+            "Una falsa alarma enseñó algo: la tabla de cobertura en texto «ocultaba» el controlador por cómo la filtraba; el informe JSON confirmó el 100 %."],
+      cmds: "npx vitest run tests/controller   # 13 passed\nnpx vitest run --coverage --coverage.reporter=json-summary",
+      why: "El controlador concentra la lógica de la aplicación; con mocks se prueban todos sus caminos sin depender de la interfaz.",
+      concepts: ["mock", "ports", "tdd"] },
+    { date: "2026-10-04", title: "F1 · 4/5 — Adaptadores, diálogos, atajos y composition root", branch: "feature/F1-app-controller", commit: "e146cf6",
+      did: ["<a href='#c-adapters'>Adaptadores</a>: A01 <code>TauriBackend</code> (IPC <code>app_info</code>; en un navegador responde sin backend) y A02 <code>setNativeTitle</code> (permiso <code>core:window:allow-set-title</code>).",
+            "V12: diálogos HTML propios, iguales en los 4 SO y probables en jsdom; Escape = la opción prudente.",
+            "Atajos: <code>commandForKey</code> compara por <code>key</code> y por <code>code</code> (con Mayúsculas, <code>Shift+8</code> da <code>*</code> o <code>(</code> según el teclado).",
+            "<code>main.ts</code> como <a href='#c-composition-root'>composition root</a>.",
+            "TypeDoc: <code>{@inheritDoc}</code> no resolvía referencias entre módulos; se quitó porque TypeDoc ya hereda la documentación de la interfaz implementada."],
+      cmds: "npx vitest run   # 336 passed · modelo, controlador y adaptadores al 100 %",
+      why: "Separar el «qué» (puertos) del «cómo» (adaptadores) permite probar y cambiar cada pieza por separado.",
+      concepts: ["adapters", "composition-root", "passive-view"] },
+    { date: "2026-10-04", title: "Investigación: un «*» en el título que no se pudo reproducir", branch: "feature/F1-app-controller",
+      did: ["Al abrir la app, el título mostraba <code>Bienvenida.md *</code> (modificado) sin haber editado, aparentemente.",
+            "Reproducción sistemática: <b>jsdom</b> (no), <b>Edge sin ventana</b> y <b>con ventana</b> con Playwright, haciendo clic en el editor (no), y <b>3 arranques de la app</b>, uno en frío, con un diagnóstico temporal en el título (no).",
+            "La depuración remota de WebView2 (<code>--remote-debugging-port</code>) no se activó dentro de Tauri; se usó como alternativa escribir el diagnóstico en el título de la ventana y leerlo desde PowerShell.",
+            "Conclusión provisional: probablemente fue una edición real (p. ej. al probar la app). El diagnóstico se retiró sin commit. Si vuelve a pasar, se reabrirá con datos."],
+      why: "Un error que no se puede reproducir no se «arregla» a ciegas: se documenta lo probado y se deja preparado cómo investigarlo.",
+      concepts: ["spike"] },
   ],
 
   git: {
@@ -646,23 +676,30 @@ const PROJECT = {
       { t: "commit", branch: "feature/F1-milkdown-editor", id: "be77c4d", msg: "feat(M07): v0.2.0" },
       { t: "commit", branch: "feature/F1-milkdown-editor", id: "59ff8a8", msg: "feat(V01): menús" },
       { t: "commit", branch: "feature/F1-milkdown-editor", id: "af391b6", msg: "feat(V02): editor Milkdown" },
-      { t: "commit", branch: "feature/F1-milkdown-editor", id: "PR #7", msg: "docs: F1 paso 3" },
+      { t: "commit", branch: "feature/F1-milkdown-editor", id: "23e0ce0", msg: "docs: F1 paso 3" },
+      { t: "merge", into: "main", from: "feature/F1-milkdown-editor", id: "efc4b42 Merge PR #7" },
+      { t: "branch", name: "feature/F1-app-controller" },
+      { t: "commit", branch: "feature/F1-app-controller", id: "d965a3c", msg: "test(C01): fase roja" },
+      { t: "commit", branch: "feature/F1-app-controller", id: "55b7fb4", msg: "feat(C01): fase verde" },
+      { t: "commit", branch: "feature/F1-app-controller", id: "e146cf6", msg: "feat: adaptadores y composition root" },
+      { t: "commit", branch: "feature/F1-app-controller", id: "PR #8", msg: "docs: F1 paso 4" },
     ],
     branches: [
-      { name: "main", goal: "Rama estable", status: ["ok", "estable · CI verde · v0.0.1"], commits: 7, pr: "" },
+      { name: "main", goal: "Rama estable", status: ["ok", "estable · CI verde · v0.0.1"], commits: 8, pr: "" },
       { name: "feature/F0-scaffold", step: "F0 · 1/4", final: "hecha/F0.1de4/feature/F0-scaffold", renamed: true, goal: "F0: esqueleto, tests, documentación, CI y web", status: ["ok", "fusionada (PR #1)"], commits: 6, pr: 1 },
       { name: "chore/release-0.0.1", step: "F0 · 2/4", final: "hecha/F0.2de4/chore/release-0.0.1", renamed: true, goal: "CHANGELOG 0.0.1 y actualización de la documentación", status: ["ok", "fusionada (PR #2)"], commits: 1, pr: 2 },
       { name: "feature/F0-linters", step: "F0 · 3/4", final: "hecha/F0.3de4/feature/F0-linters", renamed: true, goal: "F0.7: linters, formateadores y job lint en CI", status: ["ok", "fusionada (PR #3)"], commits: 3, pr: 3 },
       { name: "chore/F0-close", step: "F0 · 4/4", final: "hecha/F0.4de4/chore/F0-close", renamed: true, goal: "Cierre de F0: convención de renombrado de ramas", status: ["ok", "fusionada (PR #4)"], commits: 1, pr: 4 },
       { name: "feature/F1-document-model", step: "F1 · 1/5", final: "hecha/F1.1de5/feature/F1-document-model", goal: "Interfaces MVC + M01 DocumentState (TDD)", status: ["ok", "fusionada (PR #5)"], commits: 3, pr: 5 },
       { name: "feature/F1-markdown-codec", step: "F1 · 2/5", final: "hecha/F1.2de5/feature/F1-markdown-codec", goal: "M07 MarkdownCodec + corpus de fidelidad (TDD)", status: ["ok", "fusionada (PR #6)"], commits: 3, pr: 6 },
-      { name: "feature/F1-milkdown-editor", step: "F1 · 3/5", final: "hecha/F1.3de5/feature/F1-milkdown-editor", goal: "Spike + M07 v0.2.0 + V01 menús + V02 editor Milkdown kit", status: ["wip", "PR #7 · pendiente de CI y de tu revisión"], commits: 5, pr: 7 },
+      { name: "feature/F1-milkdown-editor", step: "F1 · 3/5", final: "hecha/F1.3de5/feature/F1-milkdown-editor", goal: "Spike + M07 v0.2.0 + V01 menús + V02 editor Milkdown kit", status: ["ok", "fusionada (PR #7)"], commits: 5, pr: 7 },
+      { name: "feature/F1-app-controller", step: "F1 · 4/5", final: "hecha/F1.4de5/feature/F1-app-controller", goal: "C01 AppController (TDD) + adaptadores + diálogos + composition root", status: ["wip", "PR #8 · pendiente de CI y de tu revisión"], commits: 4, pr: 8 },
     ],
   },
 
   components: [
     ["M00","M","Rust","AppInfo","Nombre y versión de la app (comando app_info)","0.1.0","F0"],
-    ["M01","M","TS","DocumentState","Contenido, ruta, modificado, codificación/fin de línea (Observer)","0.1.0","F1"],
+    ["M01","M","TS","DocumentState","Contenido, ruta, modificado, codificación/fin de línea, palabras (Observer)","0.2.0","F1"],
     ["M02","M","TS","History","Deshacer/rehacer","0.0.0","F3"],
     ["M03","M","TS","FormatCommands","Títulos, negrita, cursiva, tachado, código, cita","0.0.0","F4"],
     ["M04","M","TS","ListCommands","Viñetas, numeradas, tareas, sangrado","0.0.0","F5"],
@@ -679,7 +716,7 @@ const PROJECT = {
     ["M15","M","TS","Workspace","Documentos abiertos (pestañas)","0.0.0","F7"],
     ["M16","M","TS","I18n","Interfaz es/en","0.0.0","F7"],
     ["M17","M","TS","SemVer","Análisis, comparación e incremento SemVer 2.0.0","0.1.0","F0"],
-    ["V01","V","TS","MainWindow","Menús declarativos (6 menús, 35 órdenes) + MenuBar.svelte","0.2.0","F0/F1"],
+    ["V01","V","TS","MainWindow","Menús declarativos, atajos por SO, ShellState (título y barra de estado)","0.3.0","F0/F1"],
     ["V02","V","TS","WysiwygEditorView","Editor Milkdown kit (implementa IEditorView)","0.1.0","F1"],
     ["V03","V","TS","SourceEditorView","Modo fuente (CodeMirror 6)","0.0.0","F4"],
     ["V04","V","TS","StatusBarView","Posición, palabras, codificación, fin de línea","0.0.0","F2"],
@@ -690,12 +727,15 @@ const PROJECT = {
     ["V09","V","TS","QuickToolbar","Accesos directos configurables","0.0.0","F4/F7"],
     ["V10","V","TS","TabBar","Pestañas","0.0.0","F7"],
     ["V11","V","TS","ExportPreviewView","Previsualización de la exportación","0.0.0","F6"],
-    ["C01","C","TS","AppController","Ciclo de vida, salida segura","0.0.0","F1"],
+    ["V12","V","TS","DialogService","Diálogos modales propios (iguales en los 4 SO)","0.1.0","F1"],
+    ["C01","C","TS","AppController","Órdenes Nuevo, Deshacer, Rehacer, Acerca de; ciclo de vida","0.1.0","F1"],
     ["C02","C","TS","FileController","Ficheros, importar/exportar, codificación","0.0.0","F2"],
     ["C03","C","TS","EditController","Portapapeles, deshacer, buscar","0.0.0","F3"],
     ["C04","C","TS","FormatController","Formato","0.0.0","F4"],
     ["C05","C","TS","InsertController","Objetos","0.0.0","F5"],
     ["C06","C","TS","ViewController","Modo fuente, tema, zoom, preferencias","0.0.0","F4/F7"],
+    ["A01","A","TS","TauriBackend","Implementa IBackend con IPC de Tauri","0.1.0","F1"],
+    ["A02","A","TS","TauriWindow","Título de la ventana nativa","0.1.0","F1"],
   ],
 
   decisions: [
@@ -726,6 +766,9 @@ const PROJECT = {
     "svelte": ["Svelte 5", "Framework de interfaz que <i>compila</i> los componentes a JavaScript directo, sin DOM virtual. El resultado son bundles pequeños y rápidos."],
     "ci": ["Integración continua (CI)", "Un servicio (aquí, GitHub Actions) compila y ejecuta los tests automáticamente en cada push o PR, en máquinas limpias de cada SO. Un PR con la CI en rojo no se fusiona."],
     "tag": ["Etiqueta git (tag)", "Nombre fijo que apunta a un commit concreto, p. ej. <code>v0.0.1</code>. Las <i>anotadas</i> (<code>git tag -a</code>) guardan autor, fecha y mensaje. GitHub las usa para crear <i>Releases</i> descargables."],
+    "adapters": ["Puertos y adaptadores", "Un <b>puerto</b> es una interfaz que necesita el núcleo (p. ej. <code>IBackend</code>); un <b>adaptador</b> es la implementación concreta para una tecnología (p. ej. <code>TauriBackend</code>, que usa <code>invoke</code>). Si mañana cambiara Tauri por otra cosa, solo habría que escribir otro adaptador."],
+    "composition-root": ["Composition root", "El único sitio (<code>src/main.ts</code>) donde se crean las piezas concretas y se conectan entre sí. El resto del código recibe sus dependencias ya hechas (inyección de dependencias) y solo conoce interfaces."],
+    "mock": ["Mocks (dobles de prueba)", "Objetos falsos que sustituyen a los reales en un test y registran cómo se les llama (<code>vi.fn()</code>). Con <i>mocks</i> de los 4 puertos, C01 se prueba en milisegundos sin ventana, sin Milkdown y sin Rust."],
     "spike": ["Spike (prueba exploratoria)", "Experimento corto y desechable para responder una pregunta técnica antes de diseñar. Aquí: «¿qué conserva Milkdown del corpus?». No se versiona; su valor está en lo que descubre (dos pérdidas de datos), que luego se convierte en pruebas y código de verdad."],
     "memory": ["Memoria: working set frente a privada", "El <i>working set</i> incluye páginas compartidas entre procesos (DLL, memoria del GPU…), así que sumarlo en varios procesos cuenta lo mismo varias veces (415 MB). La <b>memoria privada</b> es la exclusiva de cada proceso: es la que muestra el Administrador de tareas y la que se compara con el objetivo (113 MB)."],
     "ast": ["Árbol sintáctico (AST / mdast)", "Representación del documento como árbol de nodos (<code>heading</code>, <code>paragraph</code>, <code>list</code>, <code>table</code>…). El editor WYSIWYG trabaja sobre un árbol; el fichero es texto. <b>Parsear</b> = texto → árbol; <b>serializar</b> = árbol → texto. mdast es el formato de árbol de remark."],
@@ -749,7 +792,7 @@ const PROJECT = {
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const LABEL = { ok: "hecho", wip: "en curso", todo: "pendiente", bad: "bloqueado" };
-const LAYER = { M: "Modelo", V: "Vista", C: "Controlador" };
+const LAYER = { M: "Modelo", V: "Vista", C: "Controlador", A: "Adaptador" };
 
 function phaseStats(p) {
   const n = p.tasks.length, ok = p.tasks.filter((t) => t[0] === "ok").length, wip = p.tasks.filter((t) => t[0] === "wip").length;
@@ -829,7 +872,7 @@ function renderComponents(layer) {
     `<tr id="comp-${id}"><td><strong>${id}</strong></td><td><span class="pill ${l}">${LAYER[l]}</span></td><td>${side}</td>
      <td><code>${esc(name)}</code></td><td>${esc(resp)}</td><td><span class="ver ${ver === "0.0.0" ? "zero" : ""}">${ver}</span></td><td>${ph}</td></tr>`).join("");
 }
-$("filters").innerHTML = [["", "Todos"], ["M", "Modelo"], ["V", "Vista"], ["C", "Controlador"]]
+$("filters").innerHTML = [["", "Todos"], ["M", "Modelo"], ["V", "Vista"], ["C", "Controlador"], ["A", "Adaptador"]]
   .map(([k, t]) => `<button type="button" data-layer="${k}" aria-pressed="${k === ""}">${t}</button>`).join("");
 $("filters").addEventListener("click", (e) => {
   const b = e.target.closest("button"); if (!b) return;

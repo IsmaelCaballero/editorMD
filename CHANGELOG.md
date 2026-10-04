@@ -14,6 +14,10 @@ y el proyecto usa [Semantic Versioning 2.0.0](https://semver.org/lang/es/).
 - Editor WYSIWYG con Milkdown *kit* (V02): deshacer/rehacer, pegado de Markdown, front matter y bloques R protegidos.
 - Barra de menús completa (V01); las opciones de fases futuras aparecen deshabilitadas con la fase prevista.
 - Contador de palabras en la barra de estado.
+- Menús conectados: Archivo → Nuevo (con aviso de cambios sin guardar), Editar → Deshacer/Rehacer, Ayuda → Acerca de (versión obtenida del backend Rust).
+- Atajo Ctrl+N / ⌘N; título de la ventana con el nombre del documento y `*` si hay cambios.
+- Barra de estado con codificación, fin de línea, palabras y marca de cambios.
+- Diálogos propios, iguales en Windows, Linux y macOS.
 - Linters y formateadores: ESLint + Prettier (TS/Svelte), rustfmt + clippy pedantic (Rust), EditorConfig.
 - Job `lint` en la CI.
 

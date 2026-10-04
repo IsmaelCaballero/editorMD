@@ -172,7 +172,7 @@ Cada componente lleva su propia versión **[Semantic Versioning 2.0.0](https://s
 | ID | Capa | Lado | Componente | Responsabilidad | Versión | Fase |
 |---|---|---|---|---|---|---|
 | M00 | Modelo | Rust | `AppInfo` | Nombre y versión de la app (comando `app_info`) | **0.1.0** | F0 |
-| M01 | Modelo | TS | `DocumentState` | Contenido, ruta, modificado, metadatos de codificación/fin de línea | **0.1.0** | F1 |
+| M01 | Modelo | TS | `DocumentState` | Contenido, ruta, modificado, metadatos de codificación/fin de línea, `wordCount` | **0.2.0** | F1 |
 | M02 | Modelo | TS | `History` | Deshacer/rehacer (adaptador a la historia de ProseMirror) | 0.0.0 | F3 |
 | M03 | Modelo | TS | `FormatCommands` | Títulos, negrita, cursiva, tachado, código, cita, quitar formato | 0.0.0 | F4 |
 | M04 | Modelo | TS | `ListCommands` | Viñetas, numeradas, tareas, sangrado | 0.0.0 | F5 |
@@ -189,7 +189,7 @@ Cada componente lleva su propia versión **[Semantic Versioning 2.0.0](https://s
 | M15 | Modelo | TS | `Workspace` | Colección de documentos abiertos (pestañas), documento activo | 0.0.0 | F7 |
 | M16 | Modelo | TS | `I18n` | Catálogos es/en, cambio de idioma | 0.0.0 | F7 |
 | M17 | Modelo | TS | `SemVer` | Análisis, comparación e incremento SemVer 2.0.0 | **0.1.0** | F0 |
-| V01 | Vista | TS | `MainWindow` | Menús (modelo declarativo + `MenuBar.svelte`), layout | **0.2.0** | F0/F1 |
+| V01 | Vista | TS | `MainWindow` | Menús declarativos + `MenuBar.svelte`, atajos (`commandForKey`), `ShellState` (título y barra de estado) | **0.3.0** | F0/F1 |
 | V02 | Vista | TS | `WysiwygEditorView` | Editor Milkdown *kit* (`MilkdownEditorView`) | **0.1.0** | F1 |
 | V03 | Vista | TS | `SourceEditorView` | Modo fuente Markdown (CodeMirror 6) | 0.0.0 | F4 |
 | V04 | Vista | TS | `StatusBarView` | Posición, palabras, codificación, fin de línea | 0.0.0 | F2 |
@@ -200,12 +200,17 @@ Cada componente lleva su propia versión **[Semantic Versioning 2.0.0](https://s
 | V09 | Vista | TS | `QuickToolbar` | Barra de accesos directos configurable (guardar, previsualizar…) | 0.0.0 | F4/F7 |
 | V10 | Vista | TS | `TabBar` | Pestañas multidocumento | 0.0.0 | F7 |
 | V11 | Vista | TS | `ExportPreviewView` | Previsualización de la exportación (PDF/HTML) | 0.0.0 | F6 |
-| C01 | Controlador | TS | `AppController` | Ciclo de vida, salida segura | 0.0.0 | F1 |
+| V12 | Vista | TS | `DialogService` + `DialogHost.svelte` | Diálogos modales propios (iguales en los 4 SO) | **0.1.0** | F1 |
+| C01 | Controlador | TS | `AppController` | Ciclo de vida; órdenes Nuevo, Deshacer, Rehacer, Acerca de | **0.1.0** | F1 |
 | C02 | Controlador | TS | `FileController` | Nuevo/abrir/cerrar/guardar/importar/exportar/codificación | 0.0.0 | F2 |
 | C03 | Controlador | TS | `EditController` | Portapapeles, selección, deshacer, buscar | 0.0.0 | F3 |
 | C04 | Controlador | TS | `FormatController` | | 0.0.0 | F4 |
 | C05 | Controlador | TS | `InsertController` | | 0.0.0 | F5 |
 | C06 | Controlador | TS | `ViewController` | Modo fuente/WYSIWYG, tema, zoom, preferencias | 0.0.0 | F4/F7 |
+| A01 | Adaptador | TS | `TauriBackend` | Implementa `IBackend` con IPC de Tauri (`invoke`) | **0.1.0** | F1 |
+| A02 | Adaptador | TS | `TauriWindow` (`setNativeTitle`) | Título de la ventana nativa | **0.1.0** | F1 |
+
+> **Adaptadores (A):** implementaciones concretas de los puertos que dependen de la plataforma (Tauri). Patrón *puertos y adaptadores*: el controlador nunca los conoce; se conectan en el *composition root* (`src/main.ts`).
 
 ### 4.4 Historial de versiones por componente
 > Formato: `ID vX.Y.Z (fecha) — cambio`.
@@ -217,6 +222,10 @@ Cada componente lleva su propia versión **[Semantic Versioning 2.0.0](https://s
 - M07 `MarkdownCodec` v0.2.0 (2026-10-04) — MINOR (funciones nuevas compatibles): `splitFrontMatter`/`joinFrontMatter` y plugin bidireccional `remarkCodeMetaIntoLang`. Motivo: un *spike* con Milkdown mostró que el editor convertía el front matter en un título y recortaba `{r setup, include=FALSE}` a `{r`. Rama `feature/F1-milkdown-editor`.
 - V01 `MainWindow` v0.2.0 (2026-10-04) — MINOR: modelo de menús declarativo (`menus.ts`, 6 menús, 35 órdenes con atajo y fase) y `MenuBar.svelte`; 43 tests.
 - V02 `WysiwygEditorView` v0.1.0 (2026-10-04) — primera versión: `MilkdownEditorView` implementa `IEditorView` (+ `undo`/`redo`); fidelidad comprobada con el corpus en el editor real (jsdom); 33 tests.
+- C01 `AppController` v0.1.0 (2026-10-04) — primera versión con TDD: start, execute (file.new con diálogo de cambios sin guardar, edit.undo/redo, help.about), dispose; 13 tests con mocks, 100 %. Rama `feature/F1-app-controller`.
+- M01 `DocumentState` v0.2.0 (2026-10-04) — MINOR: `wordCount`.
+- V01 `MainWindow` v0.3.0 (2026-10-04) — MINOR: `matchShortcut`/`commandForKey`, `ShellState` (puerto `IWindowView`), barra de estado completa.
+- V12 `DialogService` v0.1.0, A01 `TauriBackend` v0.1.0, A02 `TauriWindow` v0.1.0 (2026-10-04) — primeras versiones.
 - V01 `MainWindow` v0.1.0 (2026-10-03) — esqueleto: menús decorativos, área central y barra de estado con versión. Rama `feature/F0-scaffold`.
 
 ### 4.5 Versionado de la aplicación (hitos)
@@ -293,7 +302,7 @@ Asociación de `.md`, `.markdown`, `.Rmd` (y opcionalmente `.txt`), iconos y ent
 - [x] F1.2 M01 `DocumentState` + tests (22)
 - [x] F1.3 M07 `MarkdownCodec` (GFM + front matter + bloques Rmd) + corpus de fidelidad (24 documentos, 101 tests)
 - [x] F1.4 V01 `MainWindow` (menús Archivo/Editar/Formato/Insertar/Ver/Ayuda) + V02 Milkdown *kit*
-- [ ] F1.5 C01 `AppController` + *composition root* + tests
+- [x] F1.5 C01 `AppController` + *composition root* + tests (puertos y adaptadores)
 
 ### F2 — Ficheros y codificaciones → 0.1.0
 - [ ] F2.1 M09 `TextCodec`: detección (BOM, UTF-8, chardetng), decodificación de las 8 codificaciones + tests
