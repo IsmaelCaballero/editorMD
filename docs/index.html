@@ -149,6 +149,7 @@
       <li><a href="#diario">Diario de pasos</a></li>
       <li><a href="#git">Ramas y pull requests</a></li>
       <li><a href="#versiones">Versiones publicadas</a></li>
+      <li><a href="#ia">Uso de IA y coste</a></li>
       <li><a href="#arquitectura">Arquitectura MVC</a></li>
       <li><a href="#componentes">Componentes y versiones</a></li>
       <li><a href="#decisiones">Decisiones</a></li>
@@ -206,6 +207,19 @@
         <thead><tr><th>Etiqueta</th><th>Fecha</th><th>Tipo</th><th>Commit</th><th>Contenido</th></tr></thead>
         <tbody id="tags"></tbody>
       </table></div>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="ia">
+      <h2>Uso de IA y coste</h2>
+      <p class="lead">Modelo: <b>Claude Opus 5.5</b> (<code>claude-opus-5-5</code>). Tokens <b>reales</b> medidos en la transcripción de Claude Code con
+        <code>scripts/ai-usage.mjs</code>. Coste equivalente a precio de API (con suscripción no se paga por token). Análisis completo y RQ.1 en
+        <a href="ai-usage/README.md">docs/ai-usage/README.md</a>.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Fase</th><th>Paso</th><th>Estimación previa</th><th>Llamadas</th><th>Tokens procesados</th><th>Coste eq. USD</th><th>Contexto/llamada</th><th></th></tr></thead>
+        <tbody id="ai"></tbody>
+      </table></div>
+      <div class="callout info"><strong>Lección:</strong> el 98,6 % de los tokens son <a href="#c-context-cost">relecturas del contexto</a>. El contexto por llamada pasó de 145 k a 485 k tokens a lo largo de la sesión, así que <b>cada fase empezará en una sesión nueva</b>.</div>
     </section>
 
     <!-- ============================================================ -->
@@ -287,6 +301,20 @@ const PROJECT = {
   tests: { passed: 345, total: 345, coverage: "100 %" },
   metrics: { ram: "113 MB", bundle: "508 kB (158 kB gzip)" },
   ci: "4/4 SO en verde",
+  ai: {
+    model: "claude-opus-5-5",
+    rows: [
+      ["F0", "Plan + esqueleto (PR #1)", "—", 63, 9.56, 6.66, 145],
+      ["F0", "Versión 0.0.1 (PR #2)", "—", 13, 2.73, 0.98, 207],
+      ["F0", "Linters (PR #3)", "—", 22, 5.12, 1.75, 230],
+      ["F0", "Cierre F0 (PR #4)", "—", 9, 2.35, 0.99, 256],
+      ["F1", "1/5 Modelo M01 (PR #5)", "—", 17, 4.84, 1.68, 282],
+      ["F1", "2/5 Codec M07 (PR #6)", "—", 14, 4.39, 1.53, 310],
+      ["F1", "3/5 Editor Milkdown (PR #7)", "—", 45, 16.25, 5.06, 358],
+      ["F1", "4/5 Controlador C01 (PR #8)", "—", 42, 18.49, 5.54, 437],
+      ["F1", "5/5 Cierre F1 (PR #9)", "—", 13, 6.34, 1.73, 485],
+    ],
+  },
   tags: [
     { name: "v0.0.1", date: "2026-10-04", pre: true, commit: "86df753", url: "https://github.com/IsmaelCaballero/editorMD/releases/tag/v0.0.1",
       summary: "Esqueleto F0: Tauri 2 + Svelte 5, M17 SemVer, rustdoc/TypeDoc, CI en 4 SO, web del proyecto" },
@@ -294,6 +322,8 @@ const PROJECT = {
       summary: "F1: editor WYSIWYG Milkdown, menús, C01 AppController, puertos y adaptadores, diálogos; linters (F0.7)" },
   ],
   summary: `
+    <p><strong>Uso de IA medido.</strong> F0 costó <b>10,38 USD eq.</b> (107 llamadas) y F1 <b>15,54 USD eq.</b> (131 llamadas), siempre con
+    Claude Opus 5.5. Ver <a href="#ia">uso de IA y coste</a> y la pregunta de investigación <a href="#c-rq1">RQ.1</a>.</p>
     <p><strong>✅ F1 completada → versión 0.0.2.</strong> Cinco pasos (PR #5-#9): modelo, codec con corpus de fidelidad,
     editor Milkdown, controlador con puertos y adaptadores, y cierre. Al fusionar el PR #9 se publicará la etiqueta
     <a href="#versiones">v0.0.2</a> y las ramas se renombrarán a <code>hecha/F1.&lt;n&gt;de5/…</code>.</p>
@@ -322,8 +352,8 @@ const PROJECT = {
     <a href="#c-rename">renombrar las ramas</a> a <code>hecha/F0.&lt;n&gt;de4/…</code> en lugar de borrarlas (PR #4).</p>
     <p><strong>Sesión 1 (2026-10-03).</strong> Plan completo, 16 decisiones, esqueleto Tauri 2 + Svelte 5,
     primer componente <a href="#comp-M17">M17 SemVer</a> (29 tests) y documentación con rustdoc y TypeDoc.</p>`,
-  next: `<strong>Siguiente paso:</strong> revisar y fusionar el <a href="https://github.com/IsmaelCaballero/editorMD/pull/9">PR #9</a>
-    (cierre de F1) → etiqueta <code>v0.0.2</code> y renombrado de ramas. Después, el plan de <a href="#phase-F2">F2 · ficheros y codificaciones</a> para tu ok.`,
+  next: `<strong>Siguiente paso:</strong> PR #10 (métricas de IA) → etiqueta <code>v0.0.2</code> y renombrado de las ramas de F1 (con tu ok).
+    F2 empezará <b>en una sesión nueva</b>, con una estimación de tokens por paso.`,
 
   phases: [
     { id: "F0", name: "Decisiones y entorno", target: "0.0.x", tasks: [
@@ -662,6 +692,15 @@ const PROJECT = {
       cmds: "npx vitest run tests/version-sync.test.ts   # 1 failed → CHANGELOG → 5 passed\ncargo test   # Cargo.lock actualizado a 0.0.2",
       why: "Las reglas que dependen de la memoria humana («acuérdate de actualizar los tres ficheros») acaban fallando; una prueba no se olvida.",
       concepts: ["semver", "keep-a-changelog", "ci"] },
+    { date: "2026-10-04", title: "Métricas de uso de IA (F0 y F1) y RQ.1", branch: "docs/ai-usage",
+      did: ["Fusionaste el PR #9 (F1 cerrada); todo quedó guardado: <code>main</code> en <code>d26dea0</code>, sin cambios locales ni commits sin subir.",
+            "<code>scripts/ai-usage.mjs</code> lee la transcripción de Claude Code (uso <b>real</b> de cada llamada) y lo reparte por paso: F0 = 10,38 y F1 = 15,54 USD eq., con Claude Opus 5.5.",
+            "Hallazgo: el 98,6 % de los tokens son relecturas del contexto, que creció de 145 k a 485 k tokens por llamada. Las fases siguientes empezarán en sesiones nuevas.",
+            "RQ.1: a igualdad de tokens, Sonnet 5.5 solo ahorraría el 23 %, porque la lectura de caché cuesta lo mismo; Haiku 4.5 no cabría (contexto de 200 k). Se propone un experimento ciego Opus frente a Sonnet en 2 pasos de F2.",
+            "Calidad observada de Opus 5.5: 9 de 9 PR con la CI en verde al primer intento, 0 cambios pedidos en la revisión, ≈ 7 % de llamadas dedicadas a corregir errores propios (todos detectados por las herramientas)."],
+      cmds: "node scripts/ai-usage.mjs ~/.claude/projects/C--ProgsConIA-editorMD/<sesión>.jsonl docs/ai-usage/phases.json",
+      why: "Medir el coste con datos reales permite dimensionar la licencia y responder la RQ.1 con evidencia, no con intuiciones.",
+      concepts: ["context-cost", "rq1"] },
   ],
 
   git: {
@@ -796,6 +835,8 @@ const PROJECT = {
     "svelte": ["Svelte 5", "Framework de interfaz que <i>compila</i> los componentes a JavaScript directo, sin DOM virtual. El resultado son bundles pequeños y rápidos."],
     "ci": ["Integración continua (CI)", "Un servicio (aquí, GitHub Actions) compila y ejecuta los tests automáticamente en cada push o PR, en máquinas limpias de cada SO. Un PR con la CI en rojo no se fusiona."],
     "tag": ["Etiqueta git (tag)", "Nombre fijo que apunta a un commit concreto, p. ej. <code>v0.0.1</code>. Las <i>anotadas</i> (<code>git tag -a</code>) guardan autor, fecha y mensaje. GitHub las usa para crear <i>Releases</i> descargables."],
+    "context-cost": ["Coste del contexto", "La API no tiene memoria: en cada llamada se reenvía toda la conversación. La caché la abarata (lectura: 0,20 $/M frente a 4 $/M de entrada en Opus 5.5), pero sigue siendo la mayor parte del coste en sesiones largas. Por eso conviene empezar sesiones nuevas apoyándose en CONTEXT/STATUS/PLAN."],
+    "rq1": ["RQ.1 · ¿modelo caro o barato?", "Pregunta de investigación del proyecto: coste total por tarea terminada (tokens + revisión humana + defectos) de un modelo caro con poco <i>rework</i> frente a uno barato con más <i>rework</i>. Dato clave: la lectura de caché cuesta lo mismo en Opus 5.5 y Sonnet 5.5, así que Sonnet solo ahorra ~23 % a igualdad de tokens."],
     "adapters": ["Puertos y adaptadores", "Un <b>puerto</b> es una interfaz que necesita el núcleo (p. ej. <code>IBackend</code>); un <b>adaptador</b> es la implementación concreta para una tecnología (p. ej. <code>TauriBackend</code>, que usa <code>invoke</code>). Si mañana cambiara Tauri por otra cosa, solo habría que escribir otro adaptador."],
     "composition-root": ["Composition root", "El único sitio (<code>src/main.ts</code>) donde se crean las piezas concretas y se conectan entre sí. El resto del código recibe sus dependencias ya hechas (inyección de dependencias) y solo conoce interfaces."],
     "mock": ["Mocks (dobles de prueba)", "Objetos falsos que sustituyen a los reales en un test y registran cómo se les llama (<code>vi.fn()</code>). Con <i>mocks</i> de los 4 puertos, C01 se prueba en milisegundos sin ventana, sin Milkdown y sin Rust."],
@@ -845,6 +886,7 @@ const bar = (ok, wip, n) => `<div class="bar" role="img" aria-label="${ok} de ${
     ["Componentes", `${impl}/${PROJECT.components.length}`, "implementados"],
     ["Ramas abiertas", open, "pendientes de PR"],
     ["RAM", PROJECT.metrics.ram, "privada · objetivo ≤ 120 MB"],
+    ["Coste IA", "$" + PROJECT.ai.rows.reduce((a, r) => a + r[5], 0).toFixed(2), "eq. API · F0 + F1"],
     ["Repositorio", `<a href="${PROJECT.repo}">GitHub</a>`, "público"],
     ["Última versión", `<a href="${PROJECT.tags.at(-1).url}">${PROJECT.tags.at(-1).name}</a>`, PROJECT.tags.at(-1).pre ? "pre-release" : "estable"],
   ];
@@ -895,6 +937,15 @@ $("tags").innerHTML = [...PROJECT.tags].reverse().map((t) =>
   `<tr><td><a href="${t.url}"><strong>${t.name}</strong></a></td><td>${t.date}</td>
    <td><span class="pill ${t.pre ? "wip" : "ok"}">${t.pre ? "pre-release" : "estable"}</span></td>
    <td><code>${t.commit}</code></td><td>${esc(t.summary)}</td></tr>`).join("");
+
+// Uso de IA por paso (barra proporcional al coste)
+(function () {
+  const max = Math.max(...PROJECT.ai.rows.map((r) => r[5]))
+  $("ai").innerHTML = PROJECT.ai.rows.map(([ph, step, est, calls, mtok, usd, ctx]) =>
+    `<tr><td><strong>${ph}</strong></td><td>${esc(step)}</td><td>${est}</td><td>${calls}</td><td>${mtok.toFixed(1)} M</td>
+     <td><strong>${usd.toFixed(2)}</strong></td><td>${ctx} k</td>
+     <td style="min-width:8rem"><div class="bar"><span class="wip" style="width:${(usd / max) * 100}%"></span></div></td></tr>`).join("");
+})();
 
 // Componentes con filtro por capa
 function renderComponents(layer) {

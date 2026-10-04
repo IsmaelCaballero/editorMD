@@ -26,6 +26,8 @@ Un editor Markdown de escritorio con GUI, **ligero** (poca memoria) y **portable
 16. **El usuario fusiona los PR él mismo desde GitHub.** Abrir el PR, esperar la CI en verde y avisar con una guía de revisión; después, revisar la fusión.
 17. **No borrar ramas** tras fusionarlas; **al cerrar cada fase se renombran** (con el ok del usuario) a `hecha/F<m>.<n>de<T>/<nombre>` (PLAN.md §10.3 y §10.6). Objetivo: que se vea todo el proceso de desarrollo, no solo el resultado. En un desarrollo normal se recomienda **borrar las ramas una vez fusionadas**. En este proyecto **se conservan deliberadamente**: por razones académicas (para mostrar a los alumnos el proceso completo) y por **trazabilidad del esfuerzo de desarrollo**, ya que en el futuro el trabajo se repartirá entre varios miembros del equipo, cada uno trabajando sobre una parte del sistema con su propio arnés.
 18. **Cada etiqueta (tag/release) se enlaza en `docs/index.html`** (sección «Versiones publicadas», `PROJECT.tags`).
+19. **Documentar el uso de IA** (modelo y versión, estimación previa de tokens y coste real de cada paso) en `docs/ai-usage/README.md`, PLAN.md §11 y la web. Medir con `scripts/ai-usage.mjs` sobre la transcripción de la sesión. **Empezar cada fase en una sesión nueva** para abaratar las llamadas.
+20. **RQ.1 del usuario** (investigación): ¿es más rentable un modelo caro con poco *rework* o uno barato con más *rework*? Hay un experimento propuesto en `docs/ai-usage/README.md` §4.2, pendiente de aprobación. Sin errores externos al entorno.
 
 ## Convenciones del proyecto
 - Idioma de la documentación: **español**. Código e identificadores: inglés.
