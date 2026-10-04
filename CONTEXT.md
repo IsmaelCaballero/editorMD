@@ -34,8 +34,12 @@ Un editor Markdown de escritorio con GUI, **ligero** (poca memoria) y **portable
 
 ## Entorno de desarrollo
 - Máquina principal: Windows 11, carpeta `C:\ProgsConIA\editorMD`.
-- Git 2.51, Node 24.16, npm 11.13 y WebView2 instalados. **Faltan Rust (rustup) y Visual Studio Build Tools (C++)**, que el usuario instalará con permisos de administrador. `gh` (GitHub CLI) no está instalado y aún no hay remoto en GitHub.
+- Git 2.51, Node 24.16, npm 11.13, WebView2, Rust 1.99 (MSVC), VS Build Tools 2026 y gh 2.102 instalados. `gh` aún no autenticado; todavía no hay remoto en GitHub.
+- Nota: en PowerShell puede hacer falta recargar el PATH para ver `cargo`/`gh`.
 - Usuario git: Ismael Caballero.
+
+## Retomar el trabajo
+Lee el apartado **«⏸ Punto de reanudación»** al principio de STATUS.md.
 
 ## Decisiones tomadas
 *(Se trasladan aquí desde PLAN.md §8 cuando se cierran, con su justificación.)*
@@ -52,7 +56,14 @@ Un editor Markdown de escritorio con GUI, **ligero** (poca memoria) y **portable
 - **D-12**: modo fuente Markdown en la v1.0, además del WYSIWYG.
 
 ## Decisiones abiertas
-Ninguna bloqueante. Confirmadas por el usuario el 2026-10-03: D-06 GitHub, D-08 sin firma hasta la 1.0, D-10 SO mínimos, D-13 Svelte 5, D-14 Milkdown, D-16 convenciones. Ver PLAN.md §8.
+Ninguna bloqueante. Confirmadas por el usuario el 2026-10-03: D-06 GitHub, D-08 sin firma hasta la 1.0, D-10 SO mínimos, D-13 Svelte 5, D-14 Milkdown, D-16 convenciones. GitHub **público**. PR F0: esperar a que compile Rust. Ver PLAN.md §8.
+
+## Cómo trabajar en el repo
+- `npm test` (Vitest) · `npm run coverage` · `npm run check` (tipos) · `npm run build`
+- `npm run tauri dev` (app de escritorio; requiere Rust) · `cargo test --manifest-path src-tauri/Cargo.toml`
+- `npm run docs` → `docs/api/ts` + `docs/api/rust` (no se versionan)
+- Web de aprendizaje: `docs/index.html`; datos en el objeto `PROJECT` del `<script>`. **Actualizarla en cada paso** (diario, fases, ramas, componentes, KPIs).
+- Estructura: `src/{model,view,controller}` (TS), `src-tauri/src/{model,commands.rs}` (Rust), `tests/` (Vitest), `fixtures/` (binarios).
 
 ## Glosario
 - **GFM**: GitHub Flavored Markdown (tablas, tachado, tareas).
