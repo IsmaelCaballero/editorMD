@@ -58,6 +58,8 @@ Lee el apartado **«⏸ Punto de reanudación»** al principio de STATUS.md.
 - **D-07 Licencia**: MIT, código abierto.
 - **D-11 PDF**: Typst embebido (sin dependencias externas).
 - **D-12**: modo fuente Markdown en la v1.0, además del WYSIWYG.
+- **D-17 Milkdown *kit*** (no *Crepe*): núcleo mínimo; menús y barra de herramientas propios en su capa MVC.
+- **Plan de F1 aprobado** (5 pasos/ramas, PLAN.md §7 F1).
 
 ## Decisiones abiertas
 Ninguna bloqueante. Confirmadas por el usuario el 2026-10-03: D-06 GitHub, D-08 sin firma hasta la 1.0, D-10 SO mínimos, D-13 Svelte 5, D-14 Milkdown, D-16 convenciones. GitHub **público**. Ver PLAN.md §8.
