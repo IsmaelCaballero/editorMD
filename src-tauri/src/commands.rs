@@ -35,6 +35,12 @@ pub fn app_info() -> AppInfo {
 ///   { path: "/ruta/nota.md", encoding: null },
 /// );
 /// ```
+///
+/// # Errors
+///
+/// Un [`FileError`] serializado (ver [`open_text`]).
+// Tauri entrega los argumentos por valor; la firma no puede usar `&str`.
+#[allow(clippy::needless_pass_by_value)]
 #[tauri::command(async)]
 pub fn open_file(path: String, encoding: Option<Encoding>) -> Result<OpenedFile, FileError> {
     open_text(Path::new(&path), encoding)
@@ -54,6 +60,12 @@ pub fn open_file(path: String, encoding: Option<Encoding>) -> Result<OpenedFile,
 ///   strategy: null,
 /// });
 /// ```
+///
+/// # Errors
+///
+/// Un [`FileError`] serializado (ver [`save_text`]).
+// Tauri entrega los argumentos por valor; la firma no puede usar `&str`.
+#[allow(clippy::needless_pass_by_value)]
 #[tauri::command(async)]
 pub fn save_file(
     path: String,
