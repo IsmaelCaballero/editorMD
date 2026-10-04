@@ -187,7 +187,17 @@ fn map_decode(path: &Path, err: &DecodeError) -> FileError {
 /// std::fs::remove_dir_all(&dir).unwrap();
 /// ```
 pub fn read_file(path: &Path) -> Result<FileBytes, FileError> {
-    todo!()
+    let metadata = fs::metadata(path).map_err(|e| map_io(path, &e))?;
+    if metadata.is_dir() {
+        return Err(FileError::IsDirectory {
+            path: path.display().to_string(),
+        });
+    }
+    let bytes = fs::read(path).map_err(|e| map_io(path, &e))?;
+    Ok(FileBytes {
+        bytes,
+        read_only: metadata.permissions().readonly(),
+    })
 }
 
 /// Contador para que los nombres de temporales no coincidan dentro del proceso.
@@ -217,7 +227,6 @@ fn create_temp(dir: &Path, name: &std::ffi::OsStr) -> io::Result<(PathBuf, fs::F
 
 /// Escribe `bytes` en un temporal, lo vuelca al disco y lo renombra con `rename`.
 /// Si algo falla, borra el temporal.
-#[allow(dead_code)]
 fn write_via_temp(
     path: &Path,
     bytes: &[u8],
@@ -239,10 +248,10 @@ fn write_via_temp(
         file.write_all(bytes)?;
         file.sync_all()?;
         drop(file);
-        if cfg!(unix) {
-            if let Some(perms) = existing {
-                fs::set_permissions(&temp_path, perms.clone())?;
-            }
+        if cfg!(unix)
+            && let Some(perms) = existing
+        {
+            fs::set_permissions(&temp_path, perms.clone())?;
         }
         rename(&temp_path, path)
     })();
@@ -280,7 +289,7 @@ fn write_via_temp(
 /// std::fs::remove_dir_all(&dir).unwrap();
 /// ```
 pub fn write_atomic(path: &Path, bytes: &[u8]) -> Result<(), FileError> {
-    todo!()
+    write_atomic_with(path, bytes, |from, to| fs::rename(from, to))
 }
 
 /// Como [`write_atomic`] con el renombrado inyectable (para probar los fallos).
@@ -289,7 +298,22 @@ fn write_atomic_with(
     bytes: &[u8],
     rename: impl FnOnce(&Path, &Path) -> io::Result<()>,
 ) -> Result<(), FileError> {
-    todo!()
+    let existing = match fs::metadata(path) {
+        Ok(m) if m.is_dir() => {
+            return Err(FileError::IsDirectory {
+                path: path.display().to_string(),
+            });
+        }
+        Ok(m) if m.permissions().readonly() => {
+            return Err(FileError::ReadOnly {
+                path: path.display().to_string(),
+            });
+        }
+        Ok(m) => Some(m.permissions()),
+        Err(e) if e.kind() == io::ErrorKind::NotFound => None,
+        Err(e) => return Err(map_io(path, &e)),
+    };
+    write_via_temp(path, bytes, existing.as_ref(), rename)
 }
 
 /// Abre un fichero de texto: [`read_file`] y después [`read_text`] (detección
@@ -317,7 +341,13 @@ fn write_atomic_with(
 /// std::fs::remove_dir_all(&dir).unwrap();
 /// ```
 pub fn open_text(path: &Path, encoding: Option<Encoding>) -> Result<OpenedFile, FileError> {
-    todo!()
+    let FileBytes { bytes, read_only } = read_file(path)?;
+    let file = match encoding {
+        None => read_text(&bytes),
+        Some(enc) => read_text_as(&bytes, enc),
+    }
+    .map_err(|e| map_decode(path, &e))?;
+    Ok(OpenedFile { file, read_only })
 }
 
 /// Guarda `text` en `path` con la codificación y el fin de línea indicados.
@@ -336,10 +366,38 @@ pub fn save_text(
     line_ending: LineEnding,
     strategy: Option<LossStrategy>,
 ) -> Result<SavedFile, FileError> {
-    todo!()
+    let report = loss_report(text, encoding);
+    let (bytes, losses) = if report.is_lossless() {
+        match write_text(text, encoding, line_ending) {
+            Ok(bytes) => (bytes, None),
+            // No debería ocurrir (no hay pérdidas), pero se informa igualmente.
+            Err(_) => {
+                return Err(FileError::Unmappable {
+                    path: path.display().to_string(),
+                    report,
+                });
+            }
+        }
+    } else if let Some(strategy) = strategy {
+        (
+            write_text_lossy(text, encoding, line_ending, strategy),
+            Some(report),
+        )
+    } else {
+        return Err(FileError::Unmappable {
+            path: path.display().to_string(),
+            report,
+        });
+    };
+    write_atomic(path, &bytes)?;
+    Ok(SavedFile {
+        bytes_written: bytes.len(),
+        losses,
+    })
 }
 
 #[cfg(test)]
+#[allow(clippy::many_single_char_names)]
 mod tests {
     use super::*;
     use tempfile::tempdir;
@@ -376,7 +434,7 @@ mod tests {
         let d = tempdir().unwrap();
         let p = d.path().join("v");
         fs::write(&p, b"").unwrap();
-        assert!(read_file(&p).unwrap().bytes.is_empty());
+        assert_eq!(read_file(&p).unwrap().bytes, Vec::<u8>::new());
     }
 
     #[test]
@@ -443,7 +501,7 @@ mod tests {
         let p = d.path().join("v.txt");
         fs::write(&p, b"algo").unwrap();
         write_atomic(&p, b"").unwrap();
-        assert!(fs::read(&p).unwrap().is_empty());
+        assert_eq!(fs::read(&p).unwrap(), Vec::<u8>::new());
     }
 
     #[test]
@@ -536,7 +594,7 @@ mod tests {
                 path: p.display().to_string()
             })
         );
-        assert!(names(d.path()).is_empty());
+        assert_eq!(names(d.path()), Vec::<String>::new());
     }
 
     #[test]
@@ -606,7 +664,7 @@ mod tests {
         assert_eq!(path, p.display().to_string());
         assert_eq!(encoding, Encoding::Ascii);
         assert_eq!(offset, Some(3));
-        assert!(!message.is_empty());
+        assert_ne!(message, "");
     }
 
     #[test]
@@ -674,7 +732,7 @@ mod tests {
                 report: loss_report("10 €", Encoding::Ascii)
             }
         );
-        assert!(names(d.path()).is_empty());
+        assert_eq!(names(d.path()), Vec::<String>::new());
     }
 
     #[test]
