@@ -10,6 +10,7 @@
  *
  * @packageDocumentation
  */
+import type { Encoding, LineEnding } from '../model/document'
 
 /** Función que cancela una suscripción a eventos. */
 export type Unsubscribe = () => void
@@ -79,4 +80,30 @@ export interface IDialogService {
    * @returns La opción elegida por el usuario.
    */
   confirmUnsaved(documentName: string): Promise<UnsavedChoice>
+}
+
+/** Datos que muestra la barra de estado. */
+export interface StatusInfo {
+  /** Número de palabras del documento. */
+  readonly words: number
+  /** Codificación con la que se guardará. */
+  readonly encoding: Encoding
+  /** Fin de línea con el que se guardará. */
+  readonly lineEnding: LineEnding
+  /** `true` si hay cambios sin guardar. */
+  readonly modified: boolean
+}
+
+/** Ventana principal: título y barra de estado (lo implementa V01 `MainWindow`). */
+export interface IWindowView {
+  /**
+   * Cambia el título de la ventana.
+   * @param title - Texto completo, p. ej. `"notas.md * — editorMD"`.
+   */
+  setTitle(title: string): void
+  /**
+   * Actualiza la barra de estado.
+   * @param status - Datos a mostrar.
+   */
+  setStatus(status: StatusInfo): void
 }
