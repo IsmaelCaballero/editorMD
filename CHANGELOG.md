@@ -7,22 +7,28 @@ y el proyecto usa [Semantic Versioning 2.0.0](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+## [0.0.2] - 2026-10-04
+
+Fase F1 · esqueleto MVC con editor WYSIWYG ([PR #5](https://github.com/IsmaelCaballero/editorMD/pull/5) a [PR #9](https://github.com/IsmaelCaballero/editorMD/pull/9)).
+Los linters de F0.7 ([PR #3](https://github.com/IsmaelCaballero/editorMD/pull/3)) también se publican en esta versión.
+
 ### Added
-- Interfaces MVC (`IEditorView`, `IBackend`, `IDialogService`).
-- M01 `DocumentState`: estado observable del documento (cambios sin guardar, ruta, codificación, fin de línea).
-- M07 `MarkdownCodec`: conversión Markdown ⇄ árbol fiel (GFM, front matter, R Markdown) con estilo canónico y corpus de fidelidad.
-- Editor WYSIWYG con Milkdown *kit* (V02): deshacer/rehacer, pegado de Markdown, front matter y bloques R protegidos.
-- Barra de menús completa (V01); las opciones de fases futuras aparecen deshabilitadas con la fase prevista.
-- Contador de palabras en la barra de estado.
-- Menús conectados: Archivo → Nuevo (con aviso de cambios sin guardar), Editar → Deshacer/Rehacer, Ayuda → Acerca de (versión obtenida del backend Rust).
-- Atajo Ctrl+N / ⌘N; título de la ventana con el nombre del documento y `*` si hay cambios.
-- Barra de estado con codificación, fin de línea, palabras y marca de cambios.
-- Diálogos propios, iguales en Windows, Linux y macOS.
-- Linters y formateadores: ESLint + Prettier (TS/Svelte), rustfmt + clippy pedantic (Rust), EditorConfig.
-- Job `lint` en la CI.
+- **Editor WYSIWYG** con Milkdown *kit* (V02): deshacer/rehacer, pegado de Markdown; el front matter YAML y las cabeceras de los bloques de R Markdown se conservan intactos.
+- **Menús** completos (V01): las opciones de fases futuras aparecen deshabilitadas con la fase prevista.
+- Archivo → **Nuevo** (Ctrl+N / ⌘N), con aviso de cambios sin guardar; Editar → **Deshacer/Rehacer**; Ayuda → **Acerca de** (versión obtenida del backend Rust).
+- **Título** de la ventana con el nombre del documento y `*` si hay cambios.
+- **Barra de estado**: codificación, fin de línea, marca de cambios y número de palabras.
+- **Diálogos** propios, iguales en Windows, Linux y macOS.
+- Arquitectura MVC con puertos y adaptadores: M01 `DocumentState`, M07 `MarkdownCodec` (con corpus de fidelidad), C01 `AppController`, adaptadores de Tauri.
+- Linters y formateadores: ESLint + Prettier (TS/Svelte), rustfmt + clippy pedantic (Rust), EditorConfig; job `lint` en la CI.
+- Prueba que mantiene sincronizada la versión en `package.json`, `Cargo.toml` y `tauri.conf.json`.
 
 ### Changed
 - Código existente formateado con Prettier; `build.rs` documentado.
+
+### Known issues
+- Limitación de Milkdown 7: los enlaces de referencia (`[texto][ref]`) se guardan como enlaces en línea y las URL sueltas entre `<` `>`. El documento se ve igual.
+- Todavía no se pueden abrir ni guardar ficheros (llega en F2, versión 0.1.0).
 
 ## [0.0.1] - 2026-10-04
 
@@ -42,5 +48,6 @@ Esqueleto de la fase F0 ([PR #1](https://github.com/IsmaelCaballero/editorMD/pul
 ### Changed
 - `Cargo.toml`: `features = []` explícito en `tauri` y `tauri-build` (lo sincroniza `tauri dev`).
 
-[Unreleased]: https://github.com/IsmaelCaballero/editorMD/compare/v0.0.1...HEAD
+[Unreleased]: https://github.com/IsmaelCaballero/editorMD/compare/v0.0.2...HEAD
+[0.0.2]: https://github.com/IsmaelCaballero/editorMD/compare/v0.0.1...v0.0.2
 [0.0.1]: https://github.com/IsmaelCaballero/editorMD/releases/tag/v0.0.1
