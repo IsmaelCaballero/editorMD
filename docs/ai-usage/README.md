@@ -179,8 +179,8 @@ En cada paso: **estimación previa** (llamadas y USD eq., por analogía con la t
 | Paso | Sesión | Estimación (llamadas · USD eq.) | Real (llamadas · USD eq.) |
 |---|---|---|---|
 | 1/8 Decodificar 🧪 | A | 25 + 6 ejecuciones · ≈ 7 | 228 en total (88 del orquestador) · ≈ 12,5 |
-| 2/8 Codificar + fin de línea | A | 25 · 1,9 | ≈ 28 · ≈ 2,8 (provisional, sin el PR) |
-| 3/8 Pérdidas y transliteración | A | 20 · 1,7 | — |
+| 2/8 Codificar + fin de línea | A | 25 · 1,9 | 32 · 3,00 |
+| 3/8 Pérdidas y transliteración | A | 20 · 1,7 | ≈ 30 · ≈ 2,6 (provisional) |
 | 4/8 FileService 🧪 | A | 20 + 6 ejecuciones · ≈ 7 | — |
 | 5/8 FileController | B | 45 · 3,2 | — |
 | 6/8 Diálogo de codificación + barra de estado | B | 40 · 3,6 | — |

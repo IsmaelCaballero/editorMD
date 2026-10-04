@@ -180,7 +180,7 @@ Cada componente lleva su propia versión **[Semantic Versioning 2.0.0](https://s
 | M06 | Modelo | TS | `SearchEngine` | Buscar/reemplazar | 0.0.0 | F3 |
 | M07 | Modelo | TS | `MarkdownCodec` | MD ⇄ documento WYSIWYG (GFM, front matter, bloques Rmd) | **0.2.0** | F1 |
 | M08 | Modelo | Rust | `FileService` | Leer/escribir bytes, escritura atómica, permisos | 0.0.0 | F2 |
-| M09 | Modelo | Rust | `TextCodec` | Detección y conversión de codificación + fin de línea, BOM, transliteración, informe de pérdidas | **0.2.0** | F2 |
+| M09 | Modelo | Rust | `TextCodec` | Detección y conversión de codificación + fin de línea, BOM, transliteración, informe de pérdidas | **0.3.0** | F2 |
 | M10 | Modelo | Rust | `Importers` | TXT, HTML → MD | 0.0.0 | F6 |
 | M11 | Modelo | Rust | `Exporters` | HTML, TXT, PDF (MD → Typst → PDF) | 0.0.0 | F6 |
 | M12 | Modelo | Rust | `PandocBridge` | Detectar Pandoc; DOCX/ODT ⇄ MD | 0.0.0 | F6 |
@@ -226,6 +226,7 @@ Cada componente lleva su propia versión **[Semantic Versioning 2.0.0](https://s
 - M01 `DocumentState` v0.2.0 (2026-10-04) — MINOR: `wordCount`.
 - V01 `MainWindow` v0.3.0 (2026-10-04) — MINOR: `matchShortcut`/`commandForKey`, `ShellState` (puerto `IWindowView`), barra de estado completa.
 - V12 `DialogService` v0.1.0, A01 `TauriBackend` v0.1.0, A02 `TauriWindow` v0.1.0 (2026-10-04) — primeras versiones.
+- M09 `TextCodec` v0.3.0 (2026-10-04) — MINOR: `loss_report` (caracteres que no caben, con apariciones, líneas y transliteración), `encode_lossy` y `write_text_lossy` con `LossStrategy` (sustituir por `?`, transliterar con `deunicode`, entidades HTML) y `can_encode`. 63 pruebas + 14 doctests. Rama `feature/F2-text-codec-loss`.
 - M09 `TextCodec` v0.2.0 (2026-10-04) — MINOR: `encode` estricta con BOM (`EncodeError::Unmappable`), `LineEnding` / `LineEndingStats` / `normalize_line_endings`, y `read_text` / `read_text_as` / `write_text` (el editor recibe siempre LF). Ida y vuelta byte a byte con 27 ficheros de prueba (9 codificaciones × 3 finales de línea) + uno mixto. 53 pruebas + 10 doctests. Rama `feature/F2-text-codec-encode`.
 - M09 `TextCodec` v0.1.0 (2026-10-04) — primera versión: `Encoding` (9 codificaciones, ids iguales al frontend), `detect` (BOM → UTF-8 válido → chardetng → Windows-1252), `decode` estricta (sin U+FFFD; offset exacto del error) y `decode_auto`; 25 pruebas + 3 doctests y 31 pruebas ocultas de aceptación. Escrita por Sonnet 5.5 (candidata ganadora del experimento RQ.1 T1, PR #11). Rama `feature/F2-text-codec-decode`.
 - V01 `MainWindow` v0.1.0 (2026-10-03) — esqueleto: menús decorativos, área central y barra de estado con versión. Rama `feature/F0-scaffold`.
@@ -332,7 +333,7 @@ Total estimado: ≈ 28 USD eq. (rango 20-38), de los que ≈ 11 son el experimen
 
 - [x] F2.1 M09 `TextCodec`: detección (BOM, UTF-8, chardetng), decodificación de las 8 codificaciones + tests
 - [x] F2.2 M09 codificación de salida, BOM, LF/CRLF/CR, detección de fin de línea mixto + tests de ida y vuelta byte a byte
-- [ ] F2.3 M09 informe de pérdidas + transliteración + sustitución + tests
+- [x] F2.3 M09 informe de pérdidas + transliteración + sustitución + tests
 - [ ] F2.4 M08 `FileService` (escritura atómica, solo lectura) + comandos Tauri + tests
 - [ ] F2.5 C02 `FileController`: Nuevo, Abrir, Guardar, Guardar como, Cerrar, aviso de cambios + tests
 - [ ] F2.6 V07 `EncodingDialog`: Reabrir con…, Guardar con…, perfiles Windows/Linux-macOS/Máx. compatibilidad
@@ -526,7 +527,8 @@ Detalle completo, análisis y diseño del experimento de la RQ.1 en [`docs/ai-us
 | F0 | Claude Opus 5.5 (`claude-opus-5-5`) | 107 | 19,6 M | 10,38 | no se hizo |
 | F1 | Claude Opus 5.5 (`claude-opus-5-5`) | 131 | 50,2 M | 15,54 | no se hizo |
 | F2 1/8 | Opus 5.5 (orquestador) + 3 Opus 5.5 y 3 Sonnet 5.5 (subagentes) | 228 | 23,4 M | ≈ 12,5 | ≈ 7 |
-| F2 2/8 | Opus 5.5 | ≈ 28 | ≈ 7,8 M | ≈ 2,8 (provisional) | 1,9 |
+| F2 2/8 | Opus 5.5 | 32 | 9,1 M | 3,00 | 1,9 |
+| F2 3/8 | Opus 5.5 | ≈ 30 | ≈ 9,5 M | ≈ 2,6 (provisional) | 1,7 |
 
 - **Medición:** `node scripts/ai-usage.mjs <transcripción.jsonl> docs/ai-usage/phases.json`, con el uso real que registra Claude Code.
 - **Norma desde F2:** estimar antes de cada paso (llamadas y USD eq.), medir al fusionar y registrar aquí y en la web. **Cada fase empieza en una sesión nueva**, porque el contexto acumulado multiplica el coste de cada llamada.

@@ -298,7 +298,7 @@ const PROJECT = {
   repo: "https://github.com/IsmaelCaballero/editorMD",
   appVersion: "0.0.2",
   currentPhase: "F2",
-  tests: { passed: 404, total: 404, coverage: "100 %" },
+  tests: { passed: 418, total: 418, coverage: "100 %" },
   metrics: { ram: "113 MB", bundle: "508 kB (158 kB gzip)" },
   ci: "4/4 SO en verde",
   ai: {
@@ -314,7 +314,8 @@ const PROJECT = {
       ["F1", "4/5 Controlador C01 (PR #8)", "—", 42, 18.49, 5.54, 437],
       ["F1", "5/5 Cierre F1 (PR #9)", "—", 13, 6.34, 1.73, 485],
       ["F2", "1/8 Decodificar M09 + RQ.1 T1 (PR #11, #13)", "≈ 7", 228, 23.4, 12.5, 163],
-      ["F2", "2/8 Codificar + fin de línea (provisional)", "1,9", 28, 7.8, 2.8, 271],
+      ["F2", "2/8 Codificar + fin de línea (PR #14)", "1,9", 32, 9.1, 3.0, 280],
+      ["F2", "3/8 Pérdidas y transliteración (provisional)", "1,7", 30, 9.5, 2.6, 314],
     ],
   },
   tags: [
@@ -324,6 +325,10 @@ const PROJECT = {
       summary: "F1: editor WYSIWYG Milkdown, menús, C01 AppController, puertos y adaptadores, diálogos; linters (F0.7)" },
   ],
   summary: `
+    <p><strong>F2 · paso 3/8.</strong> Guardar en una codificación más pequeña ya no pierde nada <i>en silencio</i>:
+    <a href="#comp-M09">M09 v0.3.0</a> hace un <b>informe de pérdidas</b> (qué caracteres no caben y en qué líneas) y permite
+    sustituirlos por <code>?</code>, <a href="#c-transliteration">transliterarlos</a> (<code>€</code> → <code>EUR</code>) o
+    convertirlos en entidades HTML.</p>
     <p><strong>F2 · paso 2/8.</strong> <a href="#comp-M09">M09 v0.2.0</a> ya <b>escribe</b>: las 9 codificaciones con su BOM y los 3 finales de línea.
     El editor recibe siempre LF (<code>\\n</code>); al guardar se restauran la codificación y el fin de línea originales. Se comprueba la
     <a href="#c-roundtrip">ida y vuelta byte a byte</a> con 27 ficheros de prueba (9 × 3) y uno con finales mezclados, que se avisa.</p>
@@ -387,7 +392,7 @@ const PROJECT = {
     { id: "F2", name: "Ficheros y codificaciones", target: "0.1.0", tasks: [
       ["ok", "F2.1 TextCodec: detección y decodificación de las 8 codificaciones (RQ.1 T1)"],
       ["ok", "F2.2 TextCodec: codificación, BOM, LF/CRLF/CR, ida y vuelta byte a byte"],
-      ["todo", "F2.3 Informe de pérdidas, transliteración y sustitución"],
+      ["ok", "F2.3 Informe de pérdidas, transliteración y sustitución"],
       ["todo", "F2.4 FileService (escritura atómica) + comandos Tauri"],
       ["todo", "F2.5 FileController: nuevo, abrir, guardar, guardar como, cerrar"],
       ["todo", "F2.6 EncodingDialog y perfiles Windows / Linux-macOS / ASCII"],
@@ -729,6 +734,14 @@ const PROJECT = {
       cmds: "python scripts/generate-encoding-fixtures.py\ncargo test   # 53 + 10 doctests",
       why: "La «ida y vuelta byte a byte» es un objetivo medible de la v1.0: abrir y guardar un fichero sin editarlo no debe cambiar nada, para no ensuciar el historial de Git ni romper otras herramientas.",
       concepts: ["roundtrip", "eol", "encoding"] },
+    { date: "2026-10-04", title: "F2 paso 3/8: conversión con pérdida, pero nunca en silencio", branch: "feature/F2-text-codec-loss",
+      did: ["<code>loss_report</code>: lista cada carácter que no cabe en la codificación destino, cuántas veces aparece, en qué líneas y cómo se transliteraría.",
+            "<code>encode_lossy</code> con tres estrategias: sustituir por <code>?</code>, transliterar (crate <code>deunicode</code>: <code>ñ</code> → <code>n</code>, <code>—</code> → <code>--</code>) o entidades HTML (<code>&amp;#x20AC;</code>).",
+            "Solo se tocan los caracteres que no caben: al pasar a Latin-1 la <code>ñ</code> se conserva y solo el <code>€</code> se convierte.",
+            "Incidencia: Prettier rechazó <code>phases.json</code> en la CI del PR #14; ahora se ejecuta <code>npm run lint</code> antes de cada push, y ESLint/Prettier ignoran los <i>worktrees</i> de <code>.claude/</code>."],
+      cmds: "cargo test   # 63 + 14 doctests\nnpm run lint",
+      why: "Elegir otra codificación es una decisión del usuario; el programa debe enseñarle qué se va a perder antes de hacerlo (PLAN.md §2.5, punto 6).",
+      concepts: ["transliteration", "encoding"] },
   ],
 
   git: {
@@ -818,7 +831,7 @@ const PROJECT = {
     ["M06","M","TS","SearchEngine","Buscar/reemplazar","0.0.0","F3"],
     ["M07","M","TS","MarkdownCodec","MD ⇄ árbol mdast fiel (GFM, front matter, Rmd), estilo canónico, protección para el editor","0.2.0","F1"],
     ["M08","M","Rust","FileService","Lectura/escritura atómica","0.0.0","F2"],
-    ["M09","M","Rust","TextCodec","Lectura y escritura en 9 codificaciones, BOM, LF/CRLF/CR, ida y vuelta byte a byte; pendiente: informe de pérdidas","0.2.0","F2"],
+    ["M09","M","Rust","TextCodec","Lectura y escritura en 9 codificaciones, BOM, LF/CRLF/CR, ida y vuelta byte a byte, informe de pérdidas y transliteración","0.3.0","F2"],
     ["M10","M","Rust","Importers","TXT, HTML → MD","0.0.0","F6"],
     ["M11","M","Rust","Exporters","HTML, TXT, PDF (Typst)","0.0.0","F6"],
     ["M12","M","Rust","PandocBridge","DOCX/ODT vía Pandoc","0.0.0","F6"],
@@ -861,6 +874,7 @@ const PROJECT = {
   ],
 
   concepts: {
+    "transliteration": ["Transliteración", "Escribir un carácter con letras de otro alfabeto o juego de caracteres: <code>ñ</code> → <code>n</code>, <code>€</code> → <code>EUR</code>, <code>日</code> → <code>Ri</code>. Se usa cuando la codificación destino (p. ej. ASCII) no tiene el carácter original."],
     "roundtrip": ["Ida y vuelta byte a byte", "Abrir un fichero y guardarlo sin editar debe producir exactamente los mismos bytes: misma codificación, mismo BOM y mismos finales de línea. Se comprueba con ficheros de prueba binarios que git no puede alterar."],
     "worktree": ["git worktree", "Una segunda (o sexta) copia de trabajo del mismo repositorio, en otra carpeta y con su propia rama, que comparte el historial. Permite que varios agentes trabajen a la vez sin pisarse."],
     "hidden-tests": ["Pruebas ocultas", "Pruebas de aceptación que escribe el evaluador y que no ve quien implementa. Evitan que la solución se ajuste a las pruebas en lugar de a la especificación."],
