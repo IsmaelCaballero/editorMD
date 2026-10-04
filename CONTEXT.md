@@ -28,7 +28,8 @@ Un editor Markdown de escritorio con GUI, **ligero** (poca memoria) y **portable
 18. **Cada etiqueta (tag/release) se enlaza en `docs/index.html`** (sección «Versiones publicadas», `PROJECT.tags`).
 19. **Documentar el uso de IA** (modelo y versión, estimación previa de tokens y coste real de cada paso) en `docs/ai-usage/README.md`, PLAN.md §11 y la web. Medir con `scripts/ai-usage.mjs` sobre la transcripción de la sesión. **Empezar cada fase en una sesión nueva** para abaratar las llamadas.
 20. **RQ.1 del usuario** (investigación): ¿es más rentable un modelo caro con poco *rework* o uno barato con más *rework*? Experimento **aprobado** (`docs/ai-usage/README.md` §4.2): F2 pasos 1 y 4, **3 repeticiones** por modelo (Opus 5.5 / Sonnet 5.5), revisión ciega. Sin errores externos al entorno. El usuario prefiere invertir en resultados concluyentes.
-21. **Fases largas en varias sesiones**: F2 se parte en dos sesiones (A: pasos 1-4; B: pasos 5-8). Antes de cerrar una sesión se guarda todo (STATUS, CONTEXT, PLAN, métricas de IA) y se deja en STATUS.md el texto exacto para arrancar la siguiente (PLAN.md §7, F2).
+21. **Fases largas en varias sesiones**: F2 se parte en dos sesiones (A: pasos 1-3; B: pasos 4-8; el cambio se adelantó para ahorrar contexto). Antes de cerrar una sesión se guarda todo (STATUS, CONTEXT, PLAN, métricas de IA) y se deja en STATUS.md el texto exacto para arrancar la siguiente (PLAN.md §7, F2).
+22. **Trabajo desde varios ordenadores**: el usuario puede retomar el proyecto en otro equipo clonando el repositorio (`docs/retomar-en-otro-ordenador.md`). Todo lo necesario debe estar en el repositorio: la memoria y las transcripciones de Claude Code son locales y no viajan.
 
 ## Convenciones del proyecto
 - Idioma de la documentación: **español**. Código e identificadores: inglés.
@@ -66,6 +67,8 @@ Lee el apartado **«⏸ Punto de reanudación»** al principio de STATUS.md.
 - **F1 completada** (5 pasos, PR #5-#9) → versión **0.0.2**, etiqueta `v0.0.2` y ramas renombradas.
 - **Plan de F2 aprobado** (2026-10-04): 8 pasos en 2 sesiones, experimento RQ.1 en los pasos 1 y 4 (PLAN.md §7).
 - **API Rust de M09** (fijada en `docs/ai-usage/rq1/T1-text-codec-decode.md`): `Encoding` con los mismos identificadores que `src/model/document.ts` (`"utf-8"`, `"utf-8-bom"`, …, `"macintosh"`); la detección nunca devuelve `ascii` ni `iso-8859-1` (ASCII puro → `utf-8`); decodificación estricta, sin `U+FFFD`.
+- **Antes de cada push: `npm run lint`** (en el PR #14 la CI falló por el formato de un JSON editado con `sed`).
+- **Windows / Git Bash:** la herramienta Bash de Claude Code convierte `\n` y `\r` de los *heredocs* en saltos de línea reales. Para texto con secuencias de escape (JS, Rust), usar la herramienta de edición o `chr(92)` en Python, y comprobar después que el `<script>` de `docs/index.html` sigue siendo válido.
 - Al comprobar la app real (`tauri dev`), **avisar al usuario antes de medir** para que no interactúe con la ventana mientras tanto (un `*` «fantasma» en F1 resultó ser una edición suya).
 
 ## Decisiones abiertas

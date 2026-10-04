@@ -15,3 +15,5 @@ fixtures/
 docs/index.html
 # Corpus de fidelidad de M07: debe quedarse exactamente como está
 tests/corpus/
+# Worktrees de subagentes de Claude Code (experimento RQ.1)
+.claude/
