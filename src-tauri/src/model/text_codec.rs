@@ -13,6 +13,7 @@
 
 use std::fmt;
 
+use chardetng::{EncodingDetector, Iso2022JpDetection, Utf8Detection};
 use serde::{Deserialize, Serialize};
 
 /// Codificaciones soportadas (D-15).
@@ -75,20 +76,48 @@ impl Encoding {
     /// assert_eq!(Encoding::Utf8Bom.id(), "utf-8-bom");
     /// ```
     pub fn id(self) -> &'static str {
-        todo!()
+        match self {
+            Encoding::Utf8 => "utf-8",
+            Encoding::Utf8Bom => "utf-8-bom",
+            Encoding::Utf16Le => "utf-16le",
+            Encoding::Utf16Be => "utf-16be",
+            Encoding::Ascii => "ascii",
+            Encoding::Iso8859_1 => "iso-8859-1",
+            Encoding::Iso8859_15 => "iso-8859-15",
+            Encoding::Windows1252 => "windows-1252",
+            Encoding::MacRoman => "macintosh",
+        }
     }
 
     /// Inverso de [`Encoding::id`]; `None` si el identificador no existe
     /// (distingue mayúsculas).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use editormd_lib::model::text_codec::Encoding;
+    ///
+    /// assert_eq!(Encoding::from_id("macintosh"), Some(Encoding::MacRoman));
+    /// assert_eq!(Encoding::from_id("UTF-8"), None);
+    /// ```
     pub fn from_id(id: &str) -> Option<Encoding> {
-        let _ = id;
-        todo!()
+        Encoding::ALL.into_iter().find(|e| e.id() == id)
     }
 
     /// BOM de la codificación: `EF BB BF` (`Utf8Bom`), `FF FE` (`Utf16Le`),
     /// `FE FF` (`Utf16Be`); vacío en las demás.
     pub fn bom(self) -> &'static [u8] {
-        todo!()
+        match self {
+            Encoding::Utf8Bom => &[0xEF, 0xBB, 0xBF],
+            Encoding::Utf16Le => &[0xFF, 0xFE],
+            Encoding::Utf16Be => &[0xFE, 0xFF],
+            Encoding::Utf8
+            | Encoding::Ascii
+            | Encoding::Iso8859_1
+            | Encoding::Iso8859_15
+            | Encoding::Windows1252
+            | Encoding::MacRoman => &[],
+        }
     }
 }
 
@@ -153,14 +182,30 @@ pub enum DecodeError {
 
 impl fmt::Display for DecodeError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let _ = f;
-        todo!()
+        match self {
+            DecodeError::InvalidSequence { encoding, offset } => write!(
+                f,
+                "secuencia no válida en {} en la posición {offset} (bytes)",
+                encoding.id()
+            ),
+            DecodeError::OddLength { encoding } => write!(
+                f,
+                "número impar de bytes para {}: falta un byte de la última unidad",
+                encoding.id()
+            ),
+        }
     }
 }
 
 impl std::error::Error for DecodeError {}
 
 /// Detecta la codificación de `bytes`.
+///
+/// Orden: BOM (`Utf8Bom`, `Utf16Le`, `Utf16Be`); UTF-8 válido (`Utf8`,
+/// incluidos el vacío y el ASCII puro); heurística de `chardetng` sobre toda
+/// la entrada (`Windows1252`, `Iso8859_15` o `MacRoman`); y, si la heurística
+/// propone otra codificación, `Windows1252` por defecto. Nunca devuelve
+/// `Ascii` ni `Iso8859_1`.
 ///
 /// # Examples
 ///
@@ -170,44 +215,189 @@ impl std::error::Error for DecodeError {}
 /// let d = detect("¡Hola!".as_bytes());
 /// assert_eq!(d.encoding, Encoding::Utf8);
 /// assert_eq!(d.method, DetectionMethod::Utf8Valid);
+///
+/// let d = detect(&[0xFF, 0xFE, b'a', 0x00]);
+/// assert_eq!(d.encoding, Encoding::Utf16Le);
+/// assert_eq!(d.method, DetectionMethod::Bom);
 /// ```
 pub fn detect(bytes: &[u8]) -> Detection {
-    let _ = bytes;
-    todo!()
+    // 1. BOM.
+    for encoding in [Encoding::Utf8Bom, Encoding::Utf16Le, Encoding::Utf16Be] {
+        if bytes.starts_with(encoding.bom()) {
+            return Detection {
+                encoding,
+                method: DetectionMethod::Bom,
+            };
+        }
+    }
+    // 2. UTF-8 válido.
+    if std::str::from_utf8(bytes).is_ok() {
+        return Detection {
+            encoding: Encoding::Utf8,
+            method: DetectionMethod::Utf8Valid,
+        };
+    }
+    // 3-4. Heurística sobre toda la entrada, sin TLD y sin permitir UTF-8.
+    let mut detector = EncodingDetector::new(Iso2022JpDetection::Deny);
+    detector.feed(bytes, true);
+    map_guess(detector.guess(None, Utf8Detection::Deny))
 }
 
 /// Traduce la propuesta de `chardetng` a una [`Detection`].
+///
+/// Solo se aceptan las codificaciones monobyte soportadas; cualquier otra
+/// propuesta se resuelve como Windows-1252 con método `Fallback`.
 fn map_guess(guess: &'static encoding_rs::Encoding) -> Detection {
-    let _ = guess;
-    todo!()
+    let heuristic = |encoding| Detection {
+        encoding,
+        method: DetectionMethod::Heuristic,
+    };
+    if guess == encoding_rs::WINDOWS_1252 {
+        heuristic(Encoding::Windows1252)
+    } else if guess == encoding_rs::ISO_8859_15 {
+        heuristic(Encoding::Iso8859_15)
+    } else if guess == encoding_rs::MACINTOSH {
+        heuristic(Encoding::MacRoman)
+    } else {
+        Detection {
+            encoding: Encoding::Windows1252,
+            method: DetectionMethod::Fallback,
+        }
+    }
 }
 
 /// Decodifica `bytes` con `encoding` de forma estricta.
 ///
+/// No sustituye nada por `U+FFFD`: o se decodifica todo o se devuelve un
+/// error. `Utf8Bom`, `Utf16Le` y `Utf16Be` quitan su propio BOM si está al
+/// principio; `Utf8` no lo quita. `Iso8859_1` es Latin-1 real (cada byte `b`
+/// es `U+00bb`). Las codificaciones monobyte nunca fallan.
+///
 /// # Errors
 ///
-/// Devuelve [`DecodeError`] si la entrada no es válida en `encoding`.
+/// - [`DecodeError::InvalidSequence`] con el offset (contando el BOM) del
+///   primer byte no válido: UTF-8 mal formado, sustituto UTF-16 sin pareja o
+///   byte `>= 0x80` en ASCII.
+/// - [`DecodeError::OddLength`] si en UTF-16 queda un número impar de bytes
+///   tras quitar el BOM.
 ///
 /// # Examples
 ///
 /// ```
-/// use editormd_lib::model::text_codec::{decode, Encoding};
+/// use editormd_lib::model::text_codec::{decode, DecodeError, Encoding};
 ///
 /// assert_eq!(decode(b"caf\xe9", Encoding::Iso8859_1).unwrap(), "café");
+/// assert_eq!(decode(b"\xEF\xBB\xBFhi", Encoding::Utf8Bom).unwrap(), "hi");
+/// assert_eq!(
+///     decode(b"ab\xff", Encoding::Utf8),
+///     Err(DecodeError::InvalidSequence { encoding: Encoding::Utf8, offset: 2 })
+/// );
 /// ```
 pub fn decode(bytes: &[u8], encoding: Encoding) -> Result<String, DecodeError> {
-    let _ = (bytes, encoding);
-    todo!()
+    match encoding {
+        Encoding::Utf8 => decode_utf8(bytes, 0, encoding),
+        Encoding::Utf8Bom => {
+            let skip = bom_len(bytes, encoding);
+            decode_utf8(&bytes[skip..], skip, encoding)
+        }
+        Encoding::Utf16Le => decode_utf16(bytes, encoding, u16::from_le_bytes),
+        Encoding::Utf16Be => decode_utf16(bytes, encoding, u16::from_be_bytes),
+        Encoding::Ascii => match bytes.iter().position(|b| !b.is_ascii()) {
+            Some(offset) => Err(DecodeError::InvalidSequence { encoding, offset }),
+            None => Ok(latin1(bytes)),
+        },
+        Encoding::Iso8859_1 => Ok(latin1(bytes)),
+        Encoding::Iso8859_15 => Ok(single_byte(bytes, encoding_rs::ISO_8859_15)),
+        Encoding::Windows1252 => Ok(single_byte(bytes, encoding_rs::WINDOWS_1252)),
+        Encoding::MacRoman => Ok(single_byte(bytes, encoding_rs::MACINTOSH)),
+    }
 }
 
-/// Detecta la codificación y decodifica.
+/// Longitud del BOM de `encoding` si `bytes` empieza por él; 0 si no.
+fn bom_len(bytes: &[u8], encoding: Encoding) -> usize {
+    let bom = encoding.bom();
+    if bytes.starts_with(bom) { bom.len() } else { 0 }
+}
+
+/// UTF-8 estricto; `base` es lo que se ha quitado delante (el BOM) y se suma
+/// al offset del error.
+fn decode_utf8(bytes: &[u8], base: usize, encoding: Encoding) -> Result<String, DecodeError> {
+    match std::str::from_utf8(bytes) {
+        Ok(text) => Ok(text.to_owned()),
+        Err(err) => Err(DecodeError::InvalidSequence {
+            encoding,
+            offset: base + err.valid_up_to(),
+        }),
+    }
+}
+
+/// UTF-16 estricto con la endianness que da `unit`; quita el BOM propio.
+fn decode_utf16(
+    bytes: &[u8],
+    encoding: Encoding,
+    unit: fn([u8; 2]) -> u16,
+) -> Result<String, DecodeError> {
+    let base = bom_len(bytes, encoding);
+    let body = &bytes[base..];
+    let (pairs, rest) = body.as_chunks::<2>();
+    if !rest.is_empty() {
+        return Err(DecodeError::OddLength { encoding });
+    }
+    let units = pairs.iter().copied().map(unit);
+    let mut text = String::with_capacity(body.len() / 2);
+    // Índice (en unidades de 16 bits) del siguiente carácter.
+    let mut index = 0;
+    for decoded in char::decode_utf16(units) {
+        let Ok(c) = decoded else {
+            // El sustituto sin pareja es justo la unidad en `index`.
+            return Err(DecodeError::InvalidSequence {
+                encoding,
+                offset: base + 2 * index,
+            });
+        };
+        text.push(c);
+        index += c.len_utf16();
+    }
+    Ok(text)
+}
+
+/// Latin-1 real: cada byte `b` es el carácter `U+00bb`.
+fn latin1(bytes: &[u8]) -> String {
+    bytes.iter().copied().map(char::from).collect()
+}
+
+/// Codificación monobyte de `encoding_rs`. Las que se usan aquí asignan un
+/// carácter a cada byte, así que nunca hay errores ni se trata el BOM.
+fn single_byte(bytes: &[u8], encoding: &'static encoding_rs::Encoding) -> String {
+    let (text, _had_errors) = encoding.decode_without_bom_handling(bytes);
+    text.into_owned()
+}
+
+/// Detecta la codificación con [`detect`] y decodifica con [`decode`].
 ///
 /// # Errors
 ///
-/// Devuelve el [`DecodeError`] de [`decode`].
+/// Devuelve el [`DecodeError`] de [`decode`]. Solo puede ocurrir tras un BOM
+/// (p. ej. `FF FE` seguido de un número impar de bytes, o `EF BB BF` seguido
+/// de UTF-8 no válido).
+///
+/// # Examples
+///
+/// ```
+/// use editormd_lib::model::text_codec::{decode_auto, DetectionMethod, Encoding};
+///
+/// let d = decode_auto(b"caf\xe9 cr\xe8me br\xfbl\xe9e").unwrap();
+/// assert_eq!(d.text, "café crème brûlée");
+/// assert_eq!(d.encoding, Encoding::Windows1252);
+/// assert_eq!(d.method, DetectionMethod::Heuristic);
+/// ```
 pub fn decode_auto(bytes: &[u8]) -> Result<Decoded, DecodeError> {
-    let _ = bytes;
-    todo!()
+    let Detection { encoding, method } = detect(bytes);
+    Ok(Decoded {
+        text: decode(bytes, encoding)?,
+        encoding,
+        method,
+    })
 }
 
 #[cfg(test)]
