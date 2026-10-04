@@ -179,7 +179,7 @@ Cada componente lleva su propia versión **[Semantic Versioning 2.0.0](https://s
 | M05 | Modelo | TS | `TableModel` | Crear, filas/columnas, alineación | 0.0.0 | F5 |
 | M06 | Modelo | TS | `SearchEngine` | Buscar/reemplazar | 0.0.0 | F3 |
 | M07 | Modelo | TS | `MarkdownCodec` | MD ⇄ documento WYSIWYG (GFM, front matter, bloques Rmd) | **0.2.0** | F1 |
-| M08 | Modelo | Rust | `FileService` | Leer/escribir bytes, escritura atómica, permisos | 0.0.0 | F2 |
+| M08 | Modelo | Rust | `FileService` | Leer/escribir bytes, escritura atómica, solo lectura; abrir/guardar texto con M09; comandos `open_file`/`save_file` | **0.1.0** | F2 |
 | M09 | Modelo | Rust | `TextCodec` | Detección y conversión de codificación + fin de línea, BOM, transliteración, informe de pérdidas | **0.3.0** | F2 |
 | M10 | Modelo | Rust | `Importers` | TXT, HTML → MD | 0.0.0 | F6 |
 | M11 | Modelo | Rust | `Exporters` | HTML, TXT, PDF (MD → Typst → PDF) | 0.0.0 | F6 |
@@ -226,6 +226,7 @@ Cada componente lleva su propia versión **[Semantic Versioning 2.0.0](https://s
 - M01 `DocumentState` v0.2.0 (2026-10-04) — MINOR: `wordCount`.
 - V01 `MainWindow` v0.3.0 (2026-10-04) — MINOR: `matchShortcut`/`commandForKey`, `ShellState` (puerto `IWindowView`), barra de estado completa.
 - V12 `DialogService` v0.1.0, A01 `TauriBackend` v0.1.0, A02 `TauriWindow` v0.1.0 (2026-10-04) — primeras versiones.
+- M08 `FileService` v0.1.0 (2026-10-05) — primera versión: `read_file` (bytes + solo lectura), `write_atomic` (temporal `.nombre.pid.n.tmp` en la misma carpeta con `create_new`, `sync_all` y renombrado; limpieza si falla; conserva el modo en Unix), `open_text` / `save_text` sobre M09 y `FileError` serializable para el frontend (`not-found`, `permission-denied`, `read-only`, `is-directory`, `io`, `decode`, `unmappable` con el informe de pérdidas). Comandos Tauri `open_file` / `save_file` con `#[tauri::command(async)]`. 33 pruebas + 3 doctests y 28 pruebas ocultas de aceptación. Escrita por Sonnet 5.5 (candidata ganadora del experimento RQ.1 T2, PR #16). Rama `feature/F2-file-service`.
 - M09 `TextCodec` v0.3.0 (2026-10-04) — MINOR: `loss_report` (caracteres que no caben, con apariciones, líneas y transliteración), `encode_lossy` y `write_text_lossy` con `LossStrategy` (sustituir por `?`, transliterar con `deunicode`, entidades HTML) y `can_encode`. 63 pruebas + 14 doctests. Rama `feature/F2-text-codec-loss`.
 - M09 `TextCodec` v0.2.0 (2026-10-04) — MINOR: `encode` estricta con BOM (`EncodeError::Unmappable`), `LineEnding` / `LineEndingStats` / `normalize_line_endings`, y `read_text` / `read_text_as` / `write_text` (el editor recibe siempre LF). Ida y vuelta byte a byte con 27 ficheros de prueba (9 codificaciones × 3 finales de línea) + uno mixto. 53 pruebas + 10 doctests. Rama `feature/F2-text-codec-encode`.
 - M09 `TextCodec` v0.1.0 (2026-10-04) — primera versión: `Encoding` (9 codificaciones, ids iguales al frontend), `detect` (BOM → UTF-8 válido → chardetng → Windows-1252), `decode` estricta (sin U+FFFD; offset exacto del error) y `decode_auto`; 25 pruebas + 3 doctests y 31 pruebas ocultas de aceptación. Escrita por Sonnet 5.5 (candidata ganadora del experimento RQ.1 T1, PR #11). Rama `feature/F2-text-codec-decode`.
@@ -334,7 +335,7 @@ Total estimado: ≈ 28 USD eq. (rango 20-38), de los que ≈ 11 son el experimen
 - [x] F2.1 M09 `TextCodec`: detección (BOM, UTF-8, chardetng), decodificación de las 8 codificaciones + tests
 - [x] F2.2 M09 codificación de salida, BOM, LF/CRLF/CR, detección de fin de línea mixto + tests de ida y vuelta byte a byte
 - [x] F2.3 M09 informe de pérdidas + transliteración + sustitución + tests
-- [ ] F2.4 M08 `FileService` (escritura atómica, solo lectura) + comandos Tauri + tests
+- [x] F2.4 M08 `FileService` (escritura atómica, solo lectura) + comandos Tauri + tests
 - [ ] F2.5 C02 `FileController`: Nuevo, Abrir, Guardar, Guardar como, Cerrar, aviso de cambios + tests
 - [ ] F2.6 V07 `EncodingDialog`: Reabrir con…, Guardar con…, perfiles Windows/Linux-macOS/Máx. compatibilidad
 - [ ] F2.7 V04 Barra de estado con codificación y fin de línea pulsables
@@ -529,7 +530,8 @@ Detalle completo, análisis y diseño del experimento de la RQ.1 en [`docs/ai-us
 | F2 1/8 | Opus 5.5 (orquestador) + 3 Opus 5.5 y 3 Sonnet 5.5 (subagentes) | 228 | 23,4 M | ≈ 12,5 | ≈ 7 |
 | F2 2/8 | Opus 5.5 | 32 | 9,1 M | 3,00 | 1,9 |
 | F2 3/8 | Opus 5.5 | 30 | 9,6 M | 2,62 (+ cierre de la sesión A) | 1,7 |
+| F2 4/8 | Opus 5.5 (orquestador) + 3 Opus 5.5 y 3 Sonnet 5.5 (subagentes) | 195 (69 del orquestador) | 18,0 M | ≈ 10,9 (6,5 de las ejecuciones) | ≈ 9 |
 
 - **Medición:** `node scripts/ai-usage.mjs <transcripción.jsonl> docs/ai-usage/phases.json`, con el uso real que registra Claude Code.
 - **Norma desde F2:** estimar antes de cada paso (llamadas y USD eq.), medir al fusionar y registrar aquí y en la web. **Cada fase empieza en una sesión nueva**, porque el contexto acumulado multiplica el coste de cada llamada.
-- **Pregunta de investigación RQ.1:** ¿qué es más rentable, un modelo caro con poco *rework* o uno barato con más *rework*? Experimento **aprobado el 2026-10-04**: Opus 5.5 frente a Sonnet 5.5 en los pasos 1 y 4 de F2, con 3 repeticiones por modelo y revisión ciega.
+- **Pregunta de investigación RQ.1:** ¿qué es más rentable, un modelo caro con poco *rework* o uno barato con más *rework*? Experimento **aprobado el 2026-10-04**: Opus 5.5 frente a Sonnet 5.5 en los pasos 1 y 4 de F2, con 3 repeticiones por modelo y revisión ciega. **Resultado (T1 y T2): gana Sonnet 5.5** en las dos tareas (44 % y 49 % más barato, con la misma o mejor calidad en la revisión ciega). Respuesta provisional y limitaciones en `docs/ai-usage/README.md` §4.6.

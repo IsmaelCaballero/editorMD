@@ -1,0 +1,157 @@
+{
+  "task": "T2",
+  "rows": [
+    {
+      "label": "r1",
+      "calls": 17,
+      "input": 34,
+      "cacheWrite": 85756,
+      "cacheRead": 1108068,
+      "output": 32934,
+      "usd": 0.7654115999999999,
+      "models": {
+        "claude-sonnet-5-5": 17
+      },
+      "outputRecorded": 14098,
+      "patched": 7,
+      "toolCalls": 20,
+      "checks": 7,
+      "failedChecks": 5,
+      "failedTools": 8,
+      "minutes": 6.541366666666667,
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "label": "r2",
+      "calls": 20,
+      "input": 40,
+      "cacheWrite": 95252,
+      "cacheRead": 1323399,
+      "output": 34108,
+      "usd": 1.4232597999999999,
+      "models": {
+        "claude-opus-5-5": 20
+      },
+      "outputRecorded": 9409,
+      "patched": 10,
+      "toolCalls": 23,
+      "checks": 6,
+      "failedChecks": 3,
+      "failedTools": 8,
+      "minutes": 8.577816666666667,
+      "model": "claude-opus-5-5"
+    },
+    {
+      "label": "r3",
+      "calls": 25,
+      "input": 50,
+      "cacheWrite": 98373,
+      "cacheRead": 1744202,
+      "output": 31400,
+      "usd": 1.4689054,
+      "models": {
+        "claude-opus-5-5": 25
+      },
+      "outputRecorded": 15419,
+      "patched": 11,
+      "toolCalls": 30,
+      "checks": 8,
+      "failedChecks": 3,
+      "failedTools": 12,
+      "minutes": 8.29585,
+      "model": "claude-opus-5-5"
+    },
+    {
+      "label": "r4",
+      "calls": 20,
+      "input": 40,
+      "cacheWrite": 84743,
+      "cacheRead": 1290690,
+      "output": 28632,
+      "usd": 0.7563955,
+      "models": {
+        "claude-sonnet-5-5": 20
+      },
+      "outputRecorded": 15317,
+      "patched": 4,
+      "toolCalls": 27,
+      "checks": 7,
+      "failedChecks": 4,
+      "failedTools": 7,
+      "minutes": 6.3583,
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "label": "r5",
+      "calls": 24,
+      "input": 48,
+      "cacheWrite": 99207,
+      "cacheRead": 1743101,
+      "output": 28717,
+      "usd": 1.4191872,
+      "models": {
+        "claude-opus-5-5": 24
+      },
+      "outputRecorded": 15343,
+      "patched": 7,
+      "toolCalls": 29,
+      "checks": 7,
+      "failedChecks": 5,
+      "failedTools": 9,
+      "minutes": 7.782466666666667,
+      "model": "claude-opus-5-5"
+    },
+    {
+      "label": "r6",
+      "calls": 20,
+      "input": 40,
+      "cacheWrite": 79674,
+      "cacheRead": 1165833,
+      "output": 24289,
+      "usd": 0.6753215999999999,
+      "models": {
+        "claude-sonnet-5-5": 20
+      },
+      "outputRecorded": 14634,
+      "patched": 5,
+      "toolCalls": 29,
+      "checks": 7,
+      "failedChecks": 6,
+      "failedTools": 10,
+      "minutes": 5.945566666666667,
+      "model": "claude-sonnet-5-5"
+    }
+  ],
+  "summary": {
+    "claude-sonnet-5-5": {
+      "n": 3,
+      "usd": {
+        "mean": 0.7323762333333331,
+        "sd": 0.04961598435386863
+      },
+      "calls": {
+        "mean": 19,
+        "sd": 1.7320508075688772
+      },
+      "failedChecks": {
+        "mean": 5,
+        "sd": 1
+      }
+    },
+    "claude-opus-5-5": {
+      "n": 3,
+      "usd": {
+        "mean": 1.4371174666666668,
+        "sd": 0.027604366446149983
+      },
+      "calls": {
+        "mean": 23,
+        "sd": 2.6457513110645907
+      },
+      "failedChecks": {
+        "mean": 3.6666666666666665,
+        "sd": 1.1547005383792515
+      }
+    }
+  }
+}

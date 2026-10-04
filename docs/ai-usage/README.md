@@ -125,7 +125,7 @@ C = Σ tokens × precio + minutos de revisión humana × valor/hora + coste de l
 | Tarea | Paso de F2 | Especificación | Ejecuciones | Estado |
 |---|---|---|---|---|
 | T1 | 1/8 M09 detección y decodificación | [`rq1/T1-text-codec-decode.md`](rq1/T1-text-codec-decode.md) | r1-r6 (3 Opus 5.5 + 3 Sonnet 5.5, asignación aleatoria y oculta) | ✅ terminada (§4.4) |
-| T2 | 4/8 M08 FileService | (se escribirá al llegar al paso 4) | r1-r6 | pendiente |
+| T2 | 4/8 M08 FileService | [`rq1/T2-file-service.md`](rq1/T2-file-service.md) | r1-r6 (3 Opus 5.5 + 3 Sonnet 5.5, asignación aleatoria y oculta) | ✅ terminada (§4.5) |
 
 **Procedimiento:**
 1. El orquestador (Opus 5.5, sesión principal) escribe la especificación (es el encargo común) y unas **pruebas de aceptación ocultas** que no están en el repositorio hasta la evaluación.
@@ -168,9 +168,44 @@ Asignación aleatoria (se reveló tras la revisión): Sonnet 5.5 = r1, r4, r5 ·
 
 La desviación viene de las incidencias (relanzamiento, investigación del infrarregistro, *scripts* nuevos), que no se repetirán en T2.
 
+### 4.5 Resultados de T2 (M08 FileService y comandos `open_file`/`save_file`)
+
+Sesión B, en el ordenador nuevo (`C:\ProgIA`), con el contexto limpio y sin incidencias: el encargo ya empezaba con `git merge --ff-only c5f2feb`. Asignación aleatoria (revelada tras la revisión): Sonnet 5.5 = r1, r4, r6 · Opus 5.5 = r2, r3, r5. Candidatas sorteadas para la revisión ciega: **A = r1 (Sonnet)**, **B = r3 (Opus)**.
+
+| Ejecución | Modelo | Llamadas | Lect. caché | Salida estimada (registrada) | USD eq. | Comprobaciones (fallidas) | Pruebas propias | Líneas | Pruebas ocultas |
+|---|---|--:|--:|--:|--:|--:|--:|--:|--:|
+| r1 (A) | Sonnet 5.5 | 17 | 1,11 M | 32,9 k (14,1 k) | 0,77 | 7 (5) | 33 + 3 doc | 900 | 28/28 |
+| r4 | Sonnet 5.5 | 20 | 1,29 M | 28,6 k (15,3 k) | 0,76 | 7 (4) | 31 + 2 doc | 884 | 28/28 |
+| r6 | Sonnet 5.5 | 20 | 1,17 M | 24,3 k (14,6 k) | 0,68 | 7 (6) | 30 + 2 doc | 872 | 28/28 |
+| r2 | Opus 5.5 | 20 | 1,32 M | 34,1 k (9,4 k) | 1,42 | 6 (3) | 42 + 4 doc | 1 240 | 28/28 |
+| r3 (B) | Opus 5.5 | 25 | 1,74 M | 31,4 k (15,4 k) | 1,47 | 8 (3) | 44 + 2 doc | 1 165 | 28/28 |
+| r5 | Opus 5.5 | 24 | 1,74 M | 28,7 k (15,3 k) | 1,42 | 7 (5) | 37 + 2 doc | 1 024 | 28/28 |
+
+| Modelo | USD eq. por ejecución (media ± sd) | Llamadas (media ± sd) | Comprobaciones fallidas (media) | Revisión humana | Puntuación (1-5: corrección, legibilidad, documentación, pruebas, idiomático) |
+|---|--:|--:|--:|--:|---|
+| **Sonnet 5.5** | **0,73 ± 0,05** | 19,0 ± 1,7 | 5,0 | 5 min (A) | **5 · 5 · 4 · 5 · 5 (4,8)**, «la fusionaría tal cual» |
+| Opus 5.5 | 1,44 ± 0,03 | 23,0 ± 2,6 | 3,7 | 6 min (B) | 4 · 5 · 4 · 4 · 4 (4,2) |
+
+Las 6 ejecuciones superan las 28 pruebas ocultas, clippy, rustfmt y TDD, sin `unwrap`/`expect` fuera de las pruebas. La CI de las dos candidatas pasó en los 4 SO, así que también se probaron sus pruebas solo de Unix (modo del fichero, permiso denegado).
+
+**Conclusión para T2:** gana **Sonnet 5.5** otra vez. Cuesta un **49 % menos** por ejecución, con una diferencia unas 15 veces mayor que la desviación típica, y su candidata recibió **mejor** puntuación con menos minutos de revisión. Opus falló menos comprobaciones intermedias (3,7 frente a 5,0), pero ese *rework* extra de Sonnet es barato: lo detectan las herramientas y lo corrige el propio agente antes de entregar. Opus vuelve a escribir más (+29 % de líneas y más pruebas), y la revisión humana no lo percibe como más calidad. Se integra A (PR #16); B se cierra sin fusionar (PR #17) y las ramas `rq1/T2/*` se conservan.
+
+### 4.6 Respuesta provisional a la RQ.1
+
+| Tarea | Ahorro de Sonnet por ejecución | Calidad (pruebas ocultas) | Revisión ciega | Ganador |
+|---|--:|---|---|---|
+| T1 M09 lectura | 44 % | 31/31 los dos modelos | equivalente (≈ 5 min cada una) | Sonnet |
+| T2 M08 FileService | 49 % | 28/28 los dos modelos | Sonnet mejor (4,8 frente a 4,2) | Sonnet |
+
+**Con especificación cerrada, pruebas automáticas y CI, el modelo barato (Sonnet 5.5) es más rentable:** cuesta la mitad, comete algo más de *rework*, pero las redes de seguridad lo detectan pronto y no llega a la revisión humana ni a `main`. Opus 5.5 sigue siendo la opción del **orquestador** (planificar, especificar, escribir pruebas ocultas, integrar y documentar), donde el contexto es largo y los errores son más caros.
+
+**Limitaciones:** solo 2 tareas de Rust, de dificultad moderada y bien especificadas; un único revisor; costes de los subagentes como cota inferior (salida infrarregistrada); no se ha medido el caso «especificación abierta», donde el criterio del modelo pesa más. Propuesta: delegar en Sonnet los pasos bien especificados de las próximas fases y seguir midiendo.
+
+**Artefactos de T2:** [`rq1/T2-file-service.md`](rq1/T2-file-service.md), [`rq1/T2-hidden-tests.rs`](rq1/T2-hidden-tests.rs), [`rq1/T2-metrics.json`](rq1/T2-metrics.json), [`rq1/T2-runs.json`](rq1/T2-runs.json). Las transcripciones están en el ordenador nuevo (proyecto `C--ProgIA-editorMD`).
+
 ## 5. Norma a partir de F2
 
-En cada paso: **estimación previa** (llamadas y USD eq., por analogía con la tabla de la §3) → **medición real** al fusionar el PR → registro aquí y en la web. Cada fase empieza en una sesión nueva, y las fases largas se parten en varias sesiones (F2: A = pasos 1-4, B = pasos 5-8).
+En cada paso: **estimación previa** (llamadas y USD eq., por analogía con la tabla de la §3) → **medición real** al fusionar el PR → registro aquí y en la web. Cada fase empieza en una sesión nueva, y las fases largas se parten en varias sesiones (F2: A = pasos 1-3, B = pasos 4-8).
 
 **Modelo de estimación:** coste por llamada ≈ 0,04 USD + 0,20 USD por millón de tokens de contexto (ajustado con F0 y F1).
 
@@ -181,7 +216,7 @@ En cada paso: **estimación previa** (llamadas y USD eq., por analogía con la t
 | 1/8 Decodificar 🧪 | A | 25 + 6 ejecuciones · ≈ 7 | 228 en total (88 del orquestador) · ≈ 12,5 |
 | 2/8 Codificar + fin de línea | A | 25 · 1,9 | 32 · 3,00 |
 | 3/8 Pérdidas y transliteración | A | 20 · 1,7 | 30 · 2,62 (+ cierre de la sesión A) |
-| 4/8 FileService 🧪 | B | 20 + 6 ejecuciones · ≈ 7 | — |
+| 4/8 FileService 🧪 | B | 20 + 6 ejecuciones · ≈ 7 (≈ 9 al empezar el paso) | 195 en total (69 del orquestador) · ≈ 10,9 (6,5 de las 6 ejecuciones) |
 | 5/8 FileController | B | 45 · 3,2 | — |
 | 6/8 Diálogo de codificación + barra de estado | B | 40 · 3,6 | — |
 | 7/8 Ficheros recientes | B | 20 · 2,1 | — |

@@ -11,6 +11,7 @@ y el proyecto usa [Semantic Versioning 2.0.0](https://semver.org/lang/es/).
 - M09 `TextCodec` (Rust): detección automática de la codificación (BOM, UTF-8 válido, heurística `chardetng`, Windows-1252 por defecto) y decodificación estricta de UTF-8 (±BOM), UTF-16 LE/BE, ASCII, ISO-8859-1, ISO-8859-15, Windows-1252 y Mac Roman, con la posición exacta del primer byte no válido.
 - M09 `TextCodec`: escritura en las 9 codificaciones (con BOM), detección del fin de línea predominante y aviso de finales mezclados; al guardar se conservan la codificación y el fin de línea originales (ida y vuelta byte a byte).
 - M09 `TextCodec`: informe de los caracteres que no caben en la codificación destino (con sus líneas) y conversión con sustitución por `?`, transliteración (`€` → `EUR`) o entidades HTML.
+- M08 `FileService` (Rust): lectura de ficheros con aviso de solo lectura, **escritura atómica** (fichero temporal en la misma carpeta, volcado a disco y renombrado: si algo falla, el original queda intacto y no queda basura) y comandos Tauri `open_file` / `save_file`, que combinan M08 con M09. Guardar con caracteres que no caben en la codificación devuelve el informe de pérdidas en vez de perderlos en silencio.
 
 ## [0.0.2] - 2026-10-04
 

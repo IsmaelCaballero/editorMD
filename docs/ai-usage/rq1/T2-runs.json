@@ -1,0 +1,14 @@
+{
+  "task": "T2",
+  "$comment": "Ejecuciones válidas de T2. Las transcripciones están en ~/.claude/projects/<project>/<session>/subagents/agent-<agent>.jsonl; el modelo se lee de cada una.",
+  "project": "C--ProgIA-editorMD",
+  "session": "8c0c5896-2fb1-4030-a763-786ace9931fa",
+  "runs": [
+    { "label": "r1", "agent": "a0f17f2dcaa296f70" },
+    { "label": "r2", "agent": "a44d2a2c018a275a7" },
+    { "label": "r3", "agent": "a2a88e9ebf9af2656" },
+    { "label": "r4", "agent": "a8287f095989b504a" },
+    { "label": "r5", "agent": "aa3d02b6fa72ded93" },
+    { "label": "r6", "agent": "a4c4ffbf937d258ad" }
+  ]
+}
