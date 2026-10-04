@@ -82,7 +82,17 @@ impl Encoding {
     /// assert_eq!(Encoding::Utf8Bom.id(), "utf-8-bom");
     /// ```
     pub fn id(self) -> &'static str {
-        todo!()
+        match self {
+            Encoding::Utf8 => "utf-8",
+            Encoding::Utf8Bom => "utf-8-bom",
+            Encoding::Utf16Le => "utf-16le",
+            Encoding::Utf16Be => "utf-16be",
+            Encoding::Ascii => "ascii",
+            Encoding::Iso8859_1 => "iso-8859-1",
+            Encoding::Iso8859_15 => "iso-8859-15",
+            Encoding::Windows1252 => "windows-1252",
+            Encoding::MacRoman => "macintosh",
+        }
     }
 
     /// Inverso de [`Encoding::id`]; `None` si el identificador no existe
@@ -97,13 +107,23 @@ impl Encoding {
     /// assert_eq!(Encoding::from_id("UTF-8"), None);
     /// ```
     pub fn from_id(id: &str) -> Option<Encoding> {
-        todo!()
+        Encoding::ALL.into_iter().find(|e| e.id() == id)
     }
 
     /// BOM de la codificación: `EF BB BF` (`Utf8Bom`), `FF FE` (`Utf16Le`),
     /// `FE FF` (`Utf16Be`); vacío en las demás.
     pub fn bom(self) -> &'static [u8] {
-        todo!()
+        match self {
+            Encoding::Utf8Bom => BOM_UTF8,
+            Encoding::Utf16Le => BOM_UTF16_LE,
+            Encoding::Utf16Be => BOM_UTF16_BE,
+            Encoding::Utf8
+            | Encoding::Ascii
+            | Encoding::Iso8859_1
+            | Encoding::Iso8859_15
+            | Encoding::Windows1252
+            | Encoding::MacRoman => &[],
+        }
     }
 }
 
@@ -214,7 +234,24 @@ impl std::error::Error for DecodeError {}
 /// assert_eq!(d.method, DetectionMethod::Bom);
 /// ```
 pub fn detect(bytes: &[u8]) -> Detection {
-    todo!()
+    let by_bom = [Encoding::Utf8Bom, Encoding::Utf16Le, Encoding::Utf16Be]
+        .into_iter()
+        .find(|e| bytes.starts_with(e.bom()));
+    if let Some(encoding) = by_bom {
+        return Detection {
+            encoding,
+            method: DetectionMethod::Bom,
+        };
+    }
+    if std::str::from_utf8(bytes).is_ok() {
+        return Detection {
+            encoding: Encoding::Utf8,
+            method: DetectionMethod::Utf8Valid,
+        };
+    }
+    let mut detector = EncodingDetector::new(Iso2022JpDetection::Deny);
+    detector.feed(bytes, true);
+    from_heuristic_guess(detector.guess(None, Utf8Detection::Deny))
 }
 
 /// Traduce el resultado de la heurística a una [`Detection`].
@@ -222,7 +259,22 @@ pub fn detect(bytes: &[u8]) -> Detection {
 /// `chardetng` no llega a proponer ISO-8859-15 ni macintosh en la práctica,
 /// pero se traducen igualmente por si una versión futura lo hace.
 fn from_heuristic_guess(guess: &'static encoding_rs::Encoding) -> Detection {
-    todo!()
+    let heuristic = |encoding| Detection {
+        encoding,
+        method: DetectionMethod::Heuristic,
+    };
+    if guess == encoding_rs::WINDOWS_1252 {
+        heuristic(Encoding::Windows1252)
+    } else if guess == encoding_rs::ISO_8859_15 {
+        heuristic(Encoding::Iso8859_15)
+    } else if guess == encoding_rs::MACINTOSH {
+        heuristic(Encoding::MacRoman)
+    } else {
+        Detection {
+            encoding: Encoding::Windows1252,
+            method: DetectionMethod::Fallback,
+        }
+    }
 }
 
 /// Decodifica `bytes` con `encoding` de forma estricta, sin sustituir nada
@@ -256,7 +308,16 @@ fn from_heuristic_guess(guess: &'static encoding_rs::Encoding) -> Detection {
 /// );
 /// ```
 pub fn decode(bytes: &[u8], encoding: Encoding) -> Result<String, DecodeError> {
-    todo!()
+    match encoding {
+        Encoding::Utf8 | Encoding::Utf8Bom => decode_utf8(bytes, encoding),
+        Encoding::Utf16Le => decode_utf16(bytes, encoding, u16::from_le_bytes),
+        Encoding::Utf16Be => decode_utf16(bytes, encoding, u16::from_be_bytes),
+        Encoding::Ascii => decode_ascii(bytes),
+        Encoding::Iso8859_1 => Ok(bytes.iter().copied().map(char::from).collect()),
+        Encoding::Iso8859_15 => Ok(decode_single_byte(bytes, encoding_rs::ISO_8859_15)),
+        Encoding::Windows1252 => Ok(decode_single_byte(bytes, encoding_rs::WINDOWS_1252)),
+        Encoding::MacRoman => Ok(decode_single_byte(bytes, encoding_rs::MACINTOSH)),
+    }
 }
 
 /// Detecta la codificación con [`detect`] y decodifica con [`decode`].
@@ -278,7 +339,12 @@ pub fn decode(bytes: &[u8], encoding: Encoding) -> Result<String, DecodeError> {
 /// assert_eq!(d.method, DetectionMethod::Bom);
 /// ```
 pub fn decode_auto(bytes: &[u8]) -> Result<Decoded, DecodeError> {
-    todo!()
+    let Detection { encoding, method } = detect(bytes);
+    decode(bytes, encoding).map(|text| Decoded {
+        text,
+        encoding,
+        method,
+    })
 }
 
 /// Quita el BOM de `encoding` del principio de `bytes`, si está.
