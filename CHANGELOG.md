@@ -11,6 +11,9 @@ y el proyecto usa [Semantic Versioning 2.0.0](https://semver.org/lang/es/).
 - Interfaces MVC (`IEditorView`, `IBackend`, `IDialogService`).
 - M01 `DocumentState`: estado observable del documento (cambios sin guardar, ruta, codificación, fin de línea).
 - M07 `MarkdownCodec`: conversión Markdown ⇄ árbol fiel (GFM, front matter, R Markdown) con estilo canónico y corpus de fidelidad.
+- Editor WYSIWYG con Milkdown *kit* (V02): deshacer/rehacer, pegado de Markdown, front matter y bloques R protegidos.
+- Barra de menús completa (V01); las opciones de fases futuras aparecen deshabilitadas con la fase prevista.
+- Contador de palabras en la barra de estado.
 - Linters y formateadores: ESLint + Prettier (TS/Svelte), rustfmt + clippy pedantic (Rust), EditorConfig.
 - Job `lint` en la CI.
 
