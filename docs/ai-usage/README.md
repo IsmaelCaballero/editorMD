@@ -161,8 +161,8 @@ Asignación aleatoria (se reveló tras la revisión): Sonnet 5.5 = r1, r4, r5 ·
 - Es una sola tarea, bien especificada y de dificultad moderada. T2 (FileService, con sistema de ficheros y errores de E/S) dará el segundo punto de datos.
 - El coste del orquestador (especificación, pruebas ocultas, evaluación) no depende del modelo evaluado: ≈ 5,1 USD eq. en este paso, que incluye la planificación de F2.
 
-**Coste total del paso 1/8:** ≈ 10,8 USD eq., frente a ≈ 7 estimados. Se reparte así:
-- orquestador: 64 llamadas, 5,10 USD;
+**Coste total del paso 1/8** (hasta abrir el PR #13): ≈ 12,5 USD eq. (228 llamadas), frente a ≈ 7 estimados. Se reparte así:
+- orquestador: 88 llamadas, ≈ 6,8 USD (incluye la planificación de F2, la evaluación, la revisión ciega y la documentación);
 - 6 ejecuciones válidas: 4,66 USD;
 - primer lanzamiento abortado: 34 llamadas, 1,03 USD.
 
@@ -178,8 +178,8 @@ En cada paso: **estimación previa** (llamadas y USD eq., por analogía con la t
 
 | Paso | Sesión | Estimación (llamadas · USD eq.) | Real (llamadas · USD eq.) |
 |---|---|---|---|
-| 1/8 Decodificar 🧪 | A | 25 + 6 ejecuciones · ≈ 7 | 64 + 6 ejecuciones (+ 6 abortadas) · ≈ 10,8 |
-| 2/8 Codificar + fin de línea | A | 25 · 1,9 | — |
+| 1/8 Decodificar 🧪 | A | 25 + 6 ejecuciones · ≈ 7 | 228 en total (88 del orquestador) · ≈ 12,5 |
+| 2/8 Codificar + fin de línea | A | 25 · 1,9 | ≈ 28 · ≈ 2,8 (provisional, sin el PR) |
 | 3/8 Pérdidas y transliteración | A | 20 · 1,7 | — |
 | 4/8 FileService 🧪 | A | 20 + 6 ejecuciones · ≈ 7 | — |
 | 5/8 FileController | B | 45 · 3,2 | — |
