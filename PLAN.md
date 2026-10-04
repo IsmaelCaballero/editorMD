@@ -305,7 +305,29 @@ Asociación de `.md`, `.markdown`, `.Rmd` (y opcionalmente `.txt`), iconos y ent
 - [x] F1.4 V01 `MainWindow` (menús Archivo/Editar/Formato/Insertar/Ver/Ayuda) + V02 Milkdown *kit*
 - [x] F1.5 C01 `AppController` + *composition root* + tests (puertos y adaptadores)
 
-### F2 — Ficheros y codificaciones → 0.1.0
+### F2 — Ficheros y codificaciones → 0.1.0 · plan aprobado el 2026-10-04
+
+Ocho pasos en **dos sesiones** de Claude Code (A: pasos 1-4, Rust; B: pasos 5-8, interfaz) para que el contexto no supere ~350 k tokens. En los pasos 1 y 4 se hace el **experimento RQ.1** (3 ejecuciones de Opus 5.5 y 3 de Sonnet 5.5, revisión ciega; ver `docs/ai-usage/README.md` §4.2).
+
+| Paso | Sesión | Rama | Tareas | Estimación (llamadas · USD eq.) | Nombre al cerrar F2 |
+|---|---|---|---|---|---|
+| 1/8 🧪 | A | `feature/F2-text-codec-decode` | F2.1 | 25 + 6 ejecuciones · ≈ 7 | `hecha/F2.1de8/feature/F2-text-codec-decode` |
+| 2/8 | A | `feature/F2-text-codec-encode` | F2.2 | 25 · 1,9 | `hecha/F2.2de8/feature/F2-text-codec-encode` |
+| 3/8 | A | `feature/F2-text-codec-loss` | F2.3 | 20 · 1,7 | `hecha/F2.3de8/feature/F2-text-codec-loss` |
+| 4/8 🧪 | A | `feature/F2-file-service` | F2.4 | 20 + 6 ejecuciones · ≈ 7 | `hecha/F2.4de8/feature/F2-file-service` |
+| 5/8 | B | `feature/F2-file-controller` | F2.5 | 45 · 3,2 | `hecha/F2.5de8/feature/F2-file-controller` |
+| 6/8 | B | `feature/F2-encoding-ui` | F2.6 + F2.7 | 40 · 3,6 | `hecha/F2.6de8/feature/F2-encoding-ui` |
+| 7/8 | B | `feature/F2-recent-files` | F2.8 | 20 · 2,1 | `hecha/F2.7de8/feature/F2-recent-files` |
+| 8/8 | B | `chore/F2-close` | versión 0.1.0 | 13 · 1,4 | `hecha/F2.8de8/chore/F2-close` |
+
+Total estimado: ≈ 28 USD eq. (rango 20-38), de los que ≈ 11 son el experimento con 3 repeticiones.
+
+**Protocolo de cambio de sesión (A → B), al fusionarse el PR del paso 4:**
+1. Sesión A: medir el uso (`scripts/ai-usage.mjs`) de los pasos 1-4 y de las ejecuciones del experimento; registrarlo en `docs/ai-usage/README.md`, §11 y la web.
+2. Sesión A: actualizar STATUS.md («⏸ Punto de reanudación»), CONTEXT.md (decisiones nuevas) y este plan; commit en una rama `docs/F2-session-A` → PR.
+3. El usuario fusiona el PR, cierra la sesión A (`/exit`) y abre una nueva en `C:\ProgsConIA\editorMD` con el texto de arranque que figura en STATUS.md.
+4. Sesión B: leer CONTEXT → STATUS → PLAN (F2) → `docs/ai-usage/README.md`, confirmar el estado de git y empezar el paso 5.
+
 - [ ] F2.1 M09 `TextCodec`: detección (BOM, UTF-8, chardetng), decodificación de las 8 codificaciones + tests
 - [ ] F2.2 M09 codificación de salida, BOM, LF/CRLF/CR, detección de fin de línea mixto + tests de ida y vuelta byte a byte
 - [ ] F2.3 M09 informe de pérdidas + transliteración + sustitución + tests
@@ -504,4 +526,4 @@ Detalle completo, análisis y diseño del experimento de la RQ.1 en [`docs/ai-us
 
 - **Medición:** `node scripts/ai-usage.mjs <transcripción.jsonl> docs/ai-usage/phases.json`, con el uso real que registra Claude Code.
 - **Norma desde F2:** estimar antes de cada paso (llamadas y USD eq.), medir al fusionar y registrar aquí y en la web. **Cada fase empieza en una sesión nueva**, porque el contexto acumulado multiplica el coste de cada llamada.
-- **Pregunta de investigación RQ.1:** ¿qué es más rentable, un modelo caro con poco *rework* o uno barato con más *rework*? Hay un experimento propuesto (Opus 5.5 frente a Sonnet 5.5 en 2 pasos de F2), pendiente de aprobación.
+- **Pregunta de investigación RQ.1:** ¿qué es más rentable, un modelo caro con poco *rework* o uno barato con más *rework*? Experimento **aprobado el 2026-10-04**: Opus 5.5 frente a Sonnet 5.5 en los pasos 1 y 4 de F2, con 3 repeticiones por modelo y revisión ciega.

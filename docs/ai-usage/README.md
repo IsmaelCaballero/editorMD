@@ -92,7 +92,7 @@ Errores propios registrados (todos detectados por las herramientas antes de lleg
 
 El *rework* de Opus 5.5 aquí es bajo y barato, porque las herramientas (tests, lint, CI) lo detectan pronto. **Esta es la variable clave de la RQ.1:** el coste de un modelo peor depende de cuántos de sus errores se escapan de esas redes, no solo de cuántos comete.
 
-### 4.2 Diseño del experimento (propuesto, pendiente de aprobación)
+### 4.2 Diseño del experimento (aprobado el 2026-10-04, con 3 repeticiones por modelo)
 
 **Hipótesis.** H₀: el coste total por tarea terminada de Sonnet 5.5 es menor o igual que el de Opus 5.5. H₁: es mayor.
 
@@ -120,6 +120,38 @@ C = Σ tokens × precio + minutos de revisión humana × valor/hora + coste de l
 
 **Coste estimado del experimento:** unos 10-25 USD eq. (2 tareas × 2 modelos × 2-3 repeticiones, en sesiones cortas). El código que gane se integra en F2, así que parte de ese coste no se pierde.
 
+### 4.3 Ejecución
+
+| Tarea | Paso de F2 | Especificación | Ejecuciones | Estado |
+|---|---|---|---|---|
+| T1 | 1/8 M09 detección y decodificación | [`rq1/T1-text-codec-decode.md`](rq1/T1-text-codec-decode.md) | r1-r6 (3 Opus 5.5 + 3 Sonnet 5.5, asignación aleatoria y oculta) | en curso |
+| T2 | 4/8 M08 FileService | (se escribirá al llegar al paso 4) | r1-r6 | pendiente |
+
+**Procedimiento:**
+1. El orquestador (Opus 5.5, sesión principal) escribe la especificación (es el encargo común) y unas **pruebas de aceptación ocultas** que no están en el repositorio hasta la evaluación.
+2. Se lanzan 6 subagentes en paralelo, cada uno en su *git worktree*, con el mismo encargo; solo cambia la etiqueta de la rama (`rq1/T<n>/r<k>`). Cada ejecución empieza con el contexto vacío.
+3. Evaluación automática: pruebas ocultas, `cargo test`, clippy, rustfmt y métricas de tokens con [`scripts/rq1-metrics.mjs`](../../scripts/rq1-metrics.mjs).
+4. Revisión ciega: el usuario revisa dos PR en borrador («A» y «B», una ejecución de cada modelo) con la lista de comprobación, y anota sus minutos. Después se revela qué modelo hizo cada uno.
+5. Se fusiona el mejor; las demás ramas se conservan sin fusionar.
+
+**Incidencia del primer lanzamiento de T1 (excluida de las métricas):** los *worktrees* de los subagentes se crean desde `main`, no desde la rama de trabajo, así que no contenían la especificación. Las 6 ejecuciones se detuvieron sin hacer nada (≈ 3 llamadas cada una), como pedía el encargo. Al reanudarlas, sus *worktrees* ya se habían borrado (se eliminan solos si no tienen cambios). Se relanzaron 6 ejecuciones nuevas, cuyo encargo empieza con `git merge --ff-only <commit de la especificación>`. El coste de esas 12 transcripciones abortadas se cuenta en el paso, pero no en la comparación entre modelos.
+
 ## 5. Norma a partir de F2
 
-En cada paso: **estimación previa** (llamadas y USD eq., por analogía con la tabla de la §3) → **medición real** al fusionar el PR → registro aquí y en la web. Cada fase empieza en una sesión nueva.
+En cada paso: **estimación previa** (llamadas y USD eq., por analogía con la tabla de la §3) → **medición real** al fusionar el PR → registro aquí y en la web. Cada fase empieza en una sesión nueva, y las fases largas se parten en varias sesiones (F2: A = pasos 1-4, B = pasos 5-8).
+
+**Modelo de estimación:** coste por llamada ≈ 0,04 USD + 0,20 USD por millón de tokens de contexto (ajustado con F0 y F1).
+
+### 5.1 F2: estimación previa frente a coste real
+
+| Paso | Sesión | Estimación (llamadas · USD eq.) | Real (llamadas · USD eq.) |
+|---|---|---|---|
+| 1/8 Decodificar 🧪 | A | 25 + 6 ejecuciones · ≈ 7 | — |
+| 2/8 Codificar + fin de línea | A | 25 · 1,9 | — |
+| 3/8 Pérdidas y transliteración | A | 20 · 1,7 | — |
+| 4/8 FileService 🧪 | A | 20 + 6 ejecuciones · ≈ 7 | — |
+| 5/8 FileController | B | 45 · 3,2 | — |
+| 6/8 Diálogo de codificación + barra de estado | B | 40 · 3,6 | — |
+| 7/8 Ficheros recientes | B | 20 · 2,1 | — |
+| 8/8 Cierre F2 | B | 13 · 1,4 | — |
+| **Total** | | **≈ 28 (20-38)** | — |

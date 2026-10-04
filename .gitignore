@@ -20,3 +20,6 @@ coverage/
 .DS_Store
 Thumbs.db
 *.log
+
+# Worktrees de subagentes de Claude Code (experimento RQ.1)
+.claude/worktrees/

@@ -27,7 +27,8 @@ Un editor Markdown de escritorio con GUI, **ligero** (poca memoria) y **portable
 17. **No borrar ramas** tras fusionarlas; **al cerrar cada fase se renombran** (con el ok del usuario) a `hecha/F<m>.<n>de<T>/<nombre>` (PLAN.md §10.3 y §10.6). Objetivo: que se vea todo el proceso de desarrollo, no solo el resultado. En un desarrollo normal se recomienda **borrar las ramas una vez fusionadas**. En este proyecto **se conservan deliberadamente**: por razones académicas (para mostrar a los alumnos el proceso completo) y por **trazabilidad del esfuerzo de desarrollo**, ya que en el futuro el trabajo se repartirá entre varios miembros del equipo, cada uno trabajando sobre una parte del sistema con su propio arnés.
 18. **Cada etiqueta (tag/release) se enlaza en `docs/index.html`** (sección «Versiones publicadas», `PROJECT.tags`).
 19. **Documentar el uso de IA** (modelo y versión, estimación previa de tokens y coste real de cada paso) en `docs/ai-usage/README.md`, PLAN.md §11 y la web. Medir con `scripts/ai-usage.mjs` sobre la transcripción de la sesión. **Empezar cada fase en una sesión nueva** para abaratar las llamadas.
-20. **RQ.1 del usuario** (investigación): ¿es más rentable un modelo caro con poco *rework* o uno barato con más *rework*? Hay un experimento propuesto en `docs/ai-usage/README.md` §4.2, pendiente de aprobación. Sin errores externos al entorno.
+20. **RQ.1 del usuario** (investigación): ¿es más rentable un modelo caro con poco *rework* o uno barato con más *rework*? Experimento **aprobado** (`docs/ai-usage/README.md` §4.2): F2 pasos 1 y 4, **3 repeticiones** por modelo (Opus 5.5 / Sonnet 5.5), revisión ciega. Sin errores externos al entorno. El usuario prefiere invertir en resultados concluyentes.
+21. **Fases largas en varias sesiones**: F2 se parte en dos sesiones (A: pasos 1-4; B: pasos 5-8). Antes de cerrar una sesión se guarda todo (STATUS, CONTEXT, PLAN, métricas de IA) y se deja en STATUS.md el texto exacto para arrancar la siguiente (PLAN.md §7, F2).
 
 ## Convenciones del proyecto
 - Idioma de la documentación: **español**. Código e identificadores: inglés.
@@ -62,7 +63,9 @@ Lee el apartado **«⏸ Punto de reanudación»** al principio de STATUS.md.
 - **D-11 PDF**: Typst embebido (sin dependencias externas).
 - **D-12**: modo fuente Markdown en la v1.0, además del WYSIWYG.
 - **D-17 Milkdown *kit*** (no *Crepe*): núcleo mínimo; menús y barra de herramientas propios en su capa MVC.
-- **F1 completada** (5 pasos, PR #5-#9) → versión **0.0.2**. Siguiente: F2 (ficheros y codificaciones → 0.1.0), cuyo plan se presentará al usuario antes de empezar.
+- **F1 completada** (5 pasos, PR #5-#9) → versión **0.0.2**, etiqueta `v0.0.2` y ramas renombradas.
+- **Plan de F2 aprobado** (2026-10-04): 8 pasos en 2 sesiones, experimento RQ.1 en los pasos 1 y 4 (PLAN.md §7).
+- **API Rust de M09** (fijada en `docs/ai-usage/rq1/T1-text-codec-decode.md`): `Encoding` con los mismos identificadores que `src/model/document.ts` (`"utf-8"`, `"utf-8-bom"`, …, `"macintosh"`); la detección nunca devuelve `ascii` ni `iso-8859-1` (ASCII puro → `utf-8`); decodificación estricta, sin `U+FFFD`.
 - Al comprobar la app real (`tauri dev`), **avisar al usuario antes de medir** para que no interactúe con la ventana mientras tanto (un `*` «fantasma» en F1 resultó ser una edición suya).
 
 ## Decisiones abiertas

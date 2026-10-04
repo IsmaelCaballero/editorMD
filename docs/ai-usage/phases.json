@@ -10,6 +10,7 @@
     { "phase": "F1", "step": "3/5 Editor Milkdown (PR #7)", "end": "2026-10-04T09:40:17Z" },
     { "phase": "F1", "step": "4/5 Controlador C01 (PR #8)", "end": "2026-10-04T10:15:51Z" },
     { "phase": "F1", "step": "5/5 Cierre F1 (PR #9)", "end": "2026-10-04T10:26:05Z" },
-    { "phase": "Post-F1", "step": "Métricas de IA y RQ.1", "end": "2099-01-01T00:00:00Z" }
+    { "phase": "Post-F1", "step": "Métricas de IA y RQ.1 (PR #10)", "end": "2026-10-04T10:43:45Z" },
+    { "phase": "F2", "step": "1/8 Decodificar M09 + RQ.1 T1", "end": "2099-01-01T00:00:00Z" }
   ]
 }
