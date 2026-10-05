@@ -294,11 +294,11 @@ flowchart LR
  * Estados: "ok" (hecho) · "wip" (en curso) · "todo" (pendiente) · "bad" (bloqueado)
  * ===================================================================== */
 const PROJECT = {
-  updated: "2026-10-04",
+  updated: "2026-10-05",
   repo: "https://github.com/IsmaelCaballero/editorMD",
   appVersion: "0.0.2",
   currentPhase: "F2",
-  tests: { passed: 453, total: 453, coverage: "100 %" },
+  tests: { passed: 520, total: 520, coverage: "100 %" },
   metrics: { ram: "113 MB", bundle: "508 kB (158 kB gzip)" },
   ci: "4/4 SO en verde",
   ai: {
@@ -317,6 +317,7 @@ const PROJECT = {
       ["F2", "2/8 Codificar + fin de línea (PR #14)", "1,9", 32, 9.1, 3.0, 280],
       ["F2", "3/8 Pérdidas y transliteración (PR #15)", "1,7", 30, 9.6, 2.62, 318],
       ["F2", "4/8 FileService + RQ.1 T2 (PR #16, #18)", "≈ 9", 195, 18.0, 10.9, 88],
+      ["F2", "5/8 FileController (PR #19)", "3,5", 54, 6.9, 3.77, 124],
     ],
   },
   tags: [
@@ -326,6 +327,12 @@ const PROJECT = {
       summary: "F1: editor WYSIWYG Milkdown, menús, C01 AppController, puertos y adaptadores, diálogos; linters (F0.7)" },
   ],
   summary: `
+    <p><strong>F2 · paso 5/8 (sesión C): ¡ya se abren y guardan ficheros de verdad!</strong>
+    El nuevo controlador <a href="#comp-C02">C02 FileController</a> conecta el menú Archivo (Nuevo, Abrir, Guardar, Guardar como, Cerrar)
+    con <a href="#comp-M08">M08</a> a través del <a href="#c-ports">puerto</a> <code>IBackend</code>, y pide las rutas a los selectores nativos del sistema
+    con un adaptador nuevo, <a href="#comp-A03">A03 TauriFilePicker</a>. Si hay cambios sin guardar, pregunta antes de Nuevo, Abrir, Cerrar o cerrar la ventana.
+    Al guardar se conservan la codificación y el fin de línea del fichero, y si algún carácter no cabe, se explica cuál y en qué línea, sin tocar el disco.
+    67 pruebas nuevas con <a href="#c-mock">mocks</a> (TDD) y 100 % de líneas cubiertas.</p>
     <p><strong>F2 · paso 4/8 y segundo experimento <a href="#c-rq1">RQ.1</a> (sesión B, en el ordenador nuevo).</strong>
     <a href="#comp-M08">M08 FileService</a> ya lee y guarda ficheros en disco con <a href="#c-atomic-write">escritura atómica</a>,
     y expone al frontend los comandos <code>open_file</code> y <code>save_file</code>. Otra vez lo hicieron 3 × Opus 5.5 y 3 × Sonnet 5.5:
@@ -403,7 +410,7 @@ const PROJECT = {
       ["ok", "F2.2 TextCodec: codificación, BOM, LF/CRLF/CR, ida y vuelta byte a byte"],
       ["ok", "F2.3 Informe de pérdidas, transliteración y sustitución"],
       ["ok", "F2.4 FileService (escritura atómica) + comandos Tauri (RQ.1 T2)"],
-      ["todo", "F2.5 FileController: nuevo, abrir, guardar, guardar como, cerrar"],
+      ["ok", "F2.5 FileController: nuevo, abrir, guardar, guardar como, cerrar"],
       ["todo", "F2.6 EncodingDialog y perfiles Windows / Linux-macOS / ASCII"],
       ["todo", "F2.7 Barra de estado con codificación y fin de línea"],
       ["todo", "F2.8 Ficheros recientes"],
@@ -760,6 +767,18 @@ const PROJECT = {
       cmds: "scripts/rq1-eval.sh <agente> T2-hidden-tests.rs c5f2feb src-tauri/src/model/file_service.rs   # 28 passed en las 6\nnode scripts/rq1-metrics.mjs docs/ai-usage/rq1/T2-runs.json",
       why: "Guardar es la operación más delicada de un editor: si se corta a mitad, el usuario no debe perder el fichero que ya tenía. Escribir en un temporal y renombrarlo convierte el guardado en un todo o nada.",
       concepts: ["atomic-write", "rq1", "hidden-tests", "ipc"] },
+    { date: "2026-10-05", title: "F2 paso 5/8: el menú Archivo cobra vida", branch: "feature/F2-file-controller",
+      did: ["Sesión C (nueva, para empezar con el contexto limpio). Se decidió hacer el paso con Opus 5.5 sin delegar: el encargo incluye diseño de puertos e interfaz, y la especificación y la integración se comerían el ahorro de Sonnet.",
+            "Puertos: <code>IBackend.openFile/saveFile</code> con tipos espejo de los de Rust (<code>FileError</code>, <code>LossReport</code>…) y un puerto nuevo, <code>IFilePicker</code>, para los selectores nativos.",
+            "<a href=\"#comp-C02\">C02 FileController</a> con TDD (rojo → verde): 46 pruebas con mocks. Una guarda común de cambios sin guardar sirve para Nuevo, Abrir, Cerrar y la X de la ventana.",
+            "Un detalle fino: si el usuario sigue escribiendo mientras se guarda, lo nuevo sigue marcado como cambio (<a href=\"#comp-M01\">M01</a> <code>markSaved</code> recibe el texto realmente escrito).",
+            "Adaptadores: <a href=\"#comp-A03\">A03</a> usa <code>tauri-plugin-dialog</code>; <a href=\"#comp-A02\">A02</a> intercepta el cierre de la ventana. Cada uno necesita su <a href=\"#c-capabilities\">permiso</a> en <code>capabilities/default.json</code>.",
+            "La bienvenida pasa a ser un documento <i>sin título</i> (antes tenía una ruta inventada, y «Guardar» habría escrito en una carpeta cualquiera)."],
+      cmds: "npm install @tauri-apps/plugin-dialog && cargo add tauri-plugin-dialog
+npx vitest run tests/controller/file-controller.test.ts   # rojo: el módulo no existe → 46 passed
+npm run coverage   # 408 passed, 100 % de líneas",
+      why: "Hasta ahora el editor no podía tocar el disco. El controlador decide <i>qué</i> hacer (preguntar, elegir ruta, informar de errores) sin saber <i>cómo</i> se hace: por eso se prueba entero sin ventana ni Rust.",
+      concepts: ["ports", "adapters", "mock", "tdd", "capabilities"] },
   ],
 
   git: {
@@ -829,6 +848,10 @@ const PROJECT = {
       { t: "commit", branch: "feature/F2-file-service", id: "c5f2feb", msg: "docs(rq1): especificación T2" },
       { t: "commit", branch: "feature/F2-file-service", id: "60e2531", msg: "M08 (candidata A, PR #16)" },
       { t: "commit", branch: "feature/F2-file-service", id: "PR #18", msg: "docs: F2 paso 4" },
+      { t: "merge", into: "main", from: "feature/F2-file-service", id: "160a2b7 Merge PR #18" },
+      { t: "branch", name: "feature/F2-file-controller" },
+      { t: "commit", branch: "feature/F2-file-controller", id: "215c346", msg: "feat(C02): FileController" },
+      { t: "commit", branch: "feature/F2-file-controller", id: "PR #19", msg: "docs: F2 paso 5" },
     ],
     branches: [
       { name: "main", goal: "Rama estable", status: ["ok", "estable · CI verde · v0.0.1"], commits: 9, pr: "" },
@@ -845,19 +868,20 @@ const PROJECT = {
       { name: "feature/F2-text-codec-decode", step: "F2 · 1/8", final: "hecha/F2.1de8/feature/F2-text-codec-decode", goal: "M09 TextCodec: detección y decodificación + experimento RQ.1 T1", status: ["ok", "fusionada (PR #13)"], commits: 6, pr: 13 },
       { name: "feature/F2-text-codec-encode", step: "F2 · 2/8", final: "hecha/F2.2de8/feature/F2-text-codec-encode", goal: "M09 v0.2.0: codificación, BOM, finales de línea, ida y vuelta byte a byte", status: ["ok", "fusionada (PR #14)"], commits: 5, pr: 14 },
       { name: "feature/F2-text-codec-loss", step: "F2 · 3/8", final: "hecha/F2.3de8/feature/F2-text-codec-loss", goal: "M09 v0.3.0: informe de pérdidas, sustitución, transliteración y entidades HTML; cierre de la sesión A", status: ["ok", "fusionada (PR #15)"], commits: 6, pr: 15 },
-      { name: "feature/F2-file-service", step: "F2 · 4/8", final: "hecha/F2.4de8/feature/F2-file-service", goal: "M08 FileService: lectura, escritura atómica, comandos open_file/save_file + experimento RQ.1 T2", status: ["wip", "PR #18 · pendiente de tu revisión"], commits: 6, pr: 18 },
+      { name: "feature/F2-file-service", step: "F2 · 4/8", final: "hecha/F2.4de8/feature/F2-file-service", goal: "M08 FileService: lectura, escritura atómica, comandos open_file/save_file + experimento RQ.1 T2", status: ["ok", "fusionada (PR #18)"], commits: 6, pr: 18 },
+      { name: "feature/F2-file-controller", step: "F2 · 5/8", final: "hecha/F2.5de8/feature/F2-file-controller", goal: "C02 FileController: Nuevo, Abrir, Guardar, Guardar como, Cerrar y aviso de cambios; A03 selectores nativos", status: ["wip", "PR #19 · pendiente de tu revisión"], commits: 2, pr: 19 },
       { name: "rq1/T1/A (= r1, Sonnet 5.5)", step: "RQ.1 T1", goal: "Candidata ganadora de la revisión ciega", status: ["ok", "fusionada en la rama del paso (PR #11)"], commits: 2, pr: 11 },
       { name: "rq1/T1/B (= r2, Opus 5.5)", step: "RQ.1 T1", goal: "Candidata de la revisión ciega (calidad equivalente, más cara)", status: ["ok", "cerrada sin fusionar (PR #12)"], commits: 2, pr: 12 },
       { name: "rq1/T1/r3 … r6", step: "RQ.1 T1", goal: "Repeticiones del experimento (Opus r3, r6; Sonnet r4, r5): se conservan sin PR", status: ["ok", "medidas"], commits: 2, pr: "" },
       { name: "rq1/T2/A (= r1, Sonnet 5.5)", step: "RQ.1 T2", goal: "Candidata ganadora de la revisión ciega (4,8 de 5)", status: ["ok", "fusionada en la rama del paso (PR #16)"], commits: 2, pr: 16 },
       { name: "rq1/T2/B (= r3, Opus 5.5)", step: "RQ.1 T2", goal: "Candidata de la revisión ciega (4,2 de 5, el doble de cara)", status: ["ok", "cerrada sin fusionar (PR #17)"], commits: 3, pr: 17 },
-      { name: "rq1/T2/r1 … r6", step: "RQ.1 T2", goal: "Repeticiones del experimento (Sonnet r1, r4, r6; Opus r2, r3, r5): solo en el ordenador nuevo, sin subir", status: ["ok", "medidas"], commits: 2, pr: "" },
+      { name: "rq1/T2/r1 … r6", step: "RQ.1 T2", goal: "Repeticiones del experimento (Sonnet r1, r4, r6; Opus r2, r3, r5): se conservan sin PR (subidas a GitHub en la sesión C)", status: ["ok", "medidas"], commits: 2, pr: "" },
     ],
   },
 
   components: [
     ["M00","M","Rust","AppInfo","Nombre y versión de la app (comando app_info)","0.1.0","F0"],
-    ["M01","M","TS","DocumentState","Contenido, ruta, modificado, codificación/fin de línea, palabras (Observer)","0.2.0","F1"],
+    ["M01","M","TS","DocumentState","Contenido, ruta, modificado, codificación/fin de línea, palabras (Observer)","0.3.0","F1"],
     ["M02","M","TS","History","Deshacer/rehacer","0.0.0","F3"],
     ["M03","M","TS","FormatCommands","Títulos, negrita, cursiva, tachado, código, cita","0.0.0","F4"],
     ["M04","M","TS","ListCommands","Viñetas, numeradas, tareas, sangrado","0.0.0","F5"],
@@ -874,7 +898,7 @@ const PROJECT = {
     ["M15","M","TS","Workspace","Documentos abiertos (pestañas)","0.0.0","F7"],
     ["M16","M","TS","I18n","Interfaz es/en","0.0.0","F7"],
     ["M17","M","TS","SemVer","Análisis, comparación e incremento SemVer 2.0.0","0.1.0","F0"],
-    ["V01","V","TS","MainWindow","Menús declarativos, atajos por SO, ShellState (título y barra de estado)","0.3.0","F0/F1"],
+    ["V01","V","TS","MainWindow","Menús declarativos, atajos por SO, ShellState (título y barra de estado)","0.4.0","F0/F1"],
     ["V02","V","TS","WysiwygEditorView","Editor Milkdown kit (implementa IEditorView)","0.1.0","F1"],
     ["V03","V","TS","SourceEditorView","Modo fuente (CodeMirror 6)","0.0.0","F4"],
     ["V04","V","TS","StatusBarView","Posición, palabras, codificación, fin de línea","0.0.0","F2"],
@@ -886,14 +910,15 @@ const PROJECT = {
     ["V10","V","TS","TabBar","Pestañas","0.0.0","F7"],
     ["V11","V","TS","ExportPreviewView","Previsualización de la exportación","0.0.0","F6"],
     ["V12","V","TS","DialogService","Diálogos modales propios (iguales en los 4 SO)","0.1.0","F1"],
-    ["C01","C","TS","AppController","Órdenes Nuevo, Deshacer, Rehacer, Acerca de; ciclo de vida","0.1.0","F1"],
-    ["C02","C","TS","FileController","Ficheros, importar/exportar, codificación","0.0.0","F2"],
+    ["C01","C","TS","AppController","Ciclo de vida; delega el menú Archivo en C02; Deshacer, Rehacer, Acerca de","0.2.0","F1"],
+    ["C02","C","TS","FileController","Nuevo, Abrir, Guardar, Guardar como, Cerrar y aviso de cambios (importar/exportar en F6)","0.1.0","F2"],
     ["C03","C","TS","EditController","Portapapeles, deshacer, buscar","0.0.0","F3"],
     ["C04","C","TS","FormatController","Formato","0.0.0","F4"],
     ["C05","C","TS","InsertController","Objetos","0.0.0","F5"],
     ["C06","C","TS","ViewController","Modo fuente, tema, zoom, preferencias","0.0.0","F4/F7"],
-    ["A01","A","TS","TauriBackend","Implementa IBackend con IPC de Tauri","0.1.0","F1"],
-    ["A02","A","TS","TauriWindow","Título de la ventana nativa","0.1.0","F1"],
+    ["A01","A","TS","TauriBackend","Implementa IBackend con IPC de Tauri (app_info, open_file, save_file)","0.2.0","F1"],
+    ["A02","A","TS","TauriWindow","Título de la ventana nativa y confirmación al cerrarla","0.2.0","F1"],
+    ["A03","A","TS","TauriFilePicker","Selectores nativos de abrir y guardar (tauri-plugin-dialog)","0.1.0","F2"],
   ],
 
   decisions: [
@@ -908,6 +933,7 @@ const PROJECT = {
   ],
 
   concepts: {
+    "capabilities": ["Permisos de Tauri (<i>capabilities</i>)", "En Tauri 2 la interfaz web no puede usar ninguna función nativa salvo que se le conceda explícitamente en <code>src-tauri/capabilities/*.json</code>: p. ej. <code>dialog:allow-open</code> para el selector de ficheros o <code>core:window:allow-destroy</code> para cerrar la ventana. Es el principio de mínimo privilegio: si alguien inyectara código en la página, solo podría usar lo concedido."],
     "atomic-write": ["Escritura atómica", "Guardar «todo o nada»: se escribe el contenido en un fichero temporal de la misma carpeta, se fuerza su volcado al disco y se <b>renombra</b> sobre el original. El renombrado es instantáneo, así que si el programa o el equipo fallan a mitad, el original sigue intacto y nunca queda un fichero a medias."],
     "transliteration": ["Transliteración", "Escribir un carácter con letras de otro alfabeto o juego de caracteres: <code>ñ</code> → <code>n</code>, <code>€</code> → <code>EUR</code>, <code>日</code> → <code>Ri</code>. Se usa cuando la codificación destino (p. ej. ASCII) no tiene el carácter original."],
     "roundtrip": ["Ida y vuelta byte a byte", "Abrir un fichero y guardarlo sin editar debe producir exactamente los mismos bytes: misma codificación, mismo BOM y mismos finales de línea. Se comprueba con ficheros de prueba binarios que git no puede alterar."],

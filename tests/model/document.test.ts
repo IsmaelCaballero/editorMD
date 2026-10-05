@@ -23,6 +23,13 @@ describe('DocumentState · creación', () => {
     expect(doc.lineEnding).toBe('crlf')
   })
 
+  it('admite un texto inicial sin marcarlo como modificado (p. ej. la bienvenida)', () => {
+    const doc = DocumentState.createNew({}, '# Bienvenido')
+    expect(doc.content).toBe('# Bienvenido')
+    expect(doc.isUntitled).toBe(true)
+    expect(doc.isModified).toBe(false)
+  })
+
   it('fromFile carga contenido, ruta y formato sin marcarlo como modificado', () => {
     const doc = DocumentState.fromFile('# Hola', {
       path: '/home/ana/notas.md',
@@ -66,6 +73,16 @@ describe('DocumentState · cambios sin guardar', () => {
     doc.markSaved('C:\\Docs\\informe.md')
     expect(doc.path).toBe('C:\\Docs\\informe.md')
     expect(doc.isUntitled).toBe(false)
+  })
+
+  it('markSaved con el texto escrito: lo tecleado durante el guardado sigue sin guardar', () => {
+    const doc = DocumentState.fromFile('A', { path: 'a.md' })
+    doc.setContent('AB') // se guarda «AB»…
+    doc.setContent('ABC') // …y el usuario sigue escribiendo
+    doc.markSaved(undefined, 'AB')
+    expect(doc.isModified).toBe(true)
+    doc.setContent('AB')
+    expect(doc.isModified).toBe(false)
   })
 
   it('cambiar la codificación o el fin de línea también es un cambio sin guardar', () => {

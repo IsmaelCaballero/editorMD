@@ -13,7 +13,15 @@
  */
 import { DocumentState } from '../model/document'
 import type { CommandId } from '../view/menus'
-import type { IBackend, IDialogService, IEditorView, IWindowView, Unsubscribe } from './ports'
+import { FileController } from './file-controller'
+import type {
+  IBackend,
+  IDialogService,
+  IEditorView,
+  IFilePicker,
+  IWindowView,
+  Unsubscribe,
+} from './ports'
 
 /** Nombre de la aplicación que aparece en el título de la ventana. */
 export const APP_NAME = 'editorMD'
@@ -30,6 +38,8 @@ export interface AppControllerDeps {
   readonly dialogs: IDialogService
   /** Ventana principal (título y barra de estado). */
   readonly window: IWindowView
+  /** Selectores nativos de ficheros (para C02 `FileController`). */
+  readonly picker: IFilePicker
 }
 
 /**
@@ -37,18 +47,23 @@ export interface AppControllerDeps {
  *
  * @example
  * ```ts
- * const controller = new AppController({ document, editor, backend, dialogs, window })
+ * const controller = new AppController({ document, editor, backend, dialogs, window, picker })
  * controller.start()
  * await controller.execute('file.new')
  * ```
  */
 export class AppController {
   readonly #deps: AppControllerDeps
+  readonly #files: FileController
   #subscriptions: Unsubscribe[] = []
 
-  /** @param deps - Puertos y modelo inyectados. */
+  /**
+   * @param deps - Puertos y modelo inyectados. Con ellos se crea también el
+   *   controlador de ficheros (C02), en el que se delegan las órdenes `file.*`.
+   */
   constructor(deps: AppControllerDeps) {
     this.#deps = deps
+    this.#files = new FileController(deps)
   }
 
   /**
@@ -75,7 +90,26 @@ export class AppController {
   async execute(command: CommandId): Promise<boolean> {
     switch (command) {
       case 'file.new':
-        await this.#newDocument()
+        await this.#files.newDocument()
+        return true
+      case 'file.open':
+        await this.#files.open()
+        return true
+      case 'file.save':
+        await this.#files.save()
+        return true
+      case 'file.saveAs':
+        await this.#files.saveAs()
+        return true
+      case 'file.close':
+        await this.#files.close()
+        return true
+      case 'file.encoding':
+        await this.#deps.dialogs.message(
+          'Codificación y fin de línea',
+          'Este diálogo llega en el paso 6/8 de F2. Mientras tanto, los ficheros se ' +
+            'guardan con la codificación y el fin de línea con los que se abrieron.',
+        )
         return true
       case 'edit.undo':
         this.#deps.editor.undo()
@@ -89,6 +123,14 @@ export class AppController {
       default:
         return false
     }
+  }
+
+  /**
+   * Decide si se puede cerrar la ventana: si hay cambios sin guardar, pregunta.
+   * @returns `true` si se puede cerrar.
+   */
+  confirmClose(): Promise<boolean> {
+    return this.#files.confirmDiscard()
   }
 
   /** Cancela todas las suscripciones (al cerrar la ventana o en los tests). */
@@ -107,28 +149,6 @@ export class AppController {
       lineEnding: document.lineEnding,
       modified: document.isModified,
     })
-  }
-
-  /**
-   * «Nuevo»: si hay cambios sin guardar, pregunta antes de descartarlos.
-   * En F1 todavía no existe «Guardar», así que esa respuesta solo avisa.
-   */
-  async #newDocument(): Promise<void> {
-    const { document, editor, dialogs } = this.#deps
-    if (document.isModified) {
-      const choice = await dialogs.confirmUnsaved(document.fileName)
-      if (choice === 'cancel') return
-      if (choice === 'save') {
-        await dialogs.message(
-          'Guardar aún no está disponible',
-          'Guardar llegará en la fase F2. El documento no se ha descartado.',
-        )
-        return
-      }
-    }
-    document.reset()
-    editor.setMarkdown(document.content)
-    editor.focus()
   }
 
   /** «Acerca de»: nombre y versión desde el backend Rust (M00 `AppInfo`). */

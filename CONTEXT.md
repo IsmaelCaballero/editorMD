@@ -2,7 +2,7 @@
 
 > Léelo **primero** al retomar el proyecto (sobre todo si se ha perdido el contexto de la conversación).
 > Después lee STATUS.md (dónde estamos) y PLAN.md (qué falta y cómo).
-> Última actualización: 2026-10-03
+> Última actualización: 2026-10-05
 
 ## Qué es
 Un editor Markdown de escritorio con GUI, **ligero** (poca memoria) y **portable** a Windows, Ubuntu, Fedora y macOS, con **instalador** para cada sistema. Habrá varias versiones a lo largo del tiempo, así que la arquitectura debe facilitar su evolución.
@@ -28,7 +28,7 @@ Un editor Markdown de escritorio con GUI, **ligero** (poca memoria) y **portable
 18. **Cada etiqueta (tag/release) se enlaza en `docs/index.html`** (sección «Versiones publicadas», `PROJECT.tags`).
 19. **Documentar el uso de IA** (modelo y versión, estimación previa de tokens y coste real de cada paso) en `docs/ai-usage/README.md`, PLAN.md §11 y la web. Medir con `scripts/ai-usage.mjs` sobre la transcripción de la sesión. **Empezar cada fase en una sesión nueva** para abaratar las llamadas.
 20. **RQ.1 del usuario** (investigación): ¿es más rentable un modelo caro con poco *rework* o uno barato con más *rework*? Experimento **aprobado** (`docs/ai-usage/README.md` §4.2): F2 pasos 1 y 4, **3 repeticiones** por modelo (Opus 5.5 / Sonnet 5.5), revisión ciega. Sin errores externos al entorno. El usuario prefiere invertir en resultados concluyentes.
-21. **Fases largas en varias sesiones**: F2 se parte en dos sesiones (A: pasos 1-3; B: pasos 4-8; el cambio se adelantó para ahorrar contexto). Antes de cerrar una sesión se guarda todo (STATUS, CONTEXT, PLAN, métricas de IA) y se deja en STATUS.md el texto exacto para arrancar la siguiente (PLAN.md §7, F2).
+21. **Fases largas en varias sesiones**: F2 se parte en tres sesiones (A: pasos 1-3; B: paso 4 con el experimento T2; C: pasos 5-8). Antes de cerrar una sesión se guarda todo (STATUS, CONTEXT, PLAN, métricas de IA) y se deja en STATUS.md el texto exacto para arrancar la siguiente (PLAN.md §7, F2).
 22. **Trabajo desde varios ordenadores**: el usuario puede retomar el proyecto en otro equipo clonando el repositorio (`docs/retomar-en-otro-ordenador.md`). Todo lo necesario debe estar en el repositorio: la memoria y las transcripciones de Claude Code son locales y no viajan.
 
 ## Convenciones del proyecto

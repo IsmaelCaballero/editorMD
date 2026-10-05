@@ -172,7 +172,7 @@ Cada componente lleva su propia versión **[Semantic Versioning 2.0.0](https://s
 | ID | Capa | Lado | Componente | Responsabilidad | Versión | Fase |
 |---|---|---|---|---|---|---|
 | M00 | Modelo | Rust | `AppInfo` | Nombre y versión de la app (comando `app_info`) | **0.1.0** | F0 |
-| M01 | Modelo | TS | `DocumentState` | Contenido, ruta, modificado, metadatos de codificación/fin de línea, `wordCount` | **0.2.0** | F1 |
+| M01 | Modelo | TS | `DocumentState` | Contenido, ruta, modificado, metadatos de codificación/fin de línea, `wordCount` | **0.3.0** | F1 |
 | M02 | Modelo | TS | `History` | Deshacer/rehacer (adaptador a la historia de ProseMirror) | 0.0.0 | F3 |
 | M03 | Modelo | TS | `FormatCommands` | Títulos, negrita, cursiva, tachado, código, cita, quitar formato | 0.0.0 | F4 |
 | M04 | Modelo | TS | `ListCommands` | Viñetas, numeradas, tareas, sangrado | 0.0.0 | F5 |
@@ -189,7 +189,7 @@ Cada componente lleva su propia versión **[Semantic Versioning 2.0.0](https://s
 | M15 | Modelo | TS | `Workspace` | Colección de documentos abiertos (pestañas), documento activo | 0.0.0 | F7 |
 | M16 | Modelo | TS | `I18n` | Catálogos es/en, cambio de idioma | 0.0.0 | F7 |
 | M17 | Modelo | TS | `SemVer` | Análisis, comparación e incremento SemVer 2.0.0 | **0.1.0** | F0 |
-| V01 | Vista | TS | `MainWindow` | Menús declarativos + `MenuBar.svelte`, atajos (`commandForKey`), `ShellState` (título y barra de estado) | **0.3.0** | F0/F1 |
+| V01 | Vista | TS | `MainWindow` | Menús declarativos + `MenuBar.svelte`, atajos (`commandForKey`), `ShellState` (título y barra de estado) | **0.4.0** | F0/F1 |
 | V02 | Vista | TS | `WysiwygEditorView` | Editor Milkdown *kit* (`MilkdownEditorView`) | **0.1.0** | F1 |
 | V03 | Vista | TS | `SourceEditorView` | Modo fuente Markdown (CodeMirror 6) | 0.0.0 | F4 |
 | V04 | Vista | TS | `StatusBarView` | Posición, palabras, codificación, fin de línea | 0.0.0 | F2 |
@@ -201,14 +201,15 @@ Cada componente lleva su propia versión **[Semantic Versioning 2.0.0](https://s
 | V10 | Vista | TS | `TabBar` | Pestañas multidocumento | 0.0.0 | F7 |
 | V11 | Vista | TS | `ExportPreviewView` | Previsualización de la exportación (PDF/HTML) | 0.0.0 | F6 |
 | V12 | Vista | TS | `DialogService` + `DialogHost.svelte` | Diálogos modales propios (iguales en los 4 SO) | **0.1.0** | F1 |
-| C01 | Controlador | TS | `AppController` | Ciclo de vida; órdenes Nuevo, Deshacer, Rehacer, Acerca de | **0.1.0** | F1 |
-| C02 | Controlador | TS | `FileController` | Nuevo/abrir/cerrar/guardar/importar/exportar/codificación | 0.0.0 | F2 |
+| C01 | Controlador | TS | `AppController` | Ciclo de vida; delega `file.*` en C02; Deshacer, Rehacer, Acerca de; `confirmClose` | **0.2.0** | F1 |
+| C02 | Controlador | TS | `FileController` | Nuevo/abrir/cerrar/guardar/guardar como y aviso de cambios (F2); importar/exportar (F6) | **0.1.0** | F2 |
 | C03 | Controlador | TS | `EditController` | Portapapeles, selección, deshacer, buscar | 0.0.0 | F3 |
 | C04 | Controlador | TS | `FormatController` | | 0.0.0 | F4 |
 | C05 | Controlador | TS | `InsertController` | | 0.0.0 | F5 |
 | C06 | Controlador | TS | `ViewController` | Modo fuente/WYSIWYG, tema, zoom, preferencias | 0.0.0 | F4/F7 |
-| A01 | Adaptador | TS | `TauriBackend` | Implementa `IBackend` con IPC de Tauri (`invoke`) | **0.1.0** | F1 |
-| A02 | Adaptador | TS | `TauriWindow` (`setNativeTitle`) | Título de la ventana nativa | **0.1.0** | F1 |
+| A01 | Adaptador | TS | `TauriBackend` | Implementa `IBackend` con IPC de Tauri (`invoke`): `app_info`, `open_file`, `save_file` | **0.2.0** | F1 |
+| A02 | Adaptador | TS | `TauriWindow` (`setNativeTitle`, `onCloseRequested`) | Título de la ventana nativa y confirmación al cerrarla | **0.2.0** | F1 |
+| A03 | Adaptador | TS | `TauriFilePicker` | Implementa `IFilePicker` con los selectores nativos (`tauri-plugin-dialog`) | **0.1.0** | F2 |
 
 > **Adaptadores (A):** implementaciones concretas de los puertos que dependen de la plataforma (Tauri). Patrón *puertos y adaptadores*: el controlador nunca los conoce; se conectan en el *composition root* (`src/main.ts`).
 
@@ -226,6 +227,12 @@ Cada componente lleva su propia versión **[Semantic Versioning 2.0.0](https://s
 - M01 `DocumentState` v0.2.0 (2026-10-04) — MINOR: `wordCount`.
 - V01 `MainWindow` v0.3.0 (2026-10-04) — MINOR: `matchShortcut`/`commandForKey`, `ShellState` (puerto `IWindowView`), barra de estado completa.
 - V12 `DialogService` v0.1.0, A01 `TauriBackend` v0.1.0, A02 `TauriWindow` v0.1.0 (2026-10-04) — primeras versiones.
+- C02 `FileController` v0.1.0 (2026-10-05) — primera versión con TDD: `newDocument`, `open(path?)`, `save`, `saveAs`, `close` y `confirmDiscard` (guarda común de cambios sin guardar, también al cerrar la ventana); solo lectura → «Guardar como»; `describeFileError` explica cada `FileError` (los no representables, con carácter, apariciones y líneas). 46 pruebas con mocks, 100 % de líneas. Rama `feature/F2-file-controller`.
+- C01 `AppController` v0.2.0 (2026-10-05) — MINOR: delega `file.new/open/save/saveAs/close` en C02 y añade `confirmClose`; `file.encoding` avisa de que llega en el paso 6. Nueva dependencia inyectada: `picker` (`IFilePicker`).
+- Puertos (2026-10-05): `IBackend.openFile/saveFile`, tipos espejo de M08/M09 (`OpenedFile`, `SavedFile`, `FileError`, `LossReport`…), `isFileError` e `IFilePicker`.
+- A01 `TauriBackend` v0.2.0, A02 `TauriWindow` v0.2.0, A03 `TauriFilePicker` v0.1.0 (2026-10-05) — comandos de ficheros (fuera de Tauri fallan con `io`), `onCloseRequested` (permiso `core:window:allow-destroy`) y selectores nativos con `tauri-plugin-dialog` (permisos `dialog:allow-open`/`allow-save`; filtros Markdown/Rmd, texto y todos).
+- M01 `DocumentState` v0.3.0 (2026-10-05) — MINOR: `createNew(defaults, content)` (documento sin título con texto inicial, para la bienvenida) y `markSaved(path, content)` (lo tecleado durante un guardado sigue contando como cambio).
+- V01 `MainWindow` v0.4.0 (2026-10-05) — MINOR: `CURRENT_PHASE = 'F2'` (menús y atajos de ficheros activos).
 - M08 `FileService` v0.1.0 (2026-10-05) — primera versión: `read_file` (bytes + solo lectura), `write_atomic` (temporal `.nombre.pid.n.tmp` en la misma carpeta con `create_new`, `sync_all` y renombrado; limpieza si falla; conserva el modo en Unix), `open_text` / `save_text` sobre M09 y `FileError` serializable para el frontend (`not-found`, `permission-denied`, `read-only`, `is-directory`, `io`, `decode`, `unmappable` con el informe de pérdidas). Comandos Tauri `open_file` / `save_file` con `#[tauri::command(async)]`. 33 pruebas + 3 doctests y 28 pruebas ocultas de aceptación. Escrita por Sonnet 5.5 (candidata ganadora del experimento RQ.1 T2, PR #16). Rama `feature/F2-file-service`.
 - M09 `TextCodec` v0.3.0 (2026-10-04) — MINOR: `loss_report` (caracteres que no caben, con apariciones, líneas y transliteración), `encode_lossy` y `write_text_lossy` con `LossStrategy` (sustituir por `?`, transliterar con `deunicode`, entidades HTML) y `can_encode`. 63 pruebas + 14 doctests. Rama `feature/F2-text-codec-loss`.
 - M09 `TextCodec` v0.2.0 (2026-10-04) — MINOR: `encode` estricta con BOM (`EncodeError::Unmappable`), `LineEnding` / `LineEndingStats` / `normalize_line_endings`, y `read_text` / `read_text_as` / `write_text` (el editor recibe siempre LF). Ida y vuelta byte a byte con 27 ficheros de prueba (9 codificaciones × 3 finales de línea) + uno mixto. 53 pruebas + 10 doctests. Rama `feature/F2-text-codec-encode`.
@@ -311,7 +318,7 @@ Asociación de `.md`, `.markdown`, `.Rmd` (y opcionalmente `.txt`), iconos y ent
 
 ### F2 — Ficheros y codificaciones → 0.1.0 · plan aprobado el 2026-10-04
 
-Ocho pasos en **dos sesiones** de Claude Code (A: pasos 1-3; B: pasos 4-8; al principio eran 1-4 y 5-8, y se adelantó el cambio para que el experimento T2 empiece con el contexto limpio) para que el contexto no supere ~350 k tokens. En los pasos 1 y 4 se hace el **experimento RQ.1** (3 ejecuciones de Opus 5.5 y 3 de Sonnet 5.5, revisión ciega; ver `docs/ai-usage/README.md` §4.2).
+Ocho pasos en **tres sesiones** de Claude Code (A: pasos 1-3; B: paso 4; C: pasos 5-8; al principio eran dos sesiones, 1-4 y 5-8: el cambio se adelantó para que el experimento T2 empezara con el contexto limpio, y tras T2 se abrió otra sesión) para que el contexto no supere ~350 k tokens. En los pasos 1 y 4 se hace el **experimento RQ.1** (3 ejecuciones de Opus 5.5 y 3 de Sonnet 5.5, revisión ciega; ver `docs/ai-usage/README.md` §4.2).
 
 | Paso | Sesión | Rama | Tareas | Estimación (llamadas · USD eq.) | Nombre al cerrar F2 |
 |---|---|---|---|---|---|
@@ -319,10 +326,10 @@ Ocho pasos en **dos sesiones** de Claude Code (A: pasos 1-3; B: pasos 4-8; al pr
 | 2/8 | A | `feature/F2-text-codec-encode` | F2.2 | 25 · 1,9 | `hecha/F2.2de8/feature/F2-text-codec-encode` |
 | 3/8 | A | `feature/F2-text-codec-loss` | F2.3 | 20 · 1,7 | `hecha/F2.3de8/feature/F2-text-codec-loss` |
 | 4/8 🧪 | B | `feature/F2-file-service` | F2.4 | 20 + 6 ejecuciones · ≈ 7 | `hecha/F2.4de8/feature/F2-file-service` |
-| 5/8 | B | `feature/F2-file-controller` | F2.5 | 45 · 3,2 | `hecha/F2.5de8/feature/F2-file-controller` |
-| 6/8 | B | `feature/F2-encoding-ui` | F2.6 + F2.7 | 40 · 3,6 | `hecha/F2.6de8/feature/F2-encoding-ui` |
-| 7/8 | B | `feature/F2-recent-files` | F2.8 | 20 · 2,1 | `hecha/F2.7de8/feature/F2-recent-files` |
-| 8/8 | B | `chore/F2-close` | versión 0.1.0 | 13 · 1,4 | `hecha/F2.8de8/chore/F2-close` |
+| 5/8 | C | `feature/F2-file-controller` | F2.5 | 45 · 3,2 | `hecha/F2.5de8/feature/F2-file-controller` |
+| 6/8 | C | `feature/F2-encoding-ui` | F2.6 + F2.7 | 40 · 3,6 | `hecha/F2.6de8/feature/F2-encoding-ui` |
+| 7/8 | C | `feature/F2-recent-files` | F2.8 | 20 · 2,1 | `hecha/F2.7de8/feature/F2-recent-files` |
+| 8/8 | C | `chore/F2-close` | versión 0.1.0 | 13 · 1,4 | `hecha/F2.8de8/chore/F2-close` |
 
 Total estimado: ≈ 28 USD eq. (rango 20-38), de los que ≈ 11 son el experimento con 3 repeticiones.
 
@@ -336,7 +343,7 @@ Total estimado: ≈ 28 USD eq. (rango 20-38), de los que ≈ 11 son el experimen
 - [x] F2.2 M09 codificación de salida, BOM, LF/CRLF/CR, detección de fin de línea mixto + tests de ida y vuelta byte a byte
 - [x] F2.3 M09 informe de pérdidas + transliteración + sustitución + tests
 - [x] F2.4 M08 `FileService` (escritura atómica, solo lectura) + comandos Tauri + tests
-- [ ] F2.5 C02 `FileController`: Nuevo, Abrir, Guardar, Guardar como, Cerrar, aviso de cambios + tests
+- [x] F2.5 C02 `FileController`: Nuevo, Abrir, Guardar, Guardar como, Cerrar, aviso de cambios + tests
 - [ ] F2.6 V07 `EncodingDialog`: Reabrir con…, Guardar con…, perfiles Windows/Linux-macOS/Máx. compatibilidad
 - [ ] F2.7 V04 Barra de estado con codificación y fin de línea pulsables
 - [ ] F2.8 M13 `RecentFiles` + menú + tests
@@ -531,6 +538,7 @@ Detalle completo, análisis y diseño del experimento de la RQ.1 en [`docs/ai-us
 | F2 2/8 | Opus 5.5 | 32 | 9,1 M | 3,00 | 1,9 |
 | F2 3/8 | Opus 5.5 | 30 | 9,6 M | 2,62 (+ cierre de la sesión A) | 1,7 |
 | F2 4/8 | Opus 5.5 (orquestador) + 3 Opus 5.5 y 3 Sonnet 5.5 (subagentes) | 195 (69 del orquestador) | 18,0 M | ≈ 10,9 (6,5 de las ejecuciones) | ≈ 9 |
+| F2 5/8 | Opus 5.5 (sesión C) | 54 (hasta abrir el PR) | 6,9 M | 3,77 | 3,5 |
 
 - **Medición:** `node scripts/ai-usage.mjs <transcripción.jsonl> docs/ai-usage/phases.json`, con el uso real que registra Claude Code.
 - **Norma desde F2:** estimar antes de cada paso (llamadas y USD eq.), medir al fusionar y registrar aquí y en la web. **Cada fase empieza en una sesión nueva**, porque el contexto acumulado multiplica el coste de cada llamada.

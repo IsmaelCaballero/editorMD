@@ -53,15 +53,15 @@ describe('MenuBar', () => {
   it('las opciones de fases futuras están deshabilitadas e indican su fase', () => {
     render()
     openMenu('Archivo')
-    const open = item('file.open')!
-    expect(open.disabled).toBe(true)
-    expect(open.title).toBe('Disponible en F2')
+    const importItem = item('file.import')!
+    expect(importItem.disabled).toBe(true)
+    expect(importItem.title).toBe('Disponible en F6')
   })
 
   it('con una fase posterior, las opciones se habilitan', () => {
-    render({ phase: 'F2' })
+    render({ phase: 'F6' })
     openMenu('Archivo')
-    expect(item('file.open')!.disabled).toBe(false)
+    expect(item('file.import')!.disabled).toBe(false)
   })
 
   it('muestra los atajos según la plataforma', () => {

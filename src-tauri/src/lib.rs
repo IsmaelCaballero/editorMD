@@ -18,8 +18,9 @@ pub mod model;
 
 /// Punto de entrada de la aplicación: construye y ejecuta la ventana Tauri.
 ///
-/// Registra los comandos IPC disponibles para el frontend y, en compilaciones
-/// de depuración, activa el plugin de logging.
+/// Registra los comandos IPC disponibles para el frontend y el plugin de
+/// diálogos nativos (abrir/guardar, F2) y, en compilaciones de depuración,
+/// activa el plugin de logging.
 ///
 /// # Panics
 ///
@@ -28,6 +29,7 @@ pub mod model;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
             if cfg!(debug_assertions) {
                 app.handle().plugin(
