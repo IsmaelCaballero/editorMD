@@ -318,7 +318,7 @@ Asociación de `.md`, `.markdown`, `.Rmd` (y opcionalmente `.txt`), iconos y ent
 
 ### F2 — Ficheros y codificaciones → 0.1.0 · plan aprobado el 2026-10-04
 
-Ocho pasos en **tres sesiones** de Claude Code (A: pasos 1-3; B: paso 4; C: pasos 5-8; al principio eran dos sesiones, 1-4 y 5-8: el cambio se adelantó para que el experimento T2 empezara con el contexto limpio, y tras T2 se abrió otra sesión) para que el contexto no supere ~350 k tokens. En los pasos 1 y 4 se hace el **experimento RQ.1** (3 ejecuciones de Opus 5.5 y 3 de Sonnet 5.5, revisión ciega; ver `docs/ai-usage/README.md` §4.2).
+Ocho pasos en **cuatro sesiones** de Claude Code (A: pasos 1-3; B: paso 4; C: paso 5; D: pasos 6-8; al principio eran dos sesiones, 1-4 y 5-8: el cambio se adelantó para que el experimento T2 empezara con el contexto limpio, tras T2 se abrió otra sesión, y la C se cerró tras el paso 5 para no superar ~350 k de contexto) para que el contexto no supere ~350 k tokens. En los pasos 1 y 4 se hace el **experimento RQ.1** (3 ejecuciones de Opus 5.5 y 3 de Sonnet 5.5, revisión ciega; ver `docs/ai-usage/README.md` §4.2).
 
 | Paso | Sesión | Rama | Tareas | Estimación (llamadas · USD eq.) | Nombre al cerrar F2 |
 |---|---|---|---|---|---|
@@ -327,9 +327,9 @@ Ocho pasos en **tres sesiones** de Claude Code (A: pasos 1-3; B: paso 4; C: paso
 | 3/8 | A | `feature/F2-text-codec-loss` | F2.3 | 20 · 1,7 | `hecha/F2.3de8/feature/F2-text-codec-loss` |
 | 4/8 🧪 | B | `feature/F2-file-service` | F2.4 | 20 + 6 ejecuciones · ≈ 7 | `hecha/F2.4de8/feature/F2-file-service` |
 | 5/8 | C | `feature/F2-file-controller` | F2.5 | 45 · 3,2 | `hecha/F2.5de8/feature/F2-file-controller` |
-| 6/8 | C | `feature/F2-encoding-ui` | F2.6 + F2.7 | 40 · 3,6 | `hecha/F2.6de8/feature/F2-encoding-ui` |
-| 7/8 | C | `feature/F2-recent-files` | F2.8 | 20 · 2,1 | `hecha/F2.7de8/feature/F2-recent-files` |
-| 8/8 | C | `chore/F2-close` | versión 0.1.0 | 13 · 1,4 | `hecha/F2.8de8/chore/F2-close` |
+| 6/8 | D | `feature/F2-encoding-ui` | F2.6 + F2.7 | 40 · 3,6 | `hecha/F2.6de8/feature/F2-encoding-ui` |
+| 7/8 | D | `feature/F2-recent-files` | F2.8 | 20 · 2,1 | `hecha/F2.7de8/feature/F2-recent-files` |
+| 8/8 | D | `chore/F2-close` | versión 0.1.0 | 13 · 1,4 | `hecha/F2.8de8/chore/F2-close` |
 
 Total estimado: ≈ 28 USD eq. (rango 20-38), de los que ≈ 11 son el experimento con 3 repeticiones.
 
@@ -390,6 +390,8 @@ Total estimado: ≈ 28 USD eq. (rango 20-38), de los que ≈ 11 son el experimen
 ---
 
 ## 8. Decisiones (registro)
+
+> El registro completo y trazable de **todas** las decisiones (producto, proceso, uso de IA, técnicas y entorno) está en [DECISIONS.md](DECISIONS.md). Esta tabla recoge solo las de producto y arquitectura.
 
 | ID | Decisión | Elección / opciones | Estado |
 |---|---|---|---|
@@ -538,7 +540,7 @@ Detalle completo, análisis y diseño del experimento de la RQ.1 en [`docs/ai-us
 | F2 2/8 | Opus 5.5 | 32 | 9,1 M | 3,00 | 1,9 |
 | F2 3/8 | Opus 5.5 | 30 | 9,6 M | 2,62 (+ cierre de la sesión A) | 1,7 |
 | F2 4/8 | Opus 5.5 (orquestador) + 3 Opus 5.5 y 3 Sonnet 5.5 (subagentes) | 195 (69 del orquestador) | 18,0 M | ≈ 10,9 (6,5 de las ejecuciones) | ≈ 9 |
-| F2 5/8 | Opus 5.5 (sesión C) | 54 (hasta abrir el PR) | 6,9 M | 3,77 | 3,5 |
+| F2 5/8 | Opus 5.5 (sesión C) | 70 | 10,0 M | 4,74 | 3,5 |
 
 - **Medición:** `node scripts/ai-usage.mjs <transcripción.jsonl> docs/ai-usage/phases.json`, con el uso real que registra Claude Code.
 - **Norma desde F2:** estimar antes de cada paso (llamadas y USD eq.), medir al fusionar y registrar aquí y en la web. **Cada fase empieza en una sesión nueva**, porque el contexto acumulado multiplica el coste de cada llamada.

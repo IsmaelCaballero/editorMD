@@ -74,6 +74,11 @@
     {
       "phase": "F2",
       "step": "5/8 FileController (PR #19, sesión C)",
+      "end": "2026-10-05T06:56:12Z"
+    },
+    {
+      "phase": "F2",
+      "step": "6/8 EncodingDialog + barra de estado (cierre de la sesión C y sesión D)",
       "end": "2099-01-01T00:00:00Z"
     }
   ]

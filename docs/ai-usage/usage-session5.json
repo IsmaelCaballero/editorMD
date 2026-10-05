@@ -1,6 +1,6 @@
 {
   "models": {
-    "claude-opus-5-5": 54
+    "claude-opus-5-5": 81
   },
   "prices": {
     "claude-fable-5-1": {
@@ -210,25 +210,38 @@
     {
       "phase": "F2",
       "step": "5/8 FileController (PR #19, sesión C)",
-      "end": "2099-01-01T00:00:00Z",
-      "calls": 54,
-      "input": 108,
+      "end": "2026-10-05T06:56:12Z",
+      "calls": 70,
+      "input": 144,
       "cacheWrite5m": 0,
-      "cacheWrite1h": 155025,
-      "cacheRead": 6674358,
-      "output": 59519,
-      "thinking": 13543,
-      "usd": 3.7658836
+      "cacheWrite1h": 170179,
+      "cacheRead": 9805132,
+      "output": 70942,
+      "thinking": 14952,
+      "usd": 4.7418744
+    },
+    {
+      "phase": "F2",
+      "step": "6/8 EncodingDialog + barra de estado (cierre de la sesión C y sesión D)",
+      "end": "2099-01-01T00:00:00Z",
+      "calls": 11,
+      "input": 22,
+      "cacheWrite5m": 0,
+      "cacheWrite1h": 27399,
+      "cacheRead": 2341272,
+      "output": 22734,
+      "thinking": 4503,
+      "usd": 1.1422144
     }
   ],
   "total": {
-    "calls": 54,
-    "input": 108,
+    "calls": 81,
+    "input": 166,
     "cacheWrite5m": 0,
-    "cacheWrite1h": 155025,
-    "cacheRead": 6674358,
-    "output": 59519,
-    "thinking": 13543,
-    "usd": 3.7658836
+    "cacheWrite1h": 197578,
+    "cacheRead": 12146404,
+    "output": 93676,
+    "thinking": 19455,
+    "usd": 5.884088800000001
   }
 }

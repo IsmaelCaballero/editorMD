@@ -3,11 +3,20 @@
 > Fotografía del estado actual. Se actualiza **al final de cada sesión de trabajo**.
 > Última actualización: 2026-10-05
 
-## ⏸ Punto de reanudación (2026-10-05, sesión #5 = F2 sesión C, en el ordenador nuevo `C:\ProgIA`)
+## ⏸ Punto de reanudación (2026-10-05, fin de la sesión #5 = F2 sesión C, en el ordenador nuevo `C:\ProgIA`)
 
-**Dónde estamos:** F2 pasos 1-5 terminados. **Paso 5** (`feature/F2-file-controller`): C02 `FileController` v0.1.0 (Nuevo, Abrir, Guardar, Guardar como, Cerrar y aviso de cambios, también al cerrar la ventana) y A03 `TauriFilePicker` (selectores nativos, `tauri-plugin-dialog`) → **PR #19**, pendiente de tu revisión.
+**Dónde estamos:** F2 pasos 1-5 terminados y fusionados. El **paso 5** (C02 `FileController` v0.1.0 + A03 `TauriFilePicker`) está en `main` (PR #19, `d81970d`) y su coste final fue de 70 llamadas y 4,74 USD eq. **Sesión C cerrada** tras el paso 5, para que el paso 6 empiece con el contexto limpio. La rama de cierre `chore/F2-session-C-close` (DECISIONS.md + este estado) va en el **PR #20**.
 
-**Siguiente paso:** F2 6/8 `feature/F2-encoding-ui`: V07 `EncodingDialog` (Reabrir con…, Guardar con…, perfiles) + V04 barra de estado pulsable. Ahí se sustituye el aviso temporal de `file.encoding` y se ofrecen opciones (transliterar, sustituir, cambiar de codificación) cuando hay caracteres que no caben.
+**Antes de seguir:** comprobar que el PR #20 está fusionado. Si no, revisarlo y fusionarlo primero.
+
+**Siguiente paso:** F2 6/8 `feature/F2-encoding-ui` (sesión D), con Opus 5.5 sin delegar (recomendado):
+- V07 `EncodingDialog`: desplegables, perfiles Windows / Linux-macOS / Máx. compatibilidad, «Aplicar al guardar» y «Reabrir con esta codificación»;
+- diálogo de pérdidas al guardar (Cancelar · Sustituir por ? · Transliterar · Guardar en UTF-8) y recarga desde disco tras un guardado con pérdidas;
+- aviso de finales de línea mezclados al abrir;
+- V04 `StatusBarView` con codificación y fin de línea pulsables;
+- perfiles como datos de M01.
+
+Estimación: ≈ 55 llamadas · ≈ 4 USD eq. (3,3-5). Se sustituye el aviso temporal de `file.encoding`.
 
 ### Cómo retomar
 - **En este ordenador (`C:\ProgIA\editorMD`):** `git checkout main && git pull`, y `claude`.
@@ -15,9 +24,9 @@
 
 Texto de arranque si se abre una sesión nueva:
 
-> Retomamos editorMD, F2 sesión C. Lee CONTEXT.md, STATUS.md, PLAN.md (§7 F2) y docs/ai-usage/README.md. Comprueba el estado de git y de los PR abiertos y preséntame el paso 6/8 (EncodingDialog + barra de estado) con su estimación de tokens. No empieces hasta que te dé el ok.
+> Retomamos editorMD, F2 sesión D (pasos 6-8). Lee CONTEXT.md, STATUS.md, PLAN.md (§7 F2), DECISIONS.md y docs/ai-usage/README.md. Comprueba el estado de git y de los PR abiertos (el PR #20 debería estar fusionado) y preséntame el paso 6/8 (EncodingDialog + barra de estado) con su estimación de tokens. No empieces hasta que te dé el ok.
 
-**Uso de IA:** F0 10,38 · F1 15,54 · F2 sesión A ≈ 18,1 · F2 paso 4 ≈ 10,9 · **F2 paso 5 ≈ 3,8 USD eq.** (54 llamadas hasta abrir el PR). Detalle en `docs/ai-usage/README.md` §5.1.
+**Uso de IA:** F0 10,38 · F1 15,54 · F2 sesión A ≈ 18,1 · F2 paso 4 ≈ 10,9 · **F2 paso 5 4,74 USD eq.** (70 llamadas; estimado 3,5). Detalle en `docs/ai-usage/README.md` §5.1.
 
 **Reglas de trabajo** (CONTEXT.md 16-22): tú fusionas los PR; las ramas se renombran al cerrar la fase; cada etiqueta se enlaza en la web; avisar antes de medir en la app real; documentar el uso de IA en cada paso; guardar todo antes de cambiar de sesión; `npm run lint` antes de cada push.
 
@@ -27,7 +36,7 @@ Texto de arranque si se abre una sesión nueva:
 
 | Campo | Valor |
 |---|---|
-| Fase actual | **F2 en curso** · pasos 1-5 hechos (paso 5 en el PR #19); siguiente: paso 6 |
+| Fase actual | **F2 en curso** · pasos 1-5 hechos y fusionados (PR #19); siguiente: paso 6 (sesión D) |
 | Versión de la app | **0.0.2** (PR #9) · última etiqueta publicada: [v0.0.2](https://github.com/IsmaelCaballero/editorMD/releases/tag/v0.0.2) |
 | Stack | Rust + Tauri 2 · WYSIWYG |
 | Salud | 🟢 CI en verde en los 4 SO; app arranca en Windows 11 |
@@ -43,7 +52,7 @@ Texto de arranque si se abre una sesión nueva:
 |---|---|---|
 | F0 Decisiones y entorno | ✅ Cerrada (ramas renombradas) | 9/9 |
 | F1 Esqueleto MVC | ✅ Cerrada (ramas renombradas, v0.0.2) | 5/5 |
-| F2 Ficheros y codificaciones | 🔄 En curso (sesión C) | 5/8 |
+| F2 Ficheros y codificaciones | 🔄 En curso (siguiente: sesión D) | 5/8 |
 | F3 Edición | ⏳ Pendiente | 0/3 |
 | F4 Formato | ⏳ Pendiente | 0/4 |
 | F5 Objetos | ⏳ Pendiente | 0/3 |
@@ -73,15 +82,16 @@ Implementados: **M00 AppInfo 0.1.0**, **M08 FileService 0.1.0**, **M09 TextCodec
 | M08 FileService (Rust) | 33 + 3 doctests (+ 28 ocultas de RQ.1; 1 solo de Unix) | 36 | — |
 
 ## Bloqueos / pendiente del usuario
-- Revisar y fusionar el PR #19 (paso 5).
+- Revisar y fusionar el PR #20 (DECISIONS.md y cierre de la sesión C).
 
 ## Próximos pasos
-1. PR #19 (paso 5).
-2. Pasos 6-8 → cierre de F2 (versión 0.1.0).
+1. PR #20 (cierre de la sesión C).
+2. Sesión D: pasos 6-8 → cierre de F2 (versión 0.1.0, renombrado de ramas `hecha/F2.*de8/…`).
 
 ## Registro de sesiones
 | Fecha | Sesión | Hecho |
 |---|---|---|
+| 2026-10-05 | #5 | PR #19 fusionado (paso 5: 70 llamadas, 4,74 USD eq.). Subidas a GitHub las ramas `rq1/T2/r1…r6`. Nuevo **DECISIONS.md** (registro trazable de todas las decisiones). Sesión C cerrada antes del paso 6 por el tamaño del contexto → PR #20. Fin de la sesión #5. |
 | 2026-10-05 | #5 | Sesión C. Quitados los 6 *worktrees* de RQ.1 T2 (las ramas se conservan). Paso 5/8 con Opus 5.5 (sin delegar): puertos de ficheros, C02 FileController con TDD (46 pruebas), A03 selectores nativos (`tauri-plugin-dialog`), cierre de la ventana con confirmación, menús de F2 activos y bienvenida sin título → PR #19. |
 | 2026-10-05 | #4 | Sesión B en el ordenador nuevo (`C:\ProgIA`; identidad git configurada en el repositorio). Paso 4/8: especificación T2, 28 pruebas ocultas y 6 ejecuciones (3 Opus 5.5, 3 Sonnet 5.5): todas pasan; revisión ciega A (Sonnet) 4,8 frente a B (Opus) 4,2 → PR #16 fusionado en la rama, #17 cerrado. M08 FileService v0.1.0 → PR #18. RQ.1: gana Sonnet en T1 y T2. |
 | 2026-10-04 | #3 | PR #13 y #14 fusionados. Pasos 2 y 3: M09 v0.2.0 (escritura, finales de línea, 27 *fixtures* de ida y vuelta) y v0.3.0 (informe de pérdidas, transliteración) → PR #15. Sesión A cerrada tras el paso 3 (aprobado). Guía para retomar en otro ordenador. Fin de la sesión #3. |
