@@ -3,11 +3,11 @@
 > Fotografía del estado actual. Se actualiza **al final de cada sesión de trabajo**.
 > Última actualización: 2026-10-05
 
-## ⏸ Punto de reanudación (2026-10-05, sesión #4 = F2 sesión B, en el ordenador nuevo `C:\ProgIA`)
+## ⏸ Punto de reanudación (2026-10-05, sesión #5 = F2 sesión C, en el ordenador nuevo `C:\ProgIA`)
 
-**Dónde estamos:** F2 pasos 1-4 terminados. **Paso 4** (`feature/F2-file-service`, M08 `FileService` v0.1.0 + comandos `open_file`/`save_file`) → **PR #18**, pendiente de tu revisión. Experimento **RQ.1 T2** terminado: **gana Sonnet 5.5** otra vez (49 % más barato y mejor puntuado en la revisión ciega). Respuesta provisional a la RQ.1 en `docs/ai-usage/README.md` §4.6.
+**Dónde estamos:** F2 pasos 1-5 terminados. **Paso 5** (`feature/F2-file-controller`): C02 `FileController` v0.1.0 (Nuevo, Abrir, Guardar, Guardar como, Cerrar y aviso de cambios, también al cerrar la ventana) y A03 `TauriFilePicker` (selectores nativos, `tauri-plugin-dialog`) → **PR #19**, pendiente de tu revisión.
 
-**Siguiente paso:** F2 5/8 `feature/F2-file-controller`: C02 `FileController` (Nuevo, Abrir, Guardar, Guardar como, Cerrar, aviso de cambios) + puerto TS `IBackend.openFile/saveFile` sobre los comandos de M08. Antes, decidir si el paso se delega en Sonnet 5.5 (propuesta de §4.6).
+**Siguiente paso:** F2 6/8 `feature/F2-encoding-ui`: V07 `EncodingDialog` (Reabrir con…, Guardar con…, perfiles) + V04 barra de estado pulsable. Ahí se sustituye el aviso temporal de `file.encoding` y se ofrecen opciones (transliterar, sustituir, cambiar de codificación) cuando hay caracteres que no caben.
 
 ### Cómo retomar
 - **En este ordenador (`C:\ProgIA\editorMD`):** `git checkout main && git pull`, y `claude`.
@@ -15,9 +15,9 @@
 
 Texto de arranque si se abre una sesión nueva:
 
-> Retomamos editorMD, F2 sesión B. Lee CONTEXT.md, STATUS.md, PLAN.md (§7 F2) y docs/ai-usage/README.md. Comprueba el estado de git y de los PR abiertos y preséntame el paso 5/8 (FileController) con su estimación de tokens. No empieces hasta que te dé el ok.
+> Retomamos editorMD, F2 sesión C. Lee CONTEXT.md, STATUS.md, PLAN.md (§7 F2) y docs/ai-usage/README.md. Comprueba el estado de git y de los PR abiertos y preséntame el paso 6/8 (EncodingDialog + barra de estado) con su estimación de tokens. No empieces hasta que te dé el ok.
 
-**Uso de IA:** F0 10,38 · F1 15,54 · F2 sesión A ≈ 18,1 · **F2 paso 4 ≈ 10,9 USD eq.** (orquestador + 6 ejecuciones de T2). Detalle en `docs/ai-usage/README.md` §5.1.
+**Uso de IA:** F0 10,38 · F1 15,54 · F2 sesión A ≈ 18,1 · F2 paso 4 ≈ 10,9 · **F2 paso 5 ≈ 3,8 USD eq.** (54 llamadas hasta abrir el PR). Detalle en `docs/ai-usage/README.md` §5.1.
 
 **Reglas de trabajo** (CONTEXT.md 16-22): tú fusionas los PR; las ramas se renombran al cerrar la fase; cada etiqueta se enlaza en la web; avisar antes de medir en la app real; documentar el uso de IA en cada paso; guardar todo antes de cambiar de sesión; `npm run lint` antes de cada push.
 
@@ -27,11 +27,11 @@ Texto de arranque si se abre una sesión nueva:
 
 | Campo | Valor |
 |---|---|
-| Fase actual | **F2 en curso** · pasos 1-4 hechos (paso 4 en el PR #18); siguiente: paso 5 |
+| Fase actual | **F2 en curso** · pasos 1-5 hechos (paso 5 en el PR #19); siguiente: paso 6 |
 | Versión de la app | **0.0.2** (PR #9) · última etiqueta publicada: [v0.0.2](https://github.com/IsmaelCaballero/editorMD/releases/tag/v0.0.2) |
 | Stack | Rust + Tauri 2 · WYSIWYG |
 | Salud | 🟢 CI en verde en los 4 SO; app arranca en Windows 11 |
-| Tests | TS: 341/341 ✅ · Rust: 95/95 + 17 doctests ✅ (+ 31 + 28 pruebas ocultas de RQ.1) |
+| Tests | TS: 408/408 ✅ · Rust: 95/95 + 17 doctests ✅ (+ 31 + 28 pruebas ocultas de RQ.1) |
 | Cobertura | Modelo + Controlador + Adaptadores: **100 % de líneas** |
 | CI | ✅ GitHub Actions: Windows, Ubuntu 22.04, macOS y Fedora |
 | Git | https://github.com/IsmaelCaballero/editorMD · F0: PR #1-#4 fusionados y ramas renombradas `hecha/F0.*de4/…` · F1: PR #5-#9 fusionados y ramas renombradas `hecha/F1.*de5/…` · PR #10 métricas de IA |
@@ -43,7 +43,7 @@ Texto de arranque si se abre una sesión nueva:
 |---|---|---|
 | F0 Decisiones y entorno | ✅ Cerrada (ramas renombradas) | 9/9 |
 | F1 Esqueleto MVC | ✅ Cerrada (ramas renombradas, v0.0.2) | 5/5 |
-| F2 Ficheros y codificaciones | 🔄 En curso (sesión B) | 4/8 |
+| F2 Ficheros y codificaciones | 🔄 En curso (sesión C) | 5/8 |
 | F3 Edición | ⏳ Pendiente | 0/3 |
 | F4 Formato | ⏳ Pendiente | 0/4 |
 | F5 Objetos | ⏳ Pendiente | 0/3 |
@@ -53,34 +53,36 @@ Texto de arranque si se abre una sesión nueva:
 | F9 QA y release | ⏳ Pendiente | 0/4 |
 
 ## Versiones de componentes (resumen)
-Implementados: **M00 AppInfo 0.1.0**, **M08 FileService 0.1.0**, **M09 TextCodec 0.3.0**, **M01 DocumentState 0.2.0**, **M07 MarkdownCodec 0.2.0**, **V02 WysiwygEditorView 0.1.0**, **M17 SemVer 0.1.0**, **V01 MainWindow 0.3.0**, **V12 DialogService 0.1.0**, **C01 AppController 0.1.0**, **A01 TauriBackend 0.1.0**, **A02 TauriWindow 0.1.0**. El resto, en 0.0.0. Ver PLAN.md §4.3.
+Implementados: **M00 AppInfo 0.1.0**, **M08 FileService 0.1.0**, **M09 TextCodec 0.3.0**, **M01 DocumentState 0.3.0**, **M07 MarkdownCodec 0.2.0**, **V02 WysiwygEditorView 0.1.0**, **M17 SemVer 0.1.0**, **V01 MainWindow 0.4.0**, **V12 DialogService 0.1.0**, **C01 AppController 0.2.0**, **C02 FileController 0.1.0**, **A01 TauriBackend 0.2.0**, **A02 TauriWindow 0.2.0**, **A03 TauriFilePicker 0.1.0**. El resto, en 0.0.0. Ver PLAN.md §4.3.
 
 ## Estado de los tests por componente
 
 | Componente | Tests | Pasan | Cobertura |
 |---|---|---|---|
 | M17 SemVer (TS) | 29 | 29 | 97,95 % |
-| M01 DocumentState (TS) | 22 | 22 | 100 % |
+| M01 DocumentState (TS) | 31 | 31 | 100 % |
 | M07 MarkdownCodec (TS) | 163 | 163 | 100 % |
-| V01 menús + MenuBar (TS/Svelte) | 43 | 43 | — |
+| V01 menús + MenuBar (TS/Svelte) | 57 | 57 | — |
 | V02 MilkdownEditorView (jsdom) | 33 | 33 | — |
-| C01 AppController (mocks) | 13 | 13 | 100 % |
+| C01 AppController (mocks) | 19 | 19 | 100 % |
+| C02 FileController + puertos (mocks) | 46 | 46 | 100 % |
 | V12 diálogos + ShellState (jsdom) | 11 | 11 | — |
-| A01/A02 adaptadores Tauri (vi.mock) | 4 | 4 | 100 % |
+| A01/A02/A03 adaptadores Tauri (vi.mock) | 15 | 15 | 100 % |
 | M00 AppInfo (Rust) | 3 + 1 doctest | 4 | — |
 | M09 TextCodec (Rust) | 60 + 13 doctests (+ 31 ocultas de RQ.1) | 73 | — |
 | M08 FileService (Rust) | 33 + 3 doctests (+ 28 ocultas de RQ.1; 1 solo de Unix) | 36 | — |
 
 ## Bloqueos / pendiente del usuario
-- Revisar y fusionar el PR #18 (paso 4).
+- Revisar y fusionar el PR #19 (paso 5).
 
 ## Próximos pasos
-1. PR #18 (paso 4).
-2. Pasos 5-8 → cierre de F2 (versión 0.1.0).
+1. PR #19 (paso 5).
+2. Pasos 6-8 → cierre de F2 (versión 0.1.0).
 
 ## Registro de sesiones
 | Fecha | Sesión | Hecho |
 |---|---|---|
+| 2026-10-05 | #5 | Sesión C. Quitados los 6 *worktrees* de RQ.1 T2 (las ramas se conservan). Paso 5/8 con Opus 5.5 (sin delegar): puertos de ficheros, C02 FileController con TDD (46 pruebas), A03 selectores nativos (`tauri-plugin-dialog`), cierre de la ventana con confirmación, menús de F2 activos y bienvenida sin título → PR #19. |
 | 2026-10-05 | #4 | Sesión B en el ordenador nuevo (`C:\ProgIA`; identidad git configurada en el repositorio). Paso 4/8: especificación T2, 28 pruebas ocultas y 6 ejecuciones (3 Opus 5.5, 3 Sonnet 5.5): todas pasan; revisión ciega A (Sonnet) 4,8 frente a B (Opus) 4,2 → PR #16 fusionado en la rama, #17 cerrado. M08 FileService v0.1.0 → PR #18. RQ.1: gana Sonnet en T1 y T2. |
 | 2026-10-04 | #3 | PR #13 y #14 fusionados. Pasos 2 y 3: M09 v0.2.0 (escritura, finales de línea, 27 *fixtures* de ida y vuelta) y v0.3.0 (informe de pérdidas, transliteración) → PR #15. Sesión A cerrada tras el paso 3 (aprobado). Guía para retomar en otro ordenador. Fin de la sesión #3. |
 | 2026-10-04 | #3 | Sesión nueva para F2. Plan de F2 aprobado (8 pasos, 2 sesiones, RQ.1 con 3 repeticiones). Paso 1/8: especificación T1, pruebas ocultas y 6 ejecuciones del experimento. |

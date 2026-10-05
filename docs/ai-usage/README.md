@@ -1,7 +1,7 @@
 # Uso de IA: modelo, tokens y coste
 
 > Documento vivo. Se actualiza al cerrar cada paso con `node scripts/ai-usage.mjs`.
-> Última actualización: 2026-10-04 (cierre de F1).
+> Última actualización: 2026-10-05 (F2 paso 5/8).
 
 ## 1. Modelo utilizado
 
@@ -217,12 +217,14 @@ En cada paso: **estimación previa** (llamadas y USD eq., por analogía con la t
 | 2/8 Codificar + fin de línea | A | 25 · 1,9 | 32 · 3,00 |
 | 3/8 Pérdidas y transliteración | A | 20 · 1,7 | 30 · 2,62 (+ cierre de la sesión A) |
 | 4/8 FileService 🧪 | B | 20 + 6 ejecuciones · ≈ 7 (≈ 9 al empezar el paso) | 195 en total (69 del orquestador) · ≈ 10,9 (6,5 de las 6 ejecuciones) |
-| 5/8 FileController | B | 45 · 3,2 | — |
-| 6/8 Diálogo de codificación + barra de estado | B | 40 · 3,6 | — |
-| 7/8 Ficheros recientes | B | 20 · 2,1 | — |
-| 8/8 Cierre F2 | B | 13 · 1,4 | — |
+| 5/8 FileController | C | 45 · 3,2 (≈ 50 · 3,5 al empezar el paso) | 54 · 3,77 hasta abrir el PR #19 (contexto medio 124 k) |
+| 6/8 Diálogo de codificación + barra de estado | C | 40 · 3,6 | — |
+| 7/8 Ficheros recientes | C | 20 · 2,1 | — |
+| 8/8 Cierre F2 | C | 13 · 1,4 | — |
 | **Total** | | **≈ 28 (20-38)** | sesión A (pasos 1-3): ≈ 18,1 frente a 10,6 estimados |
 
 **Sesión A:** 290 llamadas en la transcripción, 41 M tokens procesados y ≈ 18,1 USD eq. (16,8 registrados + 1,3 de salida infrarregistrada de los subagentes). Instantánea en [`usage-session3.json`](usage-session3.json). Las desviaciones vienen de las incidencias del experimento (paso 1), de un contexto que llegó a ≈ 315 k tokens por llamada y de los errores de entorno (secuencias de escape en Bash, formato de un JSON). Por eso el cambio a la sesión B se adelantó un paso.
+
+**Paso 5/8 (sesión C):** lo hizo Opus 5.5 sin delegar, porque el encargo incluía diseñar puertos y conectar la interfaz (especificación abierta) y el ahorro de Sonnet se habría ido en especificar e integrar. Desviación de +8 % sobre la estimación hecha al empezar: dos ajustes que no estaban previstos (fase de los menús y documento de bienvenida sin título) y la comprobación en la app real. Instantánea en [`usage-session5.json`](usage-session5.json).
 
 **Artefactos de T1 conservados en el repositorio** (las transcripciones y los *worktrees* son locales): [`rq1/T1-hidden-tests.rs`](rq1/T1-hidden-tests.rs), [`rq1/T1-metrics.json`](rq1/T1-metrics.json), [`rq1/T1-runs.json`](rq1/T1-runs.json) y [`scripts/rq1-eval.sh`](../../scripts/rq1-eval.sh).

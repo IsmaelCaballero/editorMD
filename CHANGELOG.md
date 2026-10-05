@@ -12,6 +12,12 @@ y el proyecto usa [Semantic Versioning 2.0.0](https://semver.org/lang/es/).
 - M09 `TextCodec`: escritura en las 9 codificaciones (con BOM), detección del fin de línea predominante y aviso de finales mezclados; al guardar se conservan la codificación y el fin de línea originales (ida y vuelta byte a byte).
 - M09 `TextCodec`: informe de los caracteres que no caben en la codificación destino (con sus líneas) y conversión con sustitución por `?`, transliteración (`€` → `EUR`) o entidades HTML.
 - M08 `FileService` (Rust): lectura de ficheros con aviso de solo lectura, **escritura atómica** (fichero temporal en la misma carpeta, volcado a disco y renombrado: si algo falla, el original queda intacto y no queda basura) y comandos Tauri `open_file` / `save_file`, que combinan M08 con M09. Guardar con caracteres que no caben en la codificación devuelve el informe de pérdidas en vez de perderlos en silencio.
+- Archivo → **Abrir…** (Ctrl+O), **Guardar** (Ctrl+S), **Guardar como…** (Ctrl+Mayús+S) y **Cerrar** (Ctrl+W), con los selectores de ficheros nativos de cada sistema (C02 `FileController`, A03 `TauriFilePicker`). Al guardar se conservan la codificación y el fin de línea con los que se abrió el fichero; un fichero de solo lectura se guarda con «Guardar como».
+- Aviso de cambios sin guardar también al **cerrar la ventana**, al abrir otro fichero y al cerrar el documento. «Guardar» en ese aviso guarda de verdad (antes solo avisaba de que llegaría en F2).
+- Mensajes de error comprensibles al abrir o guardar (fichero inexistente, sin permiso, carpeta, caracteres que no caben en la codificación, con sus líneas).
+
+### Changed
+- El documento de bienvenida es ahora un documento sin título: «Guardar» pide dónde guardarlo.
 
 ## [0.0.2] - 2026-10-04
 
