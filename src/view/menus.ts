@@ -17,7 +17,7 @@
 export type Phase = 'F1' | 'F2' | 'F3' | 'F4' | 'F5' | 'F6' | 'F7'
 
 /** Fase actual del desarrollo: determina qué opciones están disponibles. */
-export const CURRENT_PHASE: Phase = 'F1'
+export const CURRENT_PHASE: Phase = 'F2'
 
 /** Identificadores de todas las órdenes que puede emitir la vista. */
 export type CommandId =

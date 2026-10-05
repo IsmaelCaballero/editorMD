@@ -6,6 +6,7 @@ import type {
   IBackend,
   IDialogService,
   IEditorView,
+  IFilePicker,
   IWindowView,
   UnsavedChoice,
 } from '../../src/controller/ports'
@@ -45,14 +46,29 @@ function setup(options: { content?: string; choice?: UnsavedChoice } = {}) {
   const { editor, type, hasListener } = fakeEditor()
   const backend: IBackend = {
     appInfo: vi.fn(async () => ({ name: 'editorMD', version: '9.8.7' })),
+    openFile: vi.fn(async () => ({
+      file: {
+        text: '# Abierto',
+        encoding: 'utf-8' as const,
+        lineEnding: 'lf' as const,
+        mixedLineEndings: false,
+        detection: 'bom' as const,
+      },
+      readOnly: false,
+    })),
+    saveFile: vi.fn(async () => ({ bytesWritten: 1, losses: null })),
   }
   const dialogs: IDialogService = {
     message: vi.fn(async () => {}),
     confirmUnsaved: vi.fn(async () => options.choice ?? 'cancel'),
   }
   const window: IWindowView = { setTitle: vi.fn(), setStatus: vi.fn() }
-  const controller = new AppController({ document, editor, backend, dialogs, window })
-  return { controller, document, editor, type, hasListener, backend, dialogs, window }
+  const picker: IFilePicker = {
+    pickOpenPath: vi.fn(async () => '/docs/otro.md'),
+    pickSavePath: vi.fn(async () => '/docs/copia.md'),
+  }
+  const controller = new AppController({ document, editor, backend, dialogs, window, picker })
+  return { controller, document, editor, type, hasListener, backend, dialogs, window, picker }
 }
 
 describe('AppController · arranque', () => {
@@ -157,16 +173,13 @@ describe('AppController · Nuevo (file.new)', () => {
     expect(editor.setMarkdown).toHaveBeenCalledTimes(1)
   })
 
-  it('con cambios y «guardar»: en F1 aún no se puede guardar, avisa y no descarta', async () => {
-    const { controller, document, type, dialogs } = setup({ content: 'A', choice: 'save' })
+  it('con cambios y «guardar»: guarda (C02) y después vacía', async () => {
+    const { controller, document, type, backend } = setup({ content: 'A', choice: 'save' })
     controller.start()
     type('B')
     await controller.execute('file.new')
-    expect(dialogs.message).toHaveBeenCalledWith(
-      'Guardar aún no está disponible',
-      expect.stringContaining('F2'),
-    )
-    expect(document.content).toBe('B')
+    expect(backend.saveFile).toHaveBeenCalledWith(expect.objectContaining({ text: 'B' }))
+    expect(document.content).toBe('')
   })
 
   it('tras «Nuevo», el foco vuelve al editor', async () => {
@@ -175,6 +188,63 @@ describe('AppController · Nuevo (file.new)', () => {
     editor.focus.mockClear()
     await controller.execute('file.new')
     expect(editor.focus).toHaveBeenCalled()
+  })
+})
+
+describe('AppController · menú Archivo (delegado en C02)', () => {
+  it('file.open abre el fichero elegido y actualiza el título', async () => {
+    const { controller, document, editor, window } = setup()
+    controller.start()
+    expect(await controller.execute('file.open')).toBe(true)
+    expect(document.path).toBe('/docs/otro.md')
+    expect(editor.setMarkdown).toHaveBeenLastCalledWith('# Abierto')
+    expect(window.setTitle).toHaveBeenLastCalledWith('otro.md — editorMD')
+  })
+
+  it('file.save guarda y quita la marca de modificado del título', async () => {
+    const { controller, type, backend, window } = setup({ content: 'A' })
+    controller.start()
+    type('B')
+    expect(await controller.execute('file.save')).toBe(true)
+    expect(backend.saveFile).toHaveBeenCalledWith(
+      expect.objectContaining({ path: '/docs/notas.md', text: 'B' }),
+    )
+    expect(window.setTitle).toHaveBeenLastCalledWith('notas.md — editorMD')
+  })
+
+  it('file.saveAs guarda en la ruta elegida', async () => {
+    const { controller, document, picker } = setup({ content: 'A' })
+    controller.start()
+    expect(await controller.execute('file.saveAs')).toBe(true)
+    expect(picker.pickSavePath).toHaveBeenCalledWith('/docs/notas.md')
+    expect(document.path).toBe('/docs/copia.md')
+  })
+
+  it('file.close deja un documento vacío sin título', async () => {
+    const { controller, document } = setup({ content: 'A' })
+    controller.start()
+    expect(await controller.execute('file.close')).toBe(true)
+    expect(document.isUntitled).toBe(true)
+    expect(document.content).toBe('')
+  })
+
+  it('file.encoding avisa de que el diálogo llega en el paso 6', async () => {
+    const { controller, dialogs } = setup()
+    controller.start()
+    expect(await controller.execute('file.encoding')).toBe(true)
+    expect(dialogs.message).toHaveBeenCalledWith(
+      'Codificación y fin de línea',
+      expect.stringContaining('paso 6/8'),
+    )
+  })
+
+  it('confirmClose: sin cambios se puede cerrar; con cambios y «cancelar», no', async () => {
+    const { controller, type, dialogs } = setup({ content: 'A', choice: 'cancel' })
+    controller.start()
+    expect(await controller.confirmClose()).toBe(true)
+    type('B')
+    expect(await controller.confirmClose()).toBe(false)
+    expect(dialogs.confirmUnsaved).toHaveBeenCalledWith('notas.md')
   })
 })
 

@@ -1,7 +1,13 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Permisos de la ventana principal: los básicos de Tauri y cambiar el título (C01 · F1).",
+  "description": "Permisos de la ventana principal: los básicos de Tauri, cambiar el título (C01 · F1), cerrarla tras confirmar los cambios sin guardar y los selectores nativos de abrir/guardar (C02 · F2).",
   "windows": ["main"],
-  "permissions": ["core:default", "core:window:allow-set-title"]
+  "permissions": [
+    "core:default",
+    "core:window:allow-set-title",
+    "core:window:allow-destroy",
+    "dialog:allow-open",
+    "dialog:allow-save"
+  ]
 }

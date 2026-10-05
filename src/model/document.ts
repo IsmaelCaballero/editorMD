@@ -78,11 +78,12 @@ export class DocumentState {
   }
 
   /**
-   * Crea un documento nuevo, vacío y sin ruta.
+   * Crea un documento nuevo, sin ruta y sin cambios.
    * @param defaults - Formato inicial (preferencias); por defecto {@link DEFAULT_FORMAT}.
+   * @param content - Texto inicial (p. ej. la bienvenida); por defecto, vacío.
    */
-  static createNew(defaults: Partial<FileFormat> = {}): DocumentState {
-    return new DocumentState('', null, { ...DEFAULT_FORMAT, ...defaults })
+  static createNew(defaults: Partial<FileFormat> = {}, content = ''): DocumentState {
+    return new DocumentState(content, null, { ...DEFAULT_FORMAT, ...defaults })
   }
 
   /**
@@ -177,12 +178,14 @@ export class DocumentState {
   }
 
   /**
-   * Registra que el estado actual se ha guardado en disco.
+   * Registra que el documento se ha guardado en disco.
    * @param path - Nueva ruta («Guardar como»); si se omite, se mantiene la actual.
+   * @param content - Texto que se escribió; por defecto, el actual. Si el usuario
+   *   siguió escribiendo durante el guardado, lo nuevo sigue contando como cambio.
    */
-  markSaved(path?: string): void {
+  markSaved(path?: string, content: string = this.#content): void {
     if (path !== undefined) this.#path = path
-    this.#saved = { content: this.#content, format: this.#format }
+    this.#saved = { content, format: this.#format }
     this.#emit()
   }
 

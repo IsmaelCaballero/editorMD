@@ -72,15 +72,32 @@ describe('estructura de menús', () => {
 })
 
 describe('disponibilidad por fase', () => {
-  it('la fase actual es F1', () => {
-    expect(CURRENT_PHASE).toBe('F1')
+  it('la fase actual es F2', () => {
+    expect(CURRENT_PHASE).toBe('F2')
   })
 
-  it('en F1 solo están disponibles Nuevo, Deshacer, Rehacer y Acerca de', () => {
+  it('en F1 solo estaban disponibles Nuevo, Deshacer, Rehacer y Acerca de', () => {
+    const available = allItems()
+      .filter((i) => isAvailable(i, 'F1'))
+      .map((i) => i.id)
+    expect(available).toEqual(['file.new', 'edit.undo', 'edit.redo', 'help.about'])
+  })
+
+  it('en F2 se añaden las órdenes de ficheros (sin importar ni exportar, que son de F6)', () => {
     const available = allItems()
       .filter((i) => isAvailable(i))
       .map((i) => i.id)
-    expect(available).toEqual(['file.new', 'edit.undo', 'edit.redo', 'help.about'])
+    expect(available).toEqual([
+      'file.new',
+      'file.open',
+      'file.save',
+      'file.saveAs',
+      'file.encoding',
+      'file.close',
+      'edit.undo',
+      'edit.redo',
+      'help.about',
+    ])
   })
 
   it('una opción de F4 está disponible desde F4 en adelante', () => {
@@ -143,8 +160,16 @@ describe('atajos de teclado (matchShortcut / commandForKey)', () => {
     expect(matchShortcut(event, shortcut, platform)).toBe(expected)
   })
 
-  it('Ctrl+N en F1 corresponde a file.new', () => {
+  it('Ctrl+N corresponde a file.new', () => {
     expect(commandForKey(key('n', { ctrl: true }), 'other')).toBe('file.new')
+  })
+
+  it('en F2, Ctrl+O, Ctrl+S, Ctrl+Mayús+S y Ctrl+W son las órdenes de ficheros', () => {
+    expect(commandForKey(key('o', { ctrl: true }), 'other')).toBe('file.open')
+    expect(commandForKey(key('s', { ctrl: true }), 'other')).toBe('file.save')
+    expect(commandForKey(key('S', { ctrl: true, shift: true }), 'other')).toBe('file.saveAs')
+    expect(commandForKey(key('w', { ctrl: true }), 'other')).toBe('file.close')
+    expect(commandForKey(key('s', { ctrl: true }), 'other', { phase: 'F1' })).toBeNull()
   })
 
   it('no devuelve órdenes de fases futuras (Ctrl+B es Negrita, F4)', () => {

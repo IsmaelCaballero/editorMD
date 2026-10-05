@@ -25,6 +25,7 @@ tauri-plugin-log = "2"
 encoding_rs = "0.8.42"
 chardetng = "1.0.0"
 deunicode = "1.6.2"
+tauri-plugin-dialog = "2"
 
 [dev-dependencies]
 tempfile = "3"
